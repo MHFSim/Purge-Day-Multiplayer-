@@ -321,7 +321,7 @@ const PD_MAXLV=60;                           /* Waffenstufe: 1 bis 60 */
 const PD_MAXPLV=500;                         /* Spielerstufe: 1 bis 500 */
 const PD_KILLS_PER_REWARD=5000, PD_REWARD_MAUT=5;   /* alle 5000 besiegten Gegner: 5 Maut im Hauptspiel */
 const PD_WPN={
- spritze:{n:'Naloxon-Spritze',ic:'💉',d:'Schießt auf den nächsten Suchti. Wird mit jeder Stufe schneller und stärker. Alle 5 Stufen 2 Spritzen mehr, die gleichzeitig feuern.',col:'#2ec4b6'},
+ spritze:{n:'Naloxon-Spritze',ic:'💉',d:'Schießt auf den nächsten Suchti. Wird mit jeder Stufe schneller und stärker. Alle 5 Stufen 2 Spritzen mehr, die gleichzeitig feuern. Ab Stufe 5 fliegt jede Spritze durch bis zum 3. Gegner.',col:'#2ec4b6'},
  defi:{n:'Defi-Schockwelle',ic:'⚡',d:'Schockwelle rund um dich, die Gegner nur ganz leicht wegschubst. Wird mit der Stufe größer und stärker, kommt nur wenig öfter.',col:'#ffd23f'},
  sirene:{n:'Sirene',ic:'📣',d:'Schallwelle in Laufrichtung, die Gegner kurz betäubt.',col:'#ff5bd0'},
  blau:{n:'Blaulicht',ic:'🚨',d:'Lichter kreisen um dich: blau, rot, blau, rot. Wer sie berührt, bleibt kurz stehen und bekommt Schaden. Alle 5 Stufen ein Licht mehr (blau, rot, …). Ab 6 Lichtern wird daraus ein Neonlaser in Rot und Blau.',col:'#4f8cff'}
@@ -535,7 +535,7 @@ function pdUpdate(dt){
  /* Projektile */
  for(const p of g.pr){ PD.src=p.o==null?null:p.o; p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt;
   if(p.ak){ for(const e of g.en){ if(e.hp<=0||(PD_EN[e.k].boss&&!PD_EN[e.k].big)) continue; const r=PD_EN[e.k].r+6, sx=p.vx*dt, sy=p.vy*dt, L2=sx*sx+sy*sy||1, u=Math.max(0,Math.min(1,((e.x-(p.x-sx))*sx+(e.y-(p.y-sy))*sy)/L2)), qx=p.x-sx+sx*u-e.x, qy=p.y-sy+sy*u-e.y; if(qx*qx+qy*qy<r*r){ if(PD_EN[e.k].big) pdHit(e,45,p.vx,p.vy,0,p.m); else { e.lh=PD.src; e.hp=0; e.flash=.12; e.kx+=p.vx*.05; e.ky+=p.vy*.05; } p.life=0; break; } } continue; }
-  for(const e of g.en){ if(e.hp<=0) continue; const r=PD_EN[e.k].r+5; if((e.x-p.x)**2+(e.y-p.y)**2<r*r){ const hp0=e.hp; pdHit(e,p.dmg,p.vx,p.vy,60,p.m); pdSnd('hit'); p.life=0;
+  for(const e of g.en){ if(e.hp<=0||(p.hit&&p.hit.includes(e))) continue; const r=PD_EN[e.k].r+5; if((e.x-p.x)**2+(e.y-p.y)**2<r*r){ const hp0=e.hp; pdHit(e,p.dmg,p.vx,p.vy,60,p.m); pdSnd('hit'); if(p.pc>0){ p.pc--; (p.hit||(p.hit=[])).push(e); } else p.life=0;
     if(p.a!==undefined&&e.hp<=0&&p.dmg*(p.m||g.dmgM)*PD_WDMG>hp0) pdPierce(e,p);
     break; } } }
  g.pr=g.pr.filter(p=>p.life>0); PD.src=null;
@@ -668,7 +668,7 @@ function pdWeapons(dt){
 }
 function pdWeap(g,dt){ const w=g.w, c=g.cd;
  if(w.spritze){ const L=w.spritze; c.S=(c.S||0)-dt; if(c.S<=0){ const t=pdNearest(g,520); if(t){ c.S=Math.max(.28,1.0-.012*L); const n=pdNSpr(L); pdSnd(n>4?'shot3':n>=2?'shot2':'shot'); const a0=Math.atan2(t.y-g.y,t.x-g.x), sp=n>12?.07:n>6?.1:.16;
-   for(let i=0;i<n;i++){ const a=a0+(i-(n-1)/2)*sp; g.pr.push({x:g.x,y:g.y-10,vx:Math.cos(a)*Math.min(720,420+5*L),vy:Math.sin(a)*Math.min(720,420+5*L),dmg:8+1.0*L,m:g.dmgM,life:1.1,a}); } } else c.S=.15; } }
+   for(let i=0;i<n;i++){ const a=a0+(i-(n-1)/2)*sp; g.pr.push({x:g.x,y:g.y-10,vx:Math.cos(a)*Math.min(720,420+5*L),vy:Math.sin(a)*Math.min(720,420+5*L),dmg:8+1.0*L,m:g.dmgM,life:1.1,a,pc:L>=5?2:0}); } } else c.S=.15; } }
  if(w.defi){ const L=w.defi; c.D=(c.D||0)-dt; if(c.D<=0){ c.D=pdCd('defi',L); const R=95+.8*L; g.fx.push({k:'defi',x:g.x,y:g.y,t:0,life:.45,R}); pdSnd('defi');
    for(const e of g.en){ const dx=e.x-g.x, dy=e.y-g.y, d=Math.hypot(dx,dy); if(d<R+PD_EN[e.k].r) pdHit(e,18+.9*L,dx,dy,55+.5*L); } } }
  if(w.sirene){ const L=w.sirene; c.R=(c.R||0)-dt; if(c.R<=0){ c.R=Math.max(2.4,3.6-.02*L); const a=Math.atan2(g.dy,g.dx), Ln=240+1.2*L; g.fx.push({k:'sir',x:g.x,y:g.y,t:0,life:.5,a,L:Ln}); pdSnd('sirene');
@@ -1343,7 +1343,7 @@ function pdF(v,d){ return (Math.round(v*Math.pow(10,d||0))/Math.pow(10,d||0)).to
 /* Werte einer Waffe bei Stufe L: [Name, Text] */
 function pdWStats(k,L,m,fine){
  L=Math.max(1,L); m=m||1; const R=v=>fine?pdF(v,1):String(Math.round(v));
- if(k==='spritze') return [['Spritzen',pdNSpr(L)+' auf einmal'],['Schaden je Spritze',pdF((8+1.0*L)*m,1)],['Schaden pro Salve',pdF(pdNSpr(L)*(8+1.0*L)*m,1)],['Abstand',pdF(Math.max(.28,1-.012*L),3)+' s']];
+ if(k==='spritze') return [['Spritzen',pdNSpr(L)+' auf einmal'],['Schaden je Spritze',pdF((8+1.0*L)*m,1)],['Schaden pro Salve',pdF(pdNSpr(L)*(8+1.0*L)*m,1)],['Abstand',pdF(Math.max(.28,1-.012*L),3)+' s'],['Durchschlag',L>=5?'bis 3 Gegner':'1 Gegner (ab Stufe 5: 3)']];
  if(k==='defi') return [['Radius',R(95+.8*L)+' px'],['Schaden',pdF((18+.9*L)*m,1)],['Rückstoß',R(55+.5*L)],['Wartezeit',pdSec(pdCd('defi',L))]];
  if(k==='sirene') return [['Reichweite',R(240+1.2*L)+' px'],['Schaden',pdF((9+.3*L)*m,1)],['Betäubung',pdF(1.2+.01*L,2)+' s'],['Wartezeit',pdSec(pdCd('sirene',L))]];
  const bm=pdBeams(L); return [[bm?'Laserstrahlen':'Lichter',bm?bm:pdNBlau(L)],[bm?'Länge':'Radius',R(bm?pdLaserLen(L):pdBlauR(L))+' px'],['Schaden',pdF((7+.22*L)*(bm?1.4:1)*m,1)+' / 0,18 s']];
