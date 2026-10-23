@@ -1621,8 +1621,44 @@ const NET_PFX='mhsim-purgeday-', NET_MAX=3, NET_RATE=83, NET_TIMEOUT=10000, NET_
 const PD_PCOL=['#78dcff','#ffd23f','#ff6bd6'];
 const PD_MPKEY='mhsim_purgeday_mp_v1';
 const NET={on:false,host:false,peer:null,conns:[],conn:null,code:'',me:0,lobby:[],cur:null,prev:null,sq:[],gen:0,iv:0,to:0,st:'',err:'',lastCode:'',eid:0,n:0,inT:0,needPos:false,wasDead:0,overShown:false,sc:{},
- uid:'',welcomed:false,re:null,lastRx:0,pingT:0,pgT:0,autoT:0,load:null,ld:0};
+ uid:'',welcomed:false,re:null,lastRx:0,pingT:0,pgT:0,autoT:0,load:null,ld:0,sconn:null,stc:{},seq:0,rseq:-1};
+const NET_EMAX=260, NET_KINDS=['suchti','speedy','dicker','nodder','boss'];
 try{ NET.uid=localStorage.getItem('mhsim_pd_uid')||''; if(!NET.uid){ NET.uid=Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('mhsim_pd_uid',NET.uid); } }catch(e){ NET.uid=Math.random().toString(36).slice(2); }
+
+/* ---------- Kompaktes Binärformat für den Spielzustand ----------
+   Gegner, Projektile, Säckchen und Blut als Bytes (Gegner: 11 statt ~45 Zeichen),
+   alles Übrige als kleiner JSON-Teil davor. */
+const NET_TE=new TextEncoder(), NET_TD=new TextDecoder();
+function netEncode(o){
+ const meta=Object.assign({},o); delete meta.E; delete meta.R; delete meta.Gm; delete meta.bl; meta.t='s'; meta.q=++NET.seq;
+ const jb=NET_TE.encode(JSON.stringify(meta)), E=o.E, R=o.R, G=o.Gm, B=o.bl;
+ const size=1+4+jb.length+2+E.length*11+2+R.length*6+2+G.length*5+2+(B?B.length*8:0);
+ const buf=new ArrayBuffer(size), dv=new DataView(buf), u8=new Uint8Array(buf); let i=0;
+ const cl=(v,a,b)=>v<a?a:v>b?b:v, I16=v=>{ dv.setInt16(i,cl(Math.round(v),-32768,32767),true); i+=2; }, U8=v=>{ dv.setUint8(i,cl(Math.round(v),0,255)); i+=1; }, U16=v=>{ dv.setUint16(i,v&65535,true); i+=2; };
+ U8(1); dv.setUint32(i,jb.length,true); i+=4; u8.set(jb,i); i+=jb.length;
+ U16(E.length); for(const e of E){ U16(e[0]); U8(Math.max(0,NET_KINDS.indexOf(e[1]))); U8(e[2]%250); I16(e[3]); I16(e[4]); U8((e[5]<0?1:0)|(e[6]?2:0)|(e[8]>0?4:0)); U8(((e[7]%6.2832+6.2832)%6.2832)/6.2832*255); U8(e[9]); }
+ U16(R.length); for(const r of R){ I16(r[0]); I16(r[1]); U8(((r[2]%6.2832+6.2832)%6.2832)/6.2832*255); U8(r[3]); }
+ U16(G.length); for(const q of G){ I16(q[0]); I16(q[1]); U8(Math.max(0,NET_KINDS.indexOf(q[2]))); }
+ if(B){ U16(B.length); for(const b of B){ I16(b[0]); I16(b[1]); U8(b[2]*10); U8(b[3]*50); U8(((b[4]%6.2832)+6.2832)%6.2832*40); U8(b[5]*10); } } else U16(65535);
+ return buf;
+}
+function netDecode(buf){
+ const dv=new DataView(buf), u8=new Uint8Array(buf); let i=0;
+ const I16=()=>{ const v=dv.getInt16(i,true); i+=2; return v; }, U8=()=>dv.getUint8(i++), U16=()=>{ const v=dv.getUint16(i,true); i+=2; return v; };
+ if(U8()!==1) return null;
+ const jl=dv.getUint32(i,true); i+=4; const d=JSON.parse(NET_TD.decode(u8.subarray(i,i+jl))); i+=jl;
+ let n=U16(); d.E=new Array(n); for(let k=0;k<n;k++){ const id=U16(), kd=NET_KINDS[U8()]||'suchti', sd=U8(), x=I16(), y=I16(), f=U8(), ph=U8()/255*6.2832, hp=U8(); d.E[k]=[id,kd,sd,x,y,f&1?-1:1,f&2?1:0,ph,f&4?.12:0,hp]; }
+ n=U16(); d.R=new Array(n); for(let k=0;k<n;k++){ const x=I16(), y=I16(), a=U8()/255*6.2832, ak=U8(); d.R[k]=[x,y,a,ak]; }
+ n=U16(); d.Gm=new Array(n); for(let k=0;k<n;k++){ const x=I16(), y=I16(); d.Gm[k]=[x,y,NET_KINDS[U8()]||'suchti']; }
+ n=U16(); if(n!==65535){ d.bl=new Array(n); for(let k=0;k<n;k++){ const x=I16(), y=I16(); d.bl[k]=[x,y,U8()/10,U8()/50,U8()/40,U8()/10]; } }
+ return d;
+}
+function netToBuf(d){
+ if(d instanceof ArrayBuffer) return Promise.resolve(d);
+ if(d&&d.buffer instanceof ArrayBuffer) return Promise.resolve(d.buffer.slice(d.byteOffset,d.byteOffset+d.byteLength));
+ if(typeof Blob!=='undefined'&&d instanceof Blob) return d.arrayBuffer();
+ return Promise.resolve(null);
+}
 
 /* ---------- Spieler-Hilfen ---------- */
 function pdUp(g){ return (g&&g.up)||(PD.g&&PD.g.up)||null; }
@@ -1656,8 +1692,10 @@ function netStop(){
  NET.gen++; clearInterval(NET.iv); clearTimeout(NET.to); NET.iv=0;
  for(const c of NET.conns) try{ c.close(); }catch(e){}
  if(NET.conn) try{ NET.conn.close(); }catch(e){}
+ if(NET.sconn) try{ NET.sconn.close(); }catch(e){}
+ for(const k in NET.stc) try{ NET.stc[k].close(); }catch(e){}
  if(NET.peer) try{ NET.peer.destroy(); }catch(e){}
- Object.assign(NET,{on:false,host:false,peer:null,conns:[],conn:null,code:'',me:0,lobby:[],cur:null,prev:null,sq:[],st:'',welcomed:false,re:null,load:null,ld:0});
+ Object.assign(NET,{sconn:null,stc:{},rseq:-1,on:false,host:false,peer:null,conns:[],conn:null,code:'',me:0,lobby:[],cur:null,prev:null,sq:[],st:'',welcomed:false,re:null,load:null,ld:0});
  const ov=document.getElementById('wzOv'); if(ov) ov.classList.remove('pdguest','pdmp');
  if(PD.g&&PD.g.mp){ cancelAnimationFrame(PD.raf); PD.g=null; }
 }
@@ -1675,7 +1713,7 @@ async function netHost(){
  const open=k=>{
   const code=netCode(), p=new Peer(NET_PFX+code.toLowerCase()); NET.peer=p;
   p.on('open',()=>{ if(gen!==NET.gen) return; NET.code=code; netBroadcastLobby(); });
-  p.on('connection',c=>{ if(gen!==NET.gen){ try{c.close();}catch(e){} return; } netHostConn(c,gen); });
+  p.on('connection',c=>{ if(gen!==NET.gen){ try{c.close();}catch(e){} return; } if(c.metadata&&c.metadata.st) netHostStConn(c,gen); else netHostConn(c,gen); });
   /* Verbindung zum Vermittlungs-Server verloren: still neu verbinden, laufende Spiele bleiben bestehen */
   p.on('disconnected',()=>{ if(gen!==NET.gen) return; setTimeout(()=>{ try{ if(gen===NET.gen&&!p.destroyed) p.reconnect(); }catch(e){} },1500); });
   p.on('error',err=>{ if(gen!==NET.gen) return; const t=err&&err.type;
@@ -1692,6 +1730,12 @@ function netHostConn(c,gen){
  c.on('data',d=>{ if(gen!==NET.gen) return; c.last=Date.now(); netHostData(c,d); });
  c.on('close',()=>{ if(gen===NET.gen) netDrop(c); });
  c.on('error',()=>{});   /* einzelne Fehler trennen niemanden; dafür gibt es die Zeitüberwachung */
+}
+function netHostStConn(c,gen){
+ const uid=String(c.metadata.uid||'').slice(0,60); if(!uid){ try{c.close();}catch(e){} return; }
+ c.on('open',()=>{ if(gen!==NET.gen) return; const old=NET.stc[uid]; if(old&&old!==c) try{ old.close(); }catch(e){} NET.stc[uid]=c; });
+ c.on('close',()=>{ if(NET.stc[uid]===c) delete NET.stc[uid]; });
+ c.on('error',()=>{}); c.on('data',()=>{});
 }
 function netDrop(c){
  if(c.dropped) return; c.dropped=true; clearTimeout(c.hiT);
@@ -1717,7 +1761,7 @@ function netHostData(c,d){
    if(NET.lobby.length>=NET_MAX){ try{ c.send({t:'full'}); }catch(e){} setTimeout(()=>{ try{c.close();}catch(e){} },500); return; }
    const slot=[1,2].find(s=>!NET.lobby.some(q=>q.slot===s)); l={slot,n:null,uid}; NET.lobby.push(l);
   }
-  c.slot=l.slot; l.off=false; NET.conns.push(c);
+  c.slot=l.slot; c.uid=uid; l.off=false; NET.conns.push(c);
   try{ c.send({t:'welcome',slot:l.slot,code:NET.code}); }catch(e){}
   if(inGame){ const g=PD.g, p=g.ps.find(q=>q.slot===l.slot); if(p){ if(p.off){ p.off=false; p.hurt=2; pdTxt(p.x,p.y-50,p.n+' ist wieder verbunden','#7dff9a',2.2); } }
    netBroadcastLobby(); try{ c.send({t:'start',re:1}); }catch(e){} }
@@ -1815,10 +1859,11 @@ function netSnapBase(){
 function netSnapFor(b,v){
  const vx=v.x, vy=v.y, D=NET_VIEW, n=(x,y)=>Math.abs(x-vx)<D&&Math.abs(y-vy)<D, o=Object.assign({},b);
  o.E=b.E.filter(e=>n(e[3],e[4])||(PD_EN[e[1]]&&PD_EN[e[1]].boss));
+ if(o.E.length>NET_EMAX){ const dd=e=>PD_EN[e[1]].boss?-1:Math.abs(e[3]-vx)+Math.abs(e[4]-vy); o.E.sort((a,b)=>dd(a)-dd(b)); o.E.length=NET_EMAX; }
  o.R=b.R.filter(q=>n(q[0],q[1])).slice(-160);
  o.Gm=b.Gm.filter(q=>n(q[0],q[1])).slice(-220);
- o.tx=b.tx.filter(q=>n(q[0],q[1]));
- o.fx=b.fx.filter(f=>n(f.x,f.y)||f.k==='boom').slice(-40);
+ o.tx=b.tx.filter(q=>n(q[0],q[1])).slice(-20);
+ o.fx=b.fx.filter(f=>n(f.x,f.y)||f.k==='boom').slice(-24);
  if(b.bl) o.bl=b.bl.filter(q=>n(q[0],q[1]));
  return o;
 }
@@ -1833,9 +1878,11 @@ function netTick(){
  const g=PD.g; let base; try{ base=netSnapBase(); }catch(e){ return; }
  for(const c of NET.conns){
   if(!c.open) continue;
-  const dc=c.dataChannel; if(dc&&dc.bufferedAmount>96000) continue;   /* Leitung voll: dieses Paket auslassen statt Stau aufbauen */
+  const p=g.ps.find(q=>q.slot===c.slot), sc=c.uid&&NET.stc[c.uid];
+  if(sc&&sc.open){ const dc=sc.dataChannel; if(dc&&dc.bufferedAmount>48000) continue;   /* Leitung voll: Paket auslassen */
+   try{ sc.send(netEncode(netSnapFor(base,p||g))); continue; }catch(e){} }
+  const dc=c.dataChannel; if(dc&&dc.bufferedAmount>64000) continue;
   if((c.bufferSize||0)>1) continue;
-  const p=g.ps.find(q=>q.slot===c.slot);
   try{ c.send(netSnapFor(base,p||g)); }catch(e){}
  }
 }
@@ -1898,7 +1945,10 @@ function netConnect(gen){
  const p=new Peer(); NET.peer=p;
  p.on('open',()=>{ if(gen!==NET.gen) return;
   const c=p.connect(NET_PFX+NET.code.toLowerCase(),{reliable:true,serialization:'json'}); NET.conn=c;
-  c.on('open',()=>{ if(gen!==NET.gen) return; try{ c.send({t:'hi',uid:NET.uid}); }catch(e){} });
+  c.on('open',()=>{ if(gen!==NET.gen) return; try{ c.send({t:'hi',uid:NET.uid}); }catch(e){}
+   try{ const sc=p.connect(NET_PFX+NET.code.toLowerCase(),{reliable:false,serialization:'raw',metadata:{st:1,uid:NET.uid}}); NET.sconn=sc;
+    sc.on('data',d=>{ if(gen!==NET.gen) return; NET.lastRx=Date.now(); netToBuf(d).then(ab=>{ if(gen!==NET.gen||!ab) return; let o=null; try{ o=netDecode(ab); }catch(e){} if(o) netGuestSnap(o); }); });
+    sc.on('error',()=>{}); sc.on('close',()=>{}); }catch(e){} });
   c.on('data',d=>{ if(gen!==NET.gen) return; NET.lastRx=Date.now(); netGuestData(d); });
   c.on('close',()=>{ if(gen===NET.gen) netLost(); });
   c.on('error',()=>{});
@@ -1924,8 +1974,8 @@ function netLost(){
 }
 function netReconnect(){
  const gen=++NET.gen; clearTimeout(NET.to);
- try{ if(NET.conn) NET.conn.close(); }catch(e){} try{ if(NET.peer) NET.peer.destroy(); }catch(e){}
- NET.conn=null; NET.peer=null; NET.welcomed=false;
+ try{ if(NET.conn) NET.conn.close(); }catch(e){} try{ if(NET.sconn) NET.sconn.close(); }catch(e){} try{ if(NET.peer) NET.peer.destroy(); }catch(e){}
+ NET.conn=null; NET.sconn=null; NET.peer=null; NET.welcomed=false; NET.rseq=-1;
  if(!NET.re) return;
  if(Date.now()>NET.re.until){ netStop(); PD.msg='Die Verbindung zum Host ist abgebrochen.'; pdSnd('bad'); if(WZ.on) wzRender(); return; }
  NET.re.n++; if(PD.st==='lobby'){ NET.st='Verbindung unterbrochen … neuer Versuch '+NET.re.n; netLobbyRender(); }
@@ -1946,8 +1996,14 @@ function netGuestData(d){
   if(PD.st==='lobby') netLobbyRender(); return;
  }
  if(d.t==='start'){ if(PD.st==='lobby') netGuestStart(); else if(PD.st==='guest') NET.needPos=true; return; }
- if(d.t==='s'){ if(PD.st!=='guest') return; d.at=performance.now(); NET.prev=NET.cur; NET.cur=d; NET.fresh=true;
-  if(d.st==='over'&&!NET.overShown) netGuestOver(d); }
+ if(d.t==='s'){ netGuestSnap(d); }
+}
+function netGuestSnap(d){
+ if(PD.st!=='guest') return;
+ if(d.q){ if(d.q<=NET.rseq&&NET.rseq-d.q<1000) return; NET.rseq=d.q; }
+ d.at=performance.now();
+ NET.prev=NET.cur; NET.cur=d; NET.fresh=true;
+ if(d.st==='over'&&!NET.overShown) netGuestOver(d);
 }
 function netPick(n){
  if(!SMAP[n]||PD.st!=='lobby') return;
@@ -1962,7 +2018,7 @@ function netGuestStart(){
  const me=NET.lobby.find(l=>l.slot===NET.me); if(!me||!me.n) return;
  const s=pdStats(me.n);
  PD.g=pdNorm({n:me.n,s,ver:3,t:0,x:(PD_AR.x0+PD_AR.x1)/2,y:1450,vx:0,vy:0,face:1,dx:0,dy:-1,hp:s.hp,hpMax:s.hp,lv:1,xp:0,xpN:pdXpNeed(1),kills:0,bossN:0,blood:[],cd:{},ang:0,spdM:1,dmgM:1,mag:70,w:{},p:{},en:[],pr:[],gem:[],fx:[],txt:[],spawnT:0,over:false,pick:null,hurt:0,anim:0,pop:[],ps:[],mp:1,dead:0});
- NET.cur=NET.prev=null; NET.needPos=true; NET.wasDead=0; NET.overShown=false; NET.inT=0; NET.msgS=''; PD.slot=null;
+ NET.cur=NET.prev=null; NET.rseq=-1; NET.needPos=true; NET.wasDead=0; NET.overShown=false; NET.inT=0; NET.msgS=''; PD.slot=null;
  PD.st='guest'; PD.sel=me.n; pdMount(); PD.last=0; cancelAnimationFrame(PD.raf); PD.raf=requestAnimationFrame(netGuestLoop); pdSnd('go');
 }
 function netGuestLoop(ts){
@@ -1998,7 +2054,7 @@ function netGuestStep(dt){
  g.t=c.tt; g.lv=c.lv; g.xp=c.xp; g.xpN=c.xpN; g.kills=c.k; g.w=c.w||{}; g.p=c.p||{}; g.up=c.up||g.up; g.spdM=c.sm||1;
  /* Gegner (weich zwischen zwei Paketen) */
  const em={}; for(const e of pv.E) em[e[0]]=e;
- g.en=c.E.map(e=>{ const o=em[e[0]]||e; return {id:e[0],k:e[1],sd:e[2],x:L(o[3],e[3]),y:L(o[4],e[4]),face:e[5],back:e[6],ph:L(o[7],e[7]),flash:e[8],hp:e[9],hpMax:100}; });
+ g.en=c.E.map(e=>{ const o=em[e[0]]||e; return {id:e[0],k:e[1],sd:e[2],x:L(o[3],e[3]),y:L(o[4],e[4]),face:e[5],back:e[6],ph:e[7]+(now-c.at)/1000*(4.6+(PD_EN[e[1]]?PD_EN[e[1]].spd:40)*.09),flash:e[8],hp:e[9],hpMax:100}; });
  if(NET.fresh){ NET.fresh=false;
   g.pr=c.R.map(p=>{ const v=p[3]?1150:420; return {x:p[0],y:p[1],a:p[2],ak:p[3],vx:Math.cos(p[2])*v,vy:Math.sin(p[2])*v}; });
   g.gem=c.Gm.map((q,i)=>({x:q[0],y:q[1],k:q[2],t:g.t+i*.37}));
