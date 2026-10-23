@@ -322,9 +322,9 @@ const PD_MAXPLV=500;                         /* Spielerstufe: 1 bis 500 */
 const PD_KILLS_PER_REWARD=5000, PD_REWARD_MAUT=5;   /* alle 5000 besiegten Gegner: 5 Maut im Hauptspiel */
 const PD_WPN={
  spritze:{n:'Naloxon-Spritze',ic:'💉',d:'Schießt auf den nächsten Suchti. Wird mit jeder Stufe schneller und stärker. Alle 5 Stufen 2 Spritzen mehr, die gleichzeitig feuern. Ab Stufe 5 fliegt jede Spritze durch bis zum 3. Gegner.',col:'#2ec4b6'},
- defi:{n:'Defi-Schockwelle',ic:'⚡',d:'Schockwelle rund um dich, die Gegner nur ganz leicht wegschubst. Wird mit der Stufe größer und stärker, kommt nur wenig öfter.',col:'#ffd23f'},
+ defi:{n:'Defi-Schockwelle',ic:'⚡',d:'Schockwelle rund um dich, die Gegner nur ganz leicht wegschubst. Wird mit der Stufe größer und stärker. Ab Stufe 5 mit jeder Stufe deutlich stärker und schneller.',col:'#ffd23f'},
  sirene:{n:'Sirene',ic:'📣',d:'Schallwelle in Laufrichtung, die Gegner kurz betäubt.',col:'#ff5bd0'},
- blau:{n:'Blaulicht',ic:'🚨',d:'Lichter kreisen um dich: blau, rot, blau, rot. Wer sie berührt, bleibt kurz stehen und bekommt Schaden. Alle 5 Stufen ein Licht mehr (blau, rot, …). Ab 6 Lichtern wird daraus ein Neonlaser in Rot und Blau.',col:'#4f8cff'}
+ blau:{n:'Blaulicht',ic:'🚨',d:'Lichter kreisen um dich: blau, rot, blau, rot. Wer sie berührt, bleibt kurz stehen und bekommt Schaden. Alle 5 Stufen ein Licht mehr (blau, rot, …). Ab 6 Lichtern wird daraus ein Neonlaser in Rot und Blau. Ab Stufe 5 mit jeder Stufe stärker und schneller.',col:'#4f8cff'}
 };
 const PD_PASS={
  hp:{n:'Warme Jause',ic:'🥪',d:'+5 maximales Leben und heilt 30 Leben.',col:'#ff7a59'},
@@ -352,7 +352,7 @@ const PD_EN={
 
 function pdRand(a,b){ return a+Math.random()*(b-a); }
 function pdPickEnemy(t){
- { let q=Math.random(), acc=0; for(const [k,tm,pp] of PD_SPEC){ if(t>tm){ acc+=pp; if(q<acc){ if((k==='spucker'||k==='schatten'||k==='rammer')&&pdKindN(k)>=2) break; return k; } } } }
+ { let q=Math.random(), acc=0; for(const [k,tm,pp] of PD_SPEC){ if(t>tm){ acc+=pp; if(q<acc){ if(((k==='spucker'||k==='schatten'||k==='rammer')&&pdKindN(k)>=2)||(k==='heiler'&&pdKindN(k)>=3)) break; return k; } } } }
  const r=Math.random();
  if(t>360&&r<.14) return 'dicker';      /* ab 6 Min */
  if(t>120&&r<.30) return 'speedy';      /* ab 2 Min */
@@ -575,7 +575,7 @@ function pdBlood(e,k){
 function pdPickups(dt){
  const g=PD.g, PL=pdPlayers(g);
  g.bpT-=dt; if(g.bpT<=0){ g.bpT=50+Math.random()*30; if(!g.bp){ g.bp={x:(PD_AR.x0+PD_AR.x1)/2+pdRand(-70,70),y:PD_AR.y1-34}; pdTxt(g.bp.x,g.bp.y-24,'Roter Rucksack!','#ff7a7a',2); } }
- if(g.bp) for(const p of pdPlayers(g)){ if(Math.hypot(g.bp.x-p.x,g.bp.y-p.y)<28){ p.hp=Math.min(p.hpMax,p.hp+PD_BP_HEAL); pdTxt(p.x,p.y-40,'+'+PD_BP_HEAL+' Leben','#6dff9a',1.4); pdSnd('heal'); g.bp=null; break; } }
+ if(g.bp) for(const p of pdPlayers(g)){ if(Math.hypot(g.bp.x-p.x,g.bp.y-p.y)<28){ p.hp=p.hpMax; pdTxt(p.x,p.y-40,'Volles Leben!','#6dff9a',1.4); pdSnd('heal'); g.bp=null; break; } }
  g.c4T-=dt; if(g.c4T<=0&&!g.arena){ g.c4T=40+Math.random()*40; if(g.c4i.length<2){ g.c4i.push({x:PD_AR.x0+36,y:PD_HOUSES.shop.y+PD_HOUSES.shop.h/2+pdRand(-90,90)}); } }
  for(const c of g.c4i){ for(const g of PL){ if(c.got) break; if(g.c4<PD_C4MAX&&Math.hypot(c.x-g.x,c.y-g.y)<28){ c.got=1; g.c4++; pdTxt(g.x,g.y-40,'C4 ×'+g.c4,'#ffd23f',1.2); pdSnd('pick'); } } }
  g.c4i=g.c4i.filter(c=>!c.got);
@@ -618,7 +618,11 @@ function pdPierce(e0,p){
  g.fx.push({k:'prc',x:e0.x,y:e0.y,x2:b.x,y2:b.y,t:0,life:.2}); pdSnd('hit');
 }
 function pdNearest(g,maxd){ let b=null,bd=maxd*maxd; for(const e of PD.g.en){ const d=(e.x-g.x)**2+(e.y-g.y)**2; if(d<bd){ bd=d; b=e; } } return b; }
-function pdCd(k,L){ return k==='defi'?Math.max(2.4,3.4-.012*L):k==='sirene'?Math.max(2.4,3.6-.02*L):0; }
+function pdX5(L){ return Math.max(0,L-5); }
+function pdDefiDmg(L){ return 18+.9*L+1.6*pdX5(L); }
+function pdBlauDmg(L){ return 7+.22*L+.45*pdX5(L); }
+function pdBlauTick(L){ return Math.max(.09,.18-.0025*pdX5(L)); }
+function pdCd(k,L){ return k==='defi'?Math.max(1.3,3.4-.012*L-.03*pdX5(L)):k==='sirene'?Math.max(2.4,3.6-.02*L):0; }
 function pdSec(v){ return v.toFixed(2).replace('.',',').replace(/,?0$/,'')+' s'; }
 function pdNSpr(L){ return 1+2*Math.floor(L/5); }   /* alle 5 Stufen 2 Spritzen mehr, auf einmal abgefeuert */
 function pdNBlau(L){ return 1+Math.floor(L/5); }   /* alle 5 Stufen ein Licht mehr; ab 6 Lichtern Neonlaser */
@@ -670,11 +674,11 @@ function pdWeap(g,dt){ const w=g.w, c=g.cd;
  if(w.spritze){ const L=w.spritze; c.S=(c.S||0)-dt; if(c.S<=0){ const t=pdNearest(g,520); if(t){ c.S=Math.max(.28,1.0-.012*L); const n=pdNSpr(L); pdSnd(n>4?'shot3':n>=2?'shot2':'shot'); const a0=Math.atan2(t.y-g.y,t.x-g.x), sp=n>12?.07:n>6?.1:.16;
    for(let i=0;i<n;i++){ const a=a0+(i-(n-1)/2)*sp; g.pr.push({x:g.x,y:g.y-10,vx:Math.cos(a)*Math.min(720,420+5*L),vy:Math.sin(a)*Math.min(720,420+5*L),dmg:8+1.0*L,m:g.dmgM,life:1.1,a,pc:L>=5?2:0}); } } else c.S=.15; } }
  if(w.defi){ const L=w.defi; c.D=(c.D||0)-dt; if(c.D<=0){ c.D=pdCd('defi',L); const R=95+.8*L; g.fx.push({k:'defi',x:g.x,y:g.y,t:0,life:.45,R}); pdSnd('defi');
-   for(const e of g.en){ const dx=e.x-g.x, dy=e.y-g.y, d=Math.hypot(dx,dy); if(d<R+PD_EN[e.k].r) pdHit(e,18+.9*L,dx,dy,55+.5*L); } } }
+   for(const e of g.en){ const dx=e.x-g.x, dy=e.y-g.y, d=Math.hypot(dx,dy); if(d<R+PD_EN[e.k].r) pdHit(e,pdDefiDmg(L),dx,dy,55+.5*L); } } }
  if(w.sirene){ const L=w.sirene; c.R=(c.R||0)-dt; if(c.R<=0){ c.R=Math.max(2.4,3.6-.02*L); const a=Math.atan2(g.dy,g.dx), Ln=240+1.2*L; g.fx.push({k:'sir',x:g.x,y:g.y,t:0,life:.5,a,L:Ln}); pdSnd('sirene');
    for(const e of g.en){ const dx=e.x-g.x, dy=e.y-g.y, d=Math.hypot(dx,dy); if(d>Ln) continue; let da=Math.atan2(dy,dx)-a; da=Math.atan2(Math.sin(da),Math.cos(da)); if(Math.abs(da)<.55){ pdHit(e,9+.3*L,dx,dy,100); pdStun(e,1.2+.01*L); } } } }
- if(w.blau){ const L=w.blau; g.ang+=dt*(2.6+.01*L); const n=pdNBlau(L), R=pdBlauR(L), bm=pdBeams(L); c.B=(c.B||0)-dt;
-   if(c.B<=0){ c.B=.18; const dm=7+.22*L; if(g.en.length) pdSnd(bm?'laser':'blau');
+ if(w.blau){ const L=w.blau; g.ang+=dt*(2.6+.01*L+.035*pdX5(L)); const n=pdNBlau(L), R=pdBlauR(L), bm=pdBeams(L); c.B=(c.B||0)-dt;
+   if(c.B<=0){ c.B=pdBlauTick(L); const dm=pdBlauDmg(L); if(g.en.length) pdSnd(bm?'laser':'blau');
     if(bm){ const Ln=pdLaserLen(L); for(let i=0;i<bm;i++){ const a=g.ang*.7+i*6.283/bm, ca=Math.cos(a), sa=Math.sin(a);
       for(const e of g.en){ const rx=e.x-g.x, ry=e.y-g.y, t=rx*ca+ry*sa; if(t<0||t>Ln) continue; const dd=Math.abs(-rx*sa+ry*ca); if(dd<PD_EN[e.k].r+10){ pdHit(e,dm*1.4,rx,ry,40); pdStun(e,.5); } } } }
     else for(let i=0;i<n;i++){ const a=g.ang+i*6.283/n, px=g.x+Math.cos(a)*R, py=g.y+Math.sin(a)*R; for(const e of g.en){ if((e.x-px)**2+(e.y-py)**2<(PD_EN[e.k].r+14)**2){ pdHit(e,dm,e.x-g.x,e.y-g.y,60); pdStun(e,.5); } } } } }
@@ -1344,9 +1348,9 @@ function pdF(v,d){ return (Math.round(v*Math.pow(10,d||0))/Math.pow(10,d||0)).to
 function pdWStats(k,L,m,fine){
  L=Math.max(1,L); m=m||1; const R=v=>fine?pdF(v,1):String(Math.round(v));
  if(k==='spritze') return [['Spritzen',pdNSpr(L)+' auf einmal'],['Schaden je Spritze',pdF((8+1.0*L)*m,1)],['Schaden pro Salve',pdF(pdNSpr(L)*(8+1.0*L)*m,1)],['Abstand',pdF(Math.max(.28,1-.012*L),3)+' s'],['Durchschlag',L>=5?'bis 3 Gegner':'1 Gegner (ab Stufe 5: 3)']];
- if(k==='defi') return [['Radius',R(95+.8*L)+' px'],['Schaden',pdF((18+.9*L)*m,1)],['Rückstoß',R(55+.5*L)],['Wartezeit',pdSec(pdCd('defi',L))]];
+ if(k==='defi') return [['Radius',R(95+.8*L)+' px'],['Schaden',pdF(pdDefiDmg(L)*m,1)],['Rückstoß',R(55+.5*L)],['Wartezeit',pdSec(pdCd('defi',L))]];
  if(k==='sirene') return [['Reichweite',R(240+1.2*L)+' px'],['Schaden',pdF((9+.3*L)*m,1)],['Betäubung',pdF(1.2+.01*L,2)+' s'],['Wartezeit',pdSec(pdCd('sirene',L))]];
- const bm=pdBeams(L); return [[bm?'Laserstrahlen':'Lichter',bm?bm:pdNBlau(L)],[bm?'Länge':'Radius',R(bm?pdLaserLen(L):pdBlauR(L))+' px'],['Schaden',pdF((7+.22*L)*(bm?1.4:1)*m,1)+' / 0,18 s']];
+ const bm=pdBeams(L); return [[bm?'Laserstrahlen':'Lichter',bm?bm:pdNBlau(L)],[bm?'Länge':'Radius',R(bm?pdLaserLen(L):pdBlauR(L))+' px'],['Schaden',pdF(pdBlauDmg(L)*(bm?1.4:1)*m,1)+' / '+pdF(pdBlauTick(L),2)+' s'],['Drehtempo',pdF(2.6+.01*L+.035*pdX5(L),2)]];
 }
 /* Meilensteine: [Stufe, Kurztext, Langtext] */
 function pdMiles(k){
@@ -2501,7 +2505,7 @@ function pdAbility(e,d,dt,tp,dist,dx,dy,vx,vy,PLs){
   case 'heal':
    if(dist<230){ vx=-ux*d.spd*.9; vy=-uy*d.spd*.9; }
    A.c-=dt; e.st=(A.c<.55&&A.c>0)?1:0;
-   if(A.c<=0){ A.c=2.7; let n=0; for(const b of g.en){ if(b===e||b.hp<=0||b.hp>=b.hpMax) continue; if((b.x-e.x)**2+(b.y-e.y)**2<135*135){ b.hp=Math.min(b.hpMax,b.hp+b.hpMax*.16); n++; } } g.fx.push({k:'heal',x:e.x,y:e.y,t:0,life:.7,R:135}); if(n) pdSnd('heal'); }
+   if(A.c<=0){ A.c=2.7; let n=0; for(const b of g.en){ if(b===e||b.hp<=0||b.hp>=b.hpMax) continue; if((b.x-e.x)**2+(b.y-e.y)**2<135*135){ b.hp=Math.min(b.hpMax,b.hp+b.hpMax*.16); n++; } } g.fx.push({k:'heal',x:e.x,y:e.y,t:0,life:.7,R:135});; }
    break;
   case 'blink':
    A.c-=dt; e.st=(A.c<.45&&A.c>0)?1:0;
@@ -2663,7 +2667,7 @@ function pdArenaTick(dt){
   if(A.q.length&&A.sp<=0){ A.sp=.38; const cnt=Math.min(A.q.length,A.r>=10?3:2);
    for(let i=0;i<cnt;i++){ const it=A.q.shift(), PT=pdAPort(g), pt=PT[Math.floor(Math.random()*PT.length)];
     if(it.k==='big'){ pdBigSpawn(g,true); const be=g.en[g.en.length-1]; be.x=(PD_ARENA.x0+PD_ARENA.x1)/2; be.y=PD_ARENA.y0+130; continue; }
-    const hm=1.5+.17*A.r+g.t/1200; if((it.k==='schatten'||it.k==='spucker'||it.k==='rammer')&&pdKindN(it.k)>=2) it.k=pdKindN('dicker')<6?'dicker':'speedy'; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
+    const hm=1.5+.17*A.r+g.t/1200; if(((it.k==='schatten'||it.k==='spucker'||it.k==='rammer')&&pdKindN(it.k)>=2)||(it.k==='heiler'&&pdKindN('heiler')>=3)) it.k=pdKindN('dicker')<6?'dicker':'speedy'; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
   A.alive=g.en.reduce((n,e)=>n+(e.hp>0?1:0),0);
   if(!A.q.length&&A.alive===0){ if(A.r>=A.total){ A.s='done'; A.t=1.5; } else { A.s='break'; A.t=4.2; pdAnn(g,'RUNDE '+A.r+' GESCHAFFT','Kurz durchatmen …','#7dff9a',2.6);
     if(!g.bp) g.bp={x:(PD_ARENA.x0+PD_ARENA.x1)/2,y:(PD_ARENA.y0+PD_ARENA.y1)/2+10}; for(const o of pdAll(g)) if(!o.dead&&!o.off) o.hp=Math.min(o.hpMax,o.hp+Math.round(o.hpMax*.12)); } } }
