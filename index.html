@@ -3334,14 +3334,14 @@ function pdBaitBuy(o){
 function pdBaitThrow(o){
  const g=PD.g; o=o||g; if(!pdActOk(g,o)||(o.bait|0)<1) return;
  o.bait--; let dx=o.dx||0, dy=o.dy||0; const l=Math.hypot(dx,dy); if(l<.1){ dx=o.face<0?-1:1; dy=0; } else { dx/=l; dy/=l; }
- const D=230, tx=Math.max(PD_AR.x0+30,Math.min(PD_AR.x1-30,o.x+dx*D)), ty=Math.max(PD_AR.y0+40,Math.min(PD_AR.y1-30,o.y+dy*D));
- g.bt={x0:o.x,y0:o.y-14,x:tx,y:ty,t:0,fly:.55,life:PD_BAIT_T+.55};
+ const D=430, tx=Math.max(PD_AR.x0+30,Math.min(PD_AR.x1-30,o.x+dx*D)), ty=Math.max(PD_AR.y0+40,Math.min(PD_AR.y1-30,o.y+dy*D));
+ g.bt={x0:o.x,y0:o.y-14,x:tx,y:ty,t:0,fly:.75,life:PD_BAIT_T+.75};
  pdTxt(o.x,o.y-56,'🎯 Köder!','#7dff9a',1.4); pdSnd('knife');
 }
 function pdBaitTick(g,dt){ const b=g.bt; if(!b) return; b.t+=dt; if(b.t>=b.life) g.bt=null; }
 function pdDrawBait(x,b,T){
  const u=Math.min(1,b.t/b.fly), fly=b.t<b.fly;
- const px=fly?b.x0+(b.x-b.x0)*u:b.x, py=fly?b.y0+(b.y-b.y0)*u-Math.sin(u*Math.PI)*70:b.y;
+ const px=fly?b.x0+(b.x-b.x0)*u:b.x, py=fly?b.y0+(b.y-b.y0)*u-Math.sin(u*Math.PI)*110:b.y;
  if(!fly){ const left=Math.max(0,b.life-b.t), pu=.5+.5*Math.sin(T*7), fade=Math.min(1,left/1);
   x.globalAlpha=fade;
   const gr=x.createRadialGradient(b.x,b.y,4,b.x,b.y,95); gr.addColorStop(0,'rgba(125,255,154,'+(.35+.15*pu)+')'); gr.addColorStop(1,'rgba(125,255,154,0)'); x.fillStyle=gr; x.beginPath(); x.ellipse(b.x,b.y+4,95,58,0,0,7); x.fill();
