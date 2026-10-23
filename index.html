@@ -316,7 +316,7 @@ const PD_CLS={
 function pdStats(n){ const s=SMAP[n], b=Object.assign({},PD_CLS[s.c]||PD_CLS.NKV); b.n=n; b.c=s.c; return b; }
 
 /* ---------- Waffen & Verbesserungen ---------- */
-const PD_WDMG=1.5, PD_HPM=2, PD_BOSSM=3, PD_EDMG=1, PD_SPAWN=1.5;   /* Gegner-Leben ×2 · Boss-Leben ×3 */   /* Waffenschaden ×1,5 · Gegner-Leben/Schaden unverändert · Gegneranzahl ×1,5 */
+const PD_WDMG=1.5, PD_HPM=1.5, PD_BOSSM=2.4, PD_EDMG=1, PD_SPAWN=1.5;   /* Gegner-Leben ×2 · Boss-Leben ×3 */   /* Waffenschaden ×1,5 · Gegner-Leben/Schaden unverändert · Gegneranzahl ×1,5 */
 const PD_MAXLV=60;                           /* Waffenstufe: 1 bis 60 */
 const PD_MAXPLV=500;                         /* Spielerstufe: 1 bis 500 */
 const PD_KILLS_PER_REWARD=5000, PD_REWARD_MAUT=5;   /* alle 5000 besiegten Gegner: 5 Maut im Hauptspiel */
@@ -1452,7 +1452,7 @@ function pdFloatRefresh(force){
  const ups=KS.filter(k=>(U[k]|0)<PD_UPMAX[k]).map(k=>{ const c=pdUpCost(g,k), can=g.coins>=c;
   return `<button class="pdflb${can?' can':''}" data-fl="up" data-k="${k}"${can?'':' disabled'}><span class="pdflbi">${NM[k][1]}</span><b>${NM[k][0]}</b><small>Stufe ${U[k]|0}/${PD_UPMAX[k]}</small><em>🛒 ${c}</em></button>`; }).join('');
  const head=g.pick?`<b>⭐ Level ${g.lv}</b><small>Wähle ein Upgrade${g.mp?' · nur für dich':''}</small>`:`<b>Aufrüsten</b><small>Waffen verbessern</small>`;
- const html=`<div class="pdflh"><div>${head}</div><span class="pdflcoin">🛒 ${g.coins}</span><button class="pdflx" data-fl="x" aria-label="Schließen">✕</button></div>${picks}<div class="pdflu">${ups||'<span class="pdflmax">Alle Waffen auf Maximum</span>'}</div>`;
+ const html=`<div class="pdflh"><div>${head}</div><span class="pdflcoin">🛒 ${g.coins}</span><button class="pdflx" data-fl="x" aria-label="Schließen">✕</button></div>${picks}${g.pick?'':`<div class="pdflu">${ups||'<span class="pdflmax">Alle Waffen auf Maximum</span>'}</div>`}`;
  if(!el){ el=document.createElement('div'); el.id='pdFloat'; wzEnsure().appendChild(el);
   el.onclick=e=>{ const b=e.target.closest('[data-pd]'), f=e.target.closest('[data-fl]'); const gg=PD.g; if(!gg) return;
    if(b&&gg.pick){ const i=+b.dataset.pd;
@@ -1572,15 +1572,15 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pduL{min-width:38px;padding:4px 6px}.pduL b{font-size:17px}.pdubar{height:4px}
 .pdgear i b{font-weight:800}
 
-#pdFloat{position:absolute;z-index:9;left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top,0px));width:min(330px,calc(100% - 16px));box-sizing:border-box;padding:7px 8px 8px;border-radius:14px;background:#0b0d14d9;border:1px solid #ffffff2a;box-shadow:0 6px 22px #0009;color:#fff;font-family:system-ui;backdrop-filter:blur(4px);animation:pdflin .22s ease-out}
+#pdFloat{position:absolute;z-index:9;left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top,0px));width:min(270px,calc(100% - 16px));box-sizing:border-box;padding:5px 6px 6px;border-radius:14px;background:#0b0d14d9;border:1px solid #ffffff2a;box-shadow:0 6px 22px #0009;color:#fff;font-family:system-ui;backdrop-filter:blur(4px);animation:pdflin .22s ease-out}
 @keyframes pdflin{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
-#pdFloat .pdflh{display:flex;align-items:center;gap:8px;margin-bottom:6px}#pdFloat .pdflh>div{flex:1;min-width:0;display:flex;flex-direction:column}
+#pdFloat .pdflh{display:flex;align-items:center;gap:6px;margin-bottom:4px}#pdFloat .pdflh>div{flex:1;min-width:0;display:flex;flex-direction:column}
 #pdFloat .pdflh b{font:800 13px system-ui}#pdFloat .pdflh small{font:600 10.5px system-ui;color:#b9c0d4}
 #pdFloat .pdflcoin{font:800 12px system-ui;color:#ffd23f;background:#ffd23f1f;border-radius:9px;padding:3px 8px}
 #pdFloat .pdflx{width:26px;height:26px;border-radius:50%;border:0;background:#ffffff1c;color:#fff;font-size:12px;cursor:pointer}
-#pdFloat .pdflp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:7px}
-#pdFloat .pdflc{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 3px 6px;border-radius:11px;border:1.5px solid var(--cc);background:linear-gradient(#ffffff14,#ffffff06);color:#fff;font-family:inherit;cursor:pointer;min-width:0;animation:pdflpulse 1.6s ease-in-out infinite}
-#pdFloat .pdflc:active{transform:scale(.96)}#pdFloat .pdflci{font-size:22px;line-height:1}#pdFloat .pdflci svg{width:26px;height:26px}
+#pdFloat .pdflp{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+#pdFloat .pdflc{display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px 4px;border-radius:11px;border:1.5px solid var(--cc);background:linear-gradient(#ffffff14,#ffffff06);color:#fff;font-family:inherit;cursor:pointer;min-width:0;animation:pdflpulse 1.6s ease-in-out infinite}
+#pdFloat .pdflc:active{transform:scale(.96)}#pdFloat .pdflci{font-size:17px;line-height:1}#pdFloat .pdflci svg{width:20px;height:20px}
 #pdFloat .pdflc b{font:800 11px system-ui;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pdFloat .pdflc small{font:600 9.5px system-ui;color:#c9d0e4;text-align:center;line-height:1.15}
 @keyframes pdflpulse{50%{box-shadow:0 0 10px -1px var(--cc)}}
 #pdFloat .pdflu{display:grid;grid-template-columns:repeat(auto-fit,minmax(70px,1fr));gap:5px}
@@ -2299,7 +2299,7 @@ const PD_BIGT=[
 ];
 const PD_MODC=['','#4fa3ff','#5dff7a','#ff4d4d','#ffa13a'];   /* Elite-Eigenschaften: 1 Schild · 2 Regeneration · 3 Wut · 4 Bombe */
 const PD_MODN=['','Schild','Regeneration','Wut','Bombe'];
-const PD_SPEC=[['spucker',150,.07],['bomber',200,.06],['heiler',270,.035],['rammer',300,.05],['schatten',420,.05]];
+const PD_SPEC=[['spucker',260,.025],['bomber',200,.06],['heiler',270,.035],['rammer',300,.05],['schatten',420,.05]];
 
 /* ---------- Spieler: Stufen, Upgrades, Münzen gehören jedem Spieler selbst ---------- */
 function pdAll(g){ return [g,...(g.ps||[])]; }
@@ -2519,7 +2519,7 @@ function pdHzUnpack(a){
 }
 
 /* ---------- Endgegner ---------- */
-function pdBigHp(g,bn){ const n=1+(g.ps||[]).filter(p=>!p.off).length; return Math.round((PD_BIGHP+PD_BIGHP*.7*bn)*(.6+.4*n)); }
+function pdBigHp(g,bn){ const n=1+(g.ps||[]).filter(p=>!p.off).length; return Math.round((PD_BIGHP+PD_BIGHP*.7*bn)*(.6+.4*n)*.8); }
 function pdBigSpawn(g,fin){
  const bn=g.bigN|0, th=fin?5:bn%5; let hp=pdBigHp(g,bn); if(fin) hp=Math.round(hp*.3);
  const ax=(PD_ARENA.x0+PD_ARENA.x1)/2, e={k:'big',sd:0,x:fin?ax:PD_DOOR.x,y:fin?PD_ARENA.y0+120:PD_DOOR.y+80,hp,hpMax:hp,xp:1,face:1,stun:0,kx:0,ky:0,ph:0,flash:0,sleep:0,mod:th,bn:fin?bn+50:bn,af:fin?1:0};
@@ -2583,7 +2583,7 @@ function pdBigPick(e,A,ph,sp){
   case 'hail': { const waves=3+ph, N=12+4*ph; A.pose=6; A.ct=T(waves*.42+.5);
     for(let w=0;w<waves;w++) q(w*.42,()=>{ const off=w*(Math.PI/N)+Math.random()*.1; for(let i=0;i<N;i++) pdShoot(e.x,e.y-10,off+i*6.2832/N,165+10*ph,13,(w%2)?3:1,7,3.6); pdSnd('shot3'); }); break; }
   case 'summon': { A.pose=5; A.ct=T(1.2);
-    q(.7,()=>{ if(g.en.length>44) return; const kinds=ph>=2?['suchti','speedy','spucker','bomber']:['suchti','speedy']; const cnt=4+ph*2; for(let i=0;i<cnt;i++){ const an=i*6.2832/cnt, k=kinds[i%kinds.length]; const m=pdMkEnemy(k,e.x+Math.cos(an)*90,e.y+Math.sin(an)*90,1+(e.bn%50)*.1+g.t/900); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.5}); } pdSnd('boss'); }); break; }
+    q(.7,()=>{ if(g.en.length>44) return; const kinds=ph>=2?['suchti','speedy','bomber','bomber']:['suchti','speedy']; const cnt=4+ph*2; for(let i=0;i<cnt;i++){ const an=i*6.2832/cnt, k=kinds[i%kinds.length]; const m=pdMkEnemy(k,e.x+Math.cos(an)*90,e.y+Math.sin(an)*90,1+(e.bn%50)*.1+g.t/900); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.5}); } pdSnd('boss'); }); break; }
   case 'leap': { const p=rp(); A.pose=1; A.ct=T(1.5); pdBlast(p.x,p.y+4,128,T(1.05),42,'slam',1);
     const tx=p.x, ty=p.y; q(1.05,()=>{ g.fx.push({k:'puff',x:e.x,y:e.y,t:0,life:.5}); e.x=Math.max(PD_AR.x0+50,Math.min(PD_AR.x1-50,tx)); e.y=Math.max(PD_AR.y0+60,Math.min(PD_AR.y1-50,ty)); g.fx.push({k:'puff',x:e.x,y:e.y,t:0,life:.5}); pdSnd('boss'); }); break; }
   case 'gas': { A.pose=5; A.ct=T(1.1); const L=pdPlayers(g).slice(); L.push(rp());
@@ -2610,7 +2610,7 @@ function pdArenaEnter(g){
  pdAnn(g,'JEDMAYER · NACHTSCHICHT','20 Runden · die Filiale gehört jetzt euch …','#ffd23f',3.4); pdSnd('boss');
 }
 function pdArenaWave(r){
- const L=[], pool=r<=3?['spucker','bomber','rammer']:r<=7?['spucker','bomber','rammer','heiler','schatten']:['spucker','bomber','rammer','heiler','schatten','dicker'];
+ const L=[], pool=r<=3?['bomber','rammer']:r<=7?['bomber','rammer','heiler','schatten']:['spucker','bomber','rammer','heiler','schatten','dicker'];
  const n=Math.min(34,Math.round(4+r*1.6)), modsA=r<4?[]:r<9?[1,2]:r<14?[1,2,3]:[1,2,3,4], pm=Math.min(.55,.06+r*.03);
  for(let i=0;i<n;i++){ const k=pool[Math.floor(Math.random()*pool.length)]; L.push({k,mod:(modsA.length&&Math.random()<pm)?modsA[Math.floor(Math.random()*modsA.length)]:0}); }
  if(r===5){ L.push({k:'dicker',mod:1,el:1},{k:'rammer',mod:3,el:1}); }
