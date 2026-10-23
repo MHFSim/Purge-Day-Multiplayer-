@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='3.4';   /* bei jeder neuen Version erhöhen */
+const PD_VER='3.5';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -3222,8 +3222,8 @@ const PD_AMBDOOR={x:1050,y:1786}, PD_MERCDOOR={x:318,y:1300}, PD_MERC_COST=5, PD
 function pdAmbSpawn(g){
  const A=PD_FA, wp=[], m=150;
  const al=g.en.filter(e=>e.hp>0&&!PD_EN[e.k].boss);
- for(let i=0;i<5;i++){ let p=null;
-  if(al.length&&Math.random()<.8){ const e=al[Math.floor(Math.random()*al.length)]; p={x:e.x,y:e.y}; }
+ for(let i=0;i<9;i++){ let p=null;
+  if(al.length&&Math.random()<.92){ const e=al[Math.floor(Math.random()*al.length)]; p={x:e.x,y:e.y}; }
   else p={x:pdRand(A.x0+m,A.x1-m),y:pdRand(A.y0+m,A.y1-m)};
   wp.push({x:Math.max(A.x0+m,Math.min(A.x1-m,p.x)),y:Math.max(A.y0+m,Math.min(A.y1-m,p.y))}); }
  wp.push({x:PD_AMBDOOR.x,y:PD_AMBDOOR.y-60},{x:PD_AMBDOOR.x,y:PD_AMBDOOR.y+30});
@@ -3236,14 +3236,15 @@ function pdAmbTick(g,dt){
  if(g.amT==null) g.amT=200+pdRand(-30,30);
  if(!g.am){ g.amT-=dt; if(g.amT<=0){ g.amT=200+pdRand(-30,30); pdAmbSpawn(g); } return; }
  const a=g.am, w=a.wp[0]; a.t+=dt;
- if(!w||a.t>40){ g.am=null; return; }
+ if(!w||a.t>60){ g.am=null; return; }
  const dx=w.x-a.x, dy=w.y-a.y, d=Math.hypot(dx,dy);
  if(d<18){ a.wp.shift(); if(!a.wp.length){ g.am=null; } return; }
  const want=Math.atan2(dy,dx); let da=Math.atan2(Math.sin(want-a.a),Math.cos(want-a.a)); a.a+=Math.max(-4.2*dt,Math.min(4.2*dt,da));
+ a.sw=(a.sw||0)-dt; if(a.sw<=0){ a.sw=1.2; g.fx.push({k:'defi',x:a.x,y:a.y,t:0,life:.4,R:110}); for(const e of g.en){ if(e.hp<=0||PD_EN[e.k].boss) continue; if((e.x-a.x)**2+(e.y-a.y)**2<110*110){ e.hp=0; e.flash=.2; a.k++; } } }
  const sp=Math.abs(da)>1.2?150:290; a.vx=Math.cos(a.a)*sp; a.vy=Math.sin(a.a)*sp; a.x+=a.vx*dt; a.y+=a.vy*dt;
  a.x=Math.max(PD_AR.x0-10,Math.min(PD_AR.x1+10,a.x)); a.y=Math.max(PD_AR.y0-10,Math.min(PD_AR.y1+60,a.y));
- for(const e of g.en){ if(e.hp<=0) continue; const r=PD_EN[e.k].r+17, ex=e.x-a.x, ey=e.y-a.y; if(ex*ex+ey*ey>r*r) continue;
-  if(PD_EN[e.k].boss){ const l=Math.hypot(ex,ey)||1; e.kx+=ex/l*120; e.ky+=ey/l*120; continue; }
+ for(const e of g.en){ if(e.hp<=0) continue; const r=PD_EN[e.k].r+44, ex=e.x-a.x, ey=e.y-a.y; if(ex*ex+ey*ey>r*r) continue;
+  if(PD_EN[e.k].boss){ const l=Math.hypot(ex,ey)||1; e.kx+=ex/l*160; e.ky+=ey/l*160; if(!(e.amCd>a.t)){ e.amCd=a.t+1.5; const dm=Math.round(e.hpMax*(PD_EN[e.k].big?.04:.2)); e.hp-=dm; e.flash=.2; g.txt.push({x:e.x,y:e.y-30,s:'🚑 −'+dm,c:'#ff6b6b',t:0,life:1}); } continue; }
   e.hp=0; e.flash=.2; e.kx+=a.vx*1.4; e.ky+=a.vy*1.4; a.k++;
   if(PDO.blood) g.fx.push({k:'bl',x:e.x,y:e.y-6,t:0,life:.4,ps:[[30,-40],[-30,-30],[0,-55]]}); }
 }
