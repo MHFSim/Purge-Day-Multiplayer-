@@ -352,7 +352,7 @@ const PD_EN={
 
 function pdRand(a,b){ return a+Math.random()*(b-a); }
 function pdPickEnemy(t){
- { let q=Math.random(), acc=0; for(const [k,tm,pp] of PD_SPEC){ if(t>tm){ acc+=pp; if(q<acc){ if((k==='spucker'||k==='schatten')&&pdKindN(k)>=2) break; return k; } } } }
+ { let q=Math.random(), acc=0; for(const [k,tm,pp] of PD_SPEC){ if(t>tm){ acc+=pp; if(q<acc){ if((k==='spucker'||k==='schatten'||k==='rammer')&&pdKindN(k)>=2) break; return k; } } } }
  const r=Math.random();
  if(t>360&&r<.14) return 'dicker';      /* ab 6 Min */
  if(t>120&&r<.30) return 'speedy';      /* ab 2 Min */
@@ -2617,7 +2617,7 @@ function pdBigPick(e,A,ph,sp){
   case 'hail': { const waves=3+ph, N=12+4*ph; A.pose=6; A.ct=T(waves*.42+.5);
     for(let w=0;w<waves;w++) q(w*.42,()=>{ const off=w*(Math.PI/N)+Math.random()*.1; for(let i=0;i<N;i++) pdShoot(e.x,e.y-10,off+i*6.2832/N,165+10*ph,13,(w%2)?3:1,7,3.6); pdSnd('shot3'); }); break; }
   case 'summon': { A.pose=5; A.ct=T(1.2);
-    q(.7,()=>{ if(g.en.length>44) return; const kinds=ph>=2?['suchti','speedy','rammer','speedy']:['suchti','speedy']; const cnt=4+ph*2; for(let i=0;i<cnt;i++){ const an=i*6.2832/cnt, k=kinds[i%kinds.length]; const m=pdMkEnemy(k,e.x+Math.cos(an)*90,e.y+Math.sin(an)*90,1+(e.bn%50)*.1+g.t/900); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.5}); } pdSnd('boss'); }); break; }
+    q(.7,()=>{ if(g.en.length>44) return; const kinds=ph>=2?['suchti','speedy','dicker','speedy']:['suchti','speedy']; const cnt=4+ph*2; for(let i=0;i<cnt;i++){ const an=i*6.2832/cnt, k=kinds[i%kinds.length]; const m=pdMkEnemy(k,e.x+Math.cos(an)*90,e.y+Math.sin(an)*90,1+(e.bn%50)*.1+g.t/900); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.5}); } pdSnd('boss'); }); break; }
   case 'leap': { const p=rp(); A.pose=1; A.ct=T(1.5); pdBlast(p.x,p.y+4,128,T(1.05),42,'slam',1);
     const tx=p.x, ty=p.y; q(1.05,()=>{ g.fx.push({k:'puff',x:e.x,y:e.y,t:0,life:.5}); e.x=Math.max(PD_AR.x0+50,Math.min(PD_AR.x1-50,tx)); e.y=Math.max(PD_AR.y0+60,Math.min(PD_AR.y1-50,ty)); g.fx.push({k:'puff',x:e.x,y:e.y,t:0,life:.5}); pdSnd('boss'); }); break; }
   case 'gas': { A.pose=5; A.ct=T(1.1); const L=pdPlayers(g).slice(); L.push(rp());
@@ -2663,7 +2663,7 @@ function pdArenaTick(dt){
   if(A.q.length&&A.sp<=0){ A.sp=.38; const cnt=Math.min(A.q.length,A.r>=10?3:2);
    for(let i=0;i<cnt;i++){ const it=A.q.shift(), PT=pdAPort(g), pt=PT[Math.floor(Math.random()*PT.length)];
     if(it.k==='big'){ pdBigSpawn(g,true); const be=g.en[g.en.length-1]; be.x=(PD_ARENA.x0+PD_ARENA.x1)/2; be.y=PD_ARENA.y0+130; continue; }
-    const hm=1.5+.17*A.r+g.t/1200; if((it.k==='schatten'||it.k==='spucker')&&pdKindN(it.k)>=2) it.k='speedy'; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
+    const hm=1.5+.17*A.r+g.t/1200; if((it.k==='schatten'||it.k==='spucker'||it.k==='rammer')&&pdKindN(it.k)>=2) it.k=pdKindN('dicker')<6?'dicker':'speedy'; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
   A.alive=g.en.reduce((n,e)=>n+(e.hp>0?1:0),0);
   if(!A.q.length&&A.alive===0){ if(A.r>=A.total){ A.s='done'; A.t=1.5; } else { A.s='break'; A.t=4.2; pdAnn(g,'RUNDE '+A.r+' GESCHAFFT','Kurz durchatmen …','#7dff9a',2.6);
     if(!g.bp) g.bp={x:(PD_ARENA.x0+PD_ARENA.x1)/2,y:(PD_ARENA.y0+PD_ARENA.y1)/2+10}; for(const o of pdAll(g)) if(!o.dead&&!o.off) o.hp=Math.min(o.hpMax,o.hp+Math.round(o.hpMax*.12)); } } }
