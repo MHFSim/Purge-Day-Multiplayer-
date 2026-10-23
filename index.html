@@ -352,7 +352,7 @@ const PD_EN={
 
 function pdRand(a,b){ return a+Math.random()*(b-a); }
 function pdPickEnemy(t){
- { let q=Math.random(), acc=0; for(const [k,tm,pp] of PD_SPEC){ if(t>tm){ acc+=pp; if(q<acc){ if(k==='spucker'&&PD.g&&PD.g.en.reduce((n,e)=>n+(e.k==='spucker'?1:0),0)>=2) break; return k; } } } }
+ { let q=Math.random(), acc=0; for(const [k,tm,pp] of PD_SPEC){ if(t>tm){ acc+=pp; if(q<acc){ if((k==='spucker'||k==='schatten')&&pdKindN(k)>=2) break; return k; } } } }
  const r=Math.random();
  if(t>360&&r<.14) return 'dicker';      /* ab 6 Min */
  if(t>120&&r<.30) return 'speedy';      /* ab 2 Min */
@@ -2478,6 +2478,7 @@ function pdMkEnemy(k,x,y,hpMul,mod,elite){
 }
 function pdShoot(x,y,a,sp,dmg,col,r,life){ const g=PD.g; if(g.hz.length>130) return; g.hz.push({k:'b',x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:r||7,dmg,life:life||2.6,col:col||1,t:0}); }
 function pdBlast(x,y,r,w,dmg,sub,col){ const g=PD.g; if(g.hz.length>130) return null; const h={k:'c',x,y,r,w,tail:.06,dmg,sub:sub||'',col:col===undefined?0:col,t:0}; g.hz.push(h); return h; }
+function pdKindN(k){ const g=PD.g; let n=0; if(g) for(const e of g.en) if(e.k===k&&e.hp>0) n++; return n; }
 function pdAbility(e,d,dt,tp,dist,dx,dy,vx,vy,PLs){
  const g=PD.g, A=e.ai||(e.ai={c:pdRand(1,3.5),s:0,t:0}); e.st=0;
  if(e.stun>0) return null;
@@ -2662,7 +2663,7 @@ function pdArenaTick(dt){
   if(A.q.length&&A.sp<=0){ A.sp=.38; const cnt=Math.min(A.q.length,A.r>=10?3:2);
    for(let i=0;i<cnt;i++){ const it=A.q.shift(), PT=pdAPort(g), pt=PT[Math.floor(Math.random()*PT.length)];
     if(it.k==='big'){ pdBigSpawn(g,true); const be=g.en[g.en.length-1]; be.x=(PD_ARENA.x0+PD_ARENA.x1)/2; be.y=PD_ARENA.y0+130; continue; }
-    const hm=1.5+.17*A.r+g.t/1200; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
+    const hm=1.5+.17*A.r+g.t/1200; if((it.k==='schatten'||it.k==='spucker')&&pdKindN(it.k)>=2) it.k='speedy'; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
   A.alive=g.en.reduce((n,e)=>n+(e.hp>0?1:0),0);
   if(!A.q.length&&A.alive===0){ if(A.r>=A.total){ A.s='done'; A.t=1.5; } else { A.s='break'; A.t=4.2; pdAnn(g,'RUNDE '+A.r+' GESCHAFFT','Kurz durchatmen …','#7dff9a',2.6);
     if(!g.bp) g.bp={x:(PD_ARENA.x0+PD_ARENA.x1)/2,y:(PD_ARENA.y0+PD_ARENA.y1)/2+10}; for(const o of pdAll(g)) if(!o.dead&&!o.off) o.hp=Math.min(o.hpMax,o.hp+Math.round(o.hpMax*.12)); } } }
