@@ -1599,11 +1599,11 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 #pdFloat{position:absolute;z-index:9;left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top,0px));width:min(236px,calc(100% - 16px));box-sizing:border-box;padding:5px 6px 6px;border-radius:14px;background:#0b0d1480;border:1px solid #ffffff22;box-shadow:0 4px 16px #0006;color:#fff;font-family:system-ui;backdrop-filter:blur(4px);animation:pdflin .22s ease-out}
 @keyframes pdflin{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
 #pdUpBar{position:absolute;z-index:7;top:calc(12px + env(safe-area-inset-top,0px));right:72px;display:flex;gap:6px;pointer-events:none}
-#pdUpBar .pdub{pointer-events:auto;position:relative;width:40px;height:40px;border-radius:12px;border:1.5px solid #ffffff22;background:#0b0d14b0;display:flex;align-items:center;justify-content:center;padding:0;cursor:default;filter:grayscale(1);opacity:.5}
+#pdUpBar .pdub{pointer-events:auto;position:relative;width:40px;height:40px;border-radius:12px;border:1.5px solid #ffffff22;background:#0b0d14b0;display:flex;align-items:center;justify-content:center;padding:0;cursor:default;background:#c3c8d0e6;border-color:#ffffff55}
 #pdUpBar .pdub svg{width:26px;height:26px}
-#pdUpBar .pdub i{position:absolute;right:2px;bottom:0;font:800 9.5px system-ui;font-style:normal;color:#fff;text-shadow:0 0 3px #000}
+#pdUpBar .pdub i{position:absolute;right:2px;bottom:0;font:800 9.5px system-ui;font-style:normal;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000}
 #pdUpBar .pdub{touch-action:manipulation}
-#pdUpBar .pdub.can{filter:none;opacity:1;cursor:pointer;border-color:#ffd23f;background:#2a2108d9;box-shadow:0 0 12px 1px #ffd23fa0;animation:pdubg 1.4s ease-in-out infinite}
+#pdUpBar .pdub.can{filter:none;opacity:1;cursor:pointer;border-color:#fff3b0;background:#ffd23f;box-shadow:0 0 12px 1px #ffd23fa0;animation:pdubg 1.4s ease-in-out infinite}
 @keyframes pdubg{50%{box-shadow:0 0 18px 4px #ffd23fd0}}
 #pdFloat .pdflh{display:flex;align-items:center;gap:6px;margin-bottom:4px}#pdFloat .pdflh>div{flex:1;min-width:0;display:flex;flex-direction:column}
 #pdFloat .pdflh b{font:800 13px system-ui}#pdFloat .pdflh small{font:600 10.5px system-ui;color:#b9c0d4}
@@ -2289,7 +2289,7 @@ function pdDrawMate(x,p){
 .pdcode b{display:block;font:900 46px/1.15 ui-monospace,Menlo,monospace;letter-spacing:.25em;color:#fff;padding-left:.25em}
 .pdcode span{font-size:12.5px;color:#8fc7ff}
 .pdlslots{max-width:460px;margin:0 auto 12px;display:flex;flex-direction:column;gap:6px}
-.pdlslots{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pdlslots .pdls{padding:6px 7px;gap:7px}.pdlslots .pdls i{width:28px;height:28px;font-size:11px}.pdlslots .pdls b{font-size:12.5px}.pdlslots .pdls small{font-size:10.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pdlslots .pdls em{font-size:14px}
+.pdlslots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:100%;box-sizing:border-box}.pdlslots .pdls{padding:6px 7px;gap:7px;min-width:0;overflow:hidden;box-sizing:border-box}.pdlslots .pdls i{width:28px;height:28px;font-size:11px}.pdlslots .pdls b{font-size:12.5px}.pdlslots .pdls small{font-size:10.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pdlslots .pdls em{font-size:14px}
 .pdls{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:#16171d;border:1px solid color-mix(in srgb,var(--pc) 55%,#ffffff1a)}
 .pdls.empty{opacity:.5;border-style:dashed}.pdls.off{opacity:.6}.pdls.off small{color:#ffb36b}
 .pdls i{font-style:normal;width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--pc) 25%,#000);color:var(--pc);font:800 13px system-ui}
