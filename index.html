@@ -9,10 +9,13 @@
 #pdFloat .pdflc{padding:3px 1px!important;border-radius:9px!important;border-width:1px!important;background:#ffffff08!important}
 #pdFloat .pdflci{font-size:14px!important}#pdFloat .pdflci svg{width:16px!important;height:16px!important}
 #pdFloat .pdflc b{font-size:9.5px!important}#pdFloat .pdflc small{font-size:8.5px!important;color:#c9d0e4cc!important}
-/* v3.2: Shop-Knöpfe am linken Rand über dem Waffenshop (außerhalb des Spielfelds) */
-#pdMerc,#pdBaitB{left:6px!important;transform:none!important;bottom:auto!important;width:132px;box-sizing:border-box;padding:6px 8px!important;border-radius:12px!important;align-items:flex-start!important;text-align:left}
-#pdBaitB{top:calc(42% - 50px)}#pdMerc{top:42%}
-#pdMerc b,#pdBaitB b{font-size:11.5px!important;white-space:normal!important}#pdMerc small,#pdBaitB small{font-size:9.5px!important;white-space:normal!important}
+/* v3.3: Werbeschilder auf Berni´s Waffenshop (hängen am Haus, erscheinen in der Nähe) */
+#pdMerc,#pdBaitB{left:0;top:0;bottom:auto!important;transform:translate(-50%,-50%)!important;width:150px;box-sizing:border-box;padding:7px 9px 6px!important;border-radius:6px!important;align-items:center!important;text-align:center;border-width:2px!important;box-shadow:0 0 0 3px #1b1d22,0 0 0 4px #5b616d,0 8px 18px #000c!important;animation:pdsign .35s cubic-bezier(.2,1.6,.4,1)!important}
+#pdMerc.can,#pdBaitB.can{animation:pdsign .35s cubic-bezier(.2,1.6,.4,1),pdsigng 1.4s ease-in-out .35s infinite!important}
+#pdMerc::before,#pdBaitB::before{content:'';position:absolute;left:18px;right:18px;top:-11px;height:9px;border-left:2px solid #5b616d;border-right:2px solid #5b616d}
+#pdMerc b,#pdBaitB b{font-size:12px!important;white-space:normal!important;letter-spacing:.02em}#pdMerc small,#pdBaitB small{font-size:9.5px!important;white-space:normal!important}
+@keyframes pdsign{from{opacity:0;transform:translate(-50%,-50%) scale(.6) rotate(-4deg)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes pdsigng{50%{filter:brightness(1.25) drop-shadow(0 0 8px currentColor)}}
 </style></head><body>
 <script>
 const STAFF=[
@@ -207,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='3.2';   /* bei jeder neuen Version erhöhen */
+const PD_VER='3.3';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -3320,6 +3323,7 @@ function pdDrawMerc(x,m,T){
  x.strokeText(s,m.x,m.y-36); x.fillStyle='#9be07a'; x.fillText(s,m.x,m.y-36); x.textAlign='left';
 }
 /* Knopf beim Waffenshop */
+function pdShopPin(el,wy){ const C=PD.cam; if(!C) return; const sh=PD_HOUSES.shop, sx=Math.max(81,(sh.x+sh.w-6-C.cx)*C.z+PD.W/2-75), sy=(wy-C.cy)*C.z+PD.H/2; el.style.left=Math.round(sx)+'px'; el.style.top=Math.round(sy)+'px'; }
 function pdMercBtn(g){
  let b=document.getElementById('pdMerc');
  const near=!g.arena&&!g.dead&&Math.hypot(g.x-PD_MERCDOOR.x,g.y-PD_MERCDOOR.y)<130;
@@ -3329,7 +3333,7 @@ function pdMercBtn(g){
  const can=!out&&!left&&!big&&(g.coins|0)>=PD_MERC_COST;
  const txt=out?'<b>🪖 Söldner ist unterwegs</b>':big?'<b>🪖 Söldner hat Angst</b><small>Endgegner auf dem Feld</small>':left?`<b>🪖 Söldner macht Pause</b><small>noch ${left} s</small>`:`<b>🪖 Söldner rufen</b><small>${PD_MERC_COST} 🪙 · ${PD_MERC_AMMO} Schuss AK</small>`;
  if(b.dataset.t!==txt+can){ b.dataset.t=txt+can; b.innerHTML=txt; b.classList.toggle('can',can); }
- b.hidden=false;
+ pdShopPin(b,1398); b.hidden=false;
 }
 
 /* ===================== Köder (Berni´s Waffenshop) ===================== */
@@ -3383,7 +3387,7 @@ function pdBaitBtns(g){
  const can=(g.coins|0)>=PD_BAIT_COST&&n<PD_BAIT_MAX;
  const txt=n>=PD_BAIT_MAX?`<b>🎯 Köder: Tasche voll</b><small>höchstens ${PD_BAIT_MAX}</small>`:`<b>🎯 Köder kaufen</b><small>${PD_BAIT_COST} 🪙 · lockt alle Gegner ${PD_BAIT_T} s an</small>`;
  if(b.dataset.t!==txt+can){ b.dataset.t=txt+can; b.innerHTML=txt; b.classList.toggle('can',can); }
- b.hidden=false;
+ pdShopPin(b,1192); b.hidden=false;
 }
 
 /* ===================== iPhone / iOS-Anpassungen ===================== */
