@@ -590,7 +590,7 @@ function pdPickups(dt){
  for(const c of g.kni){ c.t+=dt; for(const g of PL){ if(c.got) break; if(g.knife<PD_KNMAX&&Math.hypot(c.x-g.x,c.y-g.y)<30){ c.got=1; g.knife++; pdTxt(g.x,g.y-44,'Wurfmesser ×'+g.knife,'#d7e3ee',1.6); pdSnd('pick'); } } }
  g.kni=g.kni.filter(c=>!c.got&&c.t<60);
  /* AK-47 bei Berni´s Waffenshop: seltener als C4, nur eine am Boden */
- g.akT-=dt; if(g.akT<=0&&!g.arena){ g.akT=90+Math.random()*90; if(!g.aki.length) g.aki.push({x:PD_AR.x0+40,y:PD_HOUSES.shop.y+PD_HOUSES.shop.h/2+pdRand(-80,80)}); }
+ g.akT-=dt; if(g.akT<=0&&!g.arena){ g.akT=130+Math.random()*120; if(!g.aki.length) g.aki.push({x:PD_AR.x0+40,y:PD_HOUSES.shop.y+PD_HOUSES.shop.h/2+pdRand(-80,80)}); }
  for(const c of g.aki){ for(const g of PL){ if(c.got) break; if(g.ak<pdAkMag(g)&&Math.hypot(c.x-g.x,c.y-g.y)<32){ c.got=1; g.ak=pdAkMag(g); pdTxt(g.x,g.y-44,'AK-47 · '+pdAkMag(g)+' Schuss','#ffd23f',1.6); pdSnd('pick'); } } }
  g.aki=g.aki.filter(c=>!c.got);
  for(const b of g.c4s){ b.t+=dt; if(!b.boom&&Math.floor(b.t*2)>(b.bp||0)){ b.bp=Math.floor(b.t*2); pdSnd('fuse'); } if(b.t>=PD_C4FUSE&&!b.boom){ b.boom=1; g.fx.push({k:'boom',x:b.x,y:b.y,t:0,life:.6,R:(b.R||pdC4R(g))});
@@ -2861,7 +2861,7 @@ function pdEDeco(x,L,fr){
 }
 
 /* ===================== LEVEL-DESIGN 3: K.O. & Rettung · Statistik · Warnungen · Pfützen · Arena-Varianten ===================== */
-const PD_KO_T=120, PD_RV_T=10, PD_RV_R=62;
+const PD_KO_T=120, PD_RV_T=2, PD_RV_R=62;
 
 /* ---------- Statistik je Spieler ---------- */
 function pdSt(o){ return o.st||(o.st={k:0,d:0,tk:0,ko:0,rv:0,bk:0}); }
@@ -2882,7 +2882,7 @@ function pdKO(o){
  const g=PD.g; if(o.dead) return; o.hp=0; o.dead=1; o.koT=PD_KO_T; o.rT=PD_KO_T; o.rv=0; o.rvP=0; pdSt(o).ko++;
  o.akOn=false; o.glOn=false;
  pdTxt(o.x,o.y-50,'✚ '+o.n+' ist K.O.!','#ff5d5d',2.4); pdSnd('hurt');
- pdAnn(g,o.n.toUpperCase()+' IST K.O.!','10 s bei '+o.n+' bleiben = gerettet','#ff5d5d',3.2);
+ pdAnn(g,o.n.toUpperCase()+' IST K.O.!','2 s bei '+o.n+' bleiben = gerettet','#ff5d5d',3.2);
 }
 function pdGameOver(g,why){ if(g.over) return; g.why=why; g.over=true; pdEnd(); }
 function pdKOTick(g,dt){
@@ -2965,7 +2965,7 @@ function pdWarn(x,g,W,H){
  if(g.dead&&g.ps&&g.ps.length){ const t=Math.max(0,g.rT|0), p=Math.max(0,Math.min(1,(g.rvP|0)/100)), y0=H*.6;
   x.save(); x.fillStyle='#000b'; pdERR(x,W/2-150,y0-30,300,74,14); x.fill(); x.strokeStyle='#ff5d5d88'; x.lineWidth=1.5; x.stroke();
   x.textAlign='center'; x.font='900 18px system-ui,sans-serif'; x.fillStyle='#ff5d5d'; x.fillText('✚ Du bist K.O.!',W/2,y0-6);
-  x.font='700 12px system-ui,sans-serif'; x.fillStyle='#fff'; x.fillText('Ein Mitspieler muss 10 s bei dir bleiben',W/2,y0+12);
+  x.font='700 12px system-ui,sans-serif'; x.fillStyle='#fff'; x.fillText('Ein Mitspieler muss 2 s bei dir bleiben',W/2,y0+12);
   x.fillStyle='#2a1313'; x.fillRect(W/2-120,y0+22,240,8); x.fillStyle='#7dff9a'; x.fillRect(W/2-120,y0+22,240*p,8);
   x.font='900 12px system-ui,sans-serif'; x.fillStyle=t<=30?'#ff5d5d':'#ffd23f'; x.fillText('noch '+Math.floor(t/60)+':'+String(t%60).padStart(2,'0'),W/2,y0+40); x.restore(); x.textAlign='left'; }
 }
