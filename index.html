@@ -958,8 +958,8 @@ function pdDraw(){
     x.globalAlpha=.6; x.lineWidth=12; x.stroke(); x.globalAlpha=1; x.strokeStyle='#fff'; x.lineWidth=3.5; x.stroke(); }
    x.restore(); }
   else { const n=pdNBlau(L), R=pdBlauR(L); for(let i=0;i<n;i++){ const a=g.ang+i*6.283/n, px=g.x+Math.cos(a)*R, py=g.y+Math.sin(a)*R, blue=(i%2===0); const gr=x.createRadialGradient(px,py,2,px,py,28); gr.addColorStop(0,blue?'rgba(70,140,255,.95)':'rgba(255,60,60,.95)'); gr.addColorStop(1,'rgba(0,0,0,0)'); x.fillStyle=gr; x.beginPath(); x.arc(px,py,28,0,7); x.fill(); x.fillStyle='#fff'; x.beginPath(); x.arc(px,py,3,0,7); x.fill(); } } }
- x.strokeStyle=g.mp?PD_PCOL[NET.me%3]:'rgba(120,220,255,.8)'; x.lineWidth=2.5; x.beginPath(); x.ellipse(g.x,g.y+14,18,7,0,0,7); x.stroke();
- for(const p of (g.ps||[])) if(!p.dead){ x.strokeStyle=PD_PCOL[p.slot%3]; x.lineWidth=2.5; x.beginPath(); x.ellipse(p.x,p.y+14,18,7,0,0,7); x.stroke(); }
+ x.strokeStyle=g.mp?PD_PCOL[NET.me%6]:'rgba(120,220,255,.8)'; x.lineWidth=2.5; x.beginPath(); x.ellipse(g.x,g.y+14,18,7,0,0,7); x.stroke();
+ for(const p of (g.ps||[])) if(!p.dead){ x.strokeStyle=PD_PCOL[p.slot%6]; x.lineWidth=2.5; x.beginPath(); x.ellipse(p.x,p.y+14,18,7,0,0,7); x.stroke(); }
 
  /* Rucksack + C4 am Boden, scharfes C4 */
  const pulse=.5+.5*Math.sin(g.t*5);
@@ -1729,8 +1729,8 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
    Bricht die Verbindung ab, verbindet sich der Gast automatisch neu
    und bekommt seine Figur samt Waffen zurück.
    ===================================================================== */
-const NET_PFX='mhsim-purgeday-', NET_MAX=3, NET_RATE=83, NET_TIMEOUT=10000, NET_VIEW=820, NET_OFFMAX=120000;
-const PD_PCOL=['#78dcff','#ffd23f','#ff6bd6'];
+const NET_PFX='mhsim-purgeday-', NET_MAX=6, NET_RATE=83, NET_TIMEOUT=10000, NET_VIEW=820, NET_OFFMAX=120000;
+const PD_PCOL=['#78dcff','#ffd23f','#ff6bd6','#7dff9a','#ff9a4d','#b18cff'];
 const PD_MPKEY='mhsim_purgeday_mp_v1';
 const NET={on:false,host:false,peer:null,conns:[],conn:null,code:'',me:0,lobby:[],cur:null,prev:null,sq:[],gen:0,iv:0,to:0,st:'',err:'',lastCode:'',eid:0,n:0,inT:0,needPos:false,wasDead:0,overShown:false,sc:{},
  uid:'',welcomed:false,re:null,lastRx:0,pingT:0,pgT:0,autoT:0,load:null,ld:0,sconn:null,stc:{},seq:0,rseq:-1};
@@ -1780,7 +1780,7 @@ function netStats(n){ return NET.sc[n]||(NET.sc[n]=pdStats(n)); }
 function netMateInit(p,g){ const d={ak:0,akOn:false,akC:0,glMag:0,glA:0,glOn:false,glC:0,c4:0,knife:0,nuke:0,cd:{},ang:0,anim:0,hurt:0,dead:0,rT:0,hzT:0}; for(const k in d) if(p[k]===undefined) p[k]=d[k];
  if(p.lv===undefined){ const J=v=>JSON.parse(JSON.stringify(v)); p.lv=g?g.lv:1; p.xp=g?g.xp:0; p.xpN=g?g.xpN:pdXpNeed(1); p.w=g?J(g.w):{[(p.s&&p.s.wp)||'spritze']:1}; p.p=g?J(g.p):{}; p.dmgM=g?g.dmgM:((p.s&&p.s.dmg)||1); p.spdM=g?g.spdM:1; p.mag=g?g.mag:70; p.up=g?J(g.up):{ak:0,gl:0,kn:0,c4:0}; p.coins=g?(g.coins|0):0; }
  p.pick=null; p.tree=false; return p; }
-function netNewMate(l,g,i){ const s=pdStats(l.n); return netMateInit({slot:l.slot,uid:l.uid||'',n:l.n,s,x:Math.max(PD_AR.x0+22,Math.min(PD_AR.x1-22,g.x+(i?70:-70))),y:g.y,face:1,dx:0,dy:-1,back:false,mv:false,hp:s.hp,hpMax:s.hp,hurt:2}); }
+function netNewMate(l,g,i){ const s=pdStats(l.n); return netMateInit({slot:l.slot,uid:l.uid||'',n:l.n,s,x:Math.max(PD_AR.x0+22,Math.min(PD_AR.x1-22,g.x+[-70,70,-120,120,0][i%5])),y:g.y+[0,0,40,40,70][i%5],face:1,dx:0,dy:-1,back:false,mv:false,hp:s.hp,hpMax:s.hp,hurt:2}); }
 
 /* ---------- Waffen-Aktionen: gelten für jeden Spieler (o), Standard = Host ---------- */
 function pdActOk(g,o){ return g&&PD.st==='play'&&!g.over&&o&&!o.dead&&!o.off; }
@@ -1873,7 +1873,7 @@ function netHostData(c,d){
   else {
    if(inGame){ try{ c.send({t:'full',run:1}); }catch(e){} setTimeout(()=>{ try{c.close();}catch(e){} },500); return; }
    if(NET.lobby.length>=NET_MAX){ try{ c.send({t:'full'}); }catch(e){} setTimeout(()=>{ try{c.close();}catch(e){} },500); return; }
-   const slot=[1,2].find(s=>!NET.lobby.some(q=>q.slot===s)); l={slot,n:null,uid}; NET.lobby.push(l);
+   const slot=[1,2,3,4,5].find(s=>!NET.lobby.some(q=>q.slot===s)); l={slot,n:null,uid}; NET.lobby.push(l);
   }
   c.slot=l.slot; c.uid=uid; l.off=false; NET.conns.push(c);
   try{ c.send({t:'welcome',slot:l.slot,code:NET.code}); }catch(e){}
@@ -2245,7 +2245,7 @@ function netLobbyRender(){
  if(document.getElementById('pdSlots')) return;   /* Spielstand-Liste ist offen */
  const oldM=ov.querySelector('.pdmenu'), sy=oldM?oldM.scrollTop:0;
  const me=NET.lobby.find(l=>l.slot===NET.me), mine=me&&me.n, locked=(me&&me.lock)||(NET.host&&!!NET.load);
- const slots=[0,1,2].map(s=>{ const l=NET.lobby.find(q=>q.slot===s);
+ const slots=[0,1,2,3,4,5].map(s=>{ const l=NET.lobby.find(q=>q.slot===s);
   return `<div class="pdls${l?'':' empty'}${l&&l.off?' off':''}" style="--pc:${PD_PCOL[s]}"><i>${s===0?'👑':'P'+(s+1)}</i><div><b>${l?(s===0?'Host':'Spieler '+(s+1))+(s===NET.me?' (du)':''):'Freier Platz'}</b><small>${l?(l.off?'Verbindung unterbrochen …':l.n?esc(l.n)+((l.lock||l.sv!=null||(s===0&&NET.host&&NET.load))?' · aus dem Spielstand':''):'wählt eine Figur …'):(NET.host?'Code weitergeben zum Beitreten':'—')}</small></div>${l&&l.n&&!l.off?'<em>✓</em>':''}</div>`; }).join('');
  const taken=new Set(NET.lobby.filter(l=>l.slot!==NET.me&&l.n).map(l=>l.n));
  const cards=STAFF.map(s=>{ const st=pdStats(s.n), sel=mine===s.n, tk=taken.has(s.n), dis=tk||(locked&&!sel);
@@ -2255,7 +2255,7 @@ function netLobbyRender(){
  const codeBox=`<div class="pdcode"><small>${NET.host?'Raum-Code für deine Mitspieler':'Raum'}</small><b>${esc(NET.code||'····')}</b><span>${esc(NET.st||'')}</span></div>`;
  const action=NET.host?`<button class="pdstart" data-wz="mpstart"${all&&ready?'':' disabled'}>${!ready?'Raum wird erstellt …':all?(NET.load?'▶ Gespeicherte Runde fortsetzen':(act.length>1?'▶ Spiel starten ('+act.length+' Spieler)':'▶ Alleine starten')):'Alle müssen eine Figur wählen'}</button>${ready&&!NET.load?'<button class="pdopt pdldbtn" data-wz="mpload"><span class="pdoi">💾</span><span class="pdot"><b>Gespeicherte Runde laden</b><small>Mehrspieler-Spielstand fortsetzen</small></span></button>':''}`
   :`<p class="pdsub">${mine?'Bereit! Warte, bis der Host startet …':'Wähle unten deine Figur.'}</p>`;
- ov.innerHTML=`<button class="wzhome" data-wz="mpleave" aria-label="Raum verlassen">‹</button><div class="pdmenu"><div class="pdlogo"><small>Mehrspieler</small><b>LOBBY</b></div>${codeBox}${NET.err?`<div class="pdmsg">${esc(NET.err)}</div>`:''}${ldBox}<div class="pdlslots">${slots}</div>${action}<p class="pdsub pdhint">Jeder sammelt seine eigenen Waffen (AK-47, Glock, C4, Wurfmesser, Atombombe) und setzt sie selbst ein. Erfahrung und Upgrades gelten fürs ganze Team. Wer erschöpft ist, kommt nach 8 s zurück. Bricht eine Verbindung ab, wird automatisch neu verbunden.</p><div class="pdgrid">${cards}</div></div>`;
+ ov.innerHTML=`<button class="wzhome" data-wz="mpleave" aria-label="Raum verlassen">‹</button><div class="pdmenu"><div class="pdlogo"><small>Mehrspieler</small><b>LOBBY</b></div>${codeBox}${NET.err?`<div class="pdmsg">${esc(NET.err)}</div>`:''}${ldBox}<div class="pdlslots">${slots}</div>${action}<p class="pdsub pdhint">Jeder sammelt seine eigenen Waffen (AK-47, Glock, C4, Wurfmesser, Atombombe) und setzt sie selbst ein. Jeder levelt und rüstet für sich auf. Wer K.O. geht, muss innerhalb von 2 Minuten gerettet werden: 2 s bei ihm bleiben. Bricht eine Verbindung ab, wird automatisch neu verbunden.</p><div class="pdgrid">${cards}</div></div>`;
  ov.querySelectorAll('.pdav').forEach(c=>{ const x=c.getContext('2d'); const s=pdStats(c.dataset.n); x.scale(2,2); x.translate(48,70); pdDrawHero(x,s,0,0,0,0,1,2.25); });
  const nm=ov.querySelector('.pdmenu'); if(nm) nm.scrollTop=sy;
 }
@@ -2266,7 +2266,7 @@ function pdDrawMate(x,p){
  if(p.skel) pdSkel(x,p.x,p.y,(p.anim||0)*11,p.mv,p.face,1.1,true,p.back); else pdDrawHero(x,p.s,p.x,p.y,(p.anim||0)*11,p.mv,p.face,1.1,p.back);
  if(!p.off){ p.t=PD.g.t; pdHeld(x,p); }
  x.globalAlpha=1;
- const col=PD_PCOL[p.slot%3], nm=p.off?p.n+' (offline)':p.n+(p.lv?' · '+p.lv:'');
+ const col=PD_PCOL[p.slot%6], nm=p.off?p.n+' (offline)':p.n+(p.lv?' · '+p.lv:'');
  x.font='800 11px system-ui,sans-serif'; x.textAlign='center'; x.lineJoin='round'; x.lineWidth=3; x.strokeStyle='#000'; x.strokeText(nm,p.x,p.y-47); x.fillStyle=col; x.fillText(nm,p.x,p.y-47);
  x.fillStyle='#000a'; x.fillRect(p.x-16,p.y-43,32,4); x.fillStyle='#ff6b6b'; x.fillRect(p.x-15,p.y-42,30*Math.max(0,Math.min(1,p.hp/p.hpMax)),2);
  x.textAlign='left';
@@ -2284,6 +2284,7 @@ function pdDrawMate(x,p){
 .pdcode b{display:block;font:900 46px/1.15 ui-monospace,Menlo,monospace;letter-spacing:.25em;color:#fff;padding-left:.25em}
 .pdcode span{font-size:12.5px;color:#8fc7ff}
 .pdlslots{max-width:460px;margin:0 auto 12px;display:flex;flex-direction:column;gap:6px}
+.pdlslots{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pdlslots .pdls{padding:6px 7px;gap:7px}.pdlslots .pdls i{width:28px;height:28px;font-size:11px}.pdlslots .pdls b{font-size:12.5px}.pdlslots .pdls small{font-size:10.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pdlslots .pdls em{font-size:14px}
 .pdls{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:#16171d;border:1px solid color-mix(in srgb,var(--pc) 55%,#ffffff1a)}
 .pdls.empty{opacity:.5;border-style:dashed}.pdls.off{opacity:.6}.pdls.off small{color:#ffb36b}
 .pdls i{font-style:normal;width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--pc) 25%,#000);color:var(--pc);font:800 13px system-ui}
@@ -2871,7 +2872,7 @@ function pdStatHTML(rows){
  if(!rows||!rows.length) return '';
  const best=i=>Math.max(...rows.map(r=>r[i]));
  const bk=best(3), bd=best(4), brv=best(7), multi=rows.length>1;
- const cards=rows.map(r=>{ const col=PD_PCOL[(r[0]|0)%3];
+ const cards=rows.map(r=>{ const col=PD_PCOL[(r[0]|0)%6];
   const cell=(v,l,top)=>`<span class="${multi&&top?'top':''}"><b>${v}</b><small>${l}</small></span>`;
   return `<div class="pdsx" style="--pc:${col}"><div class="pdsxh"><i>${r[0]===0?'👑':'P'+(r[0]+1)}</i><b>${esc(r[1])}</b><em>Stufe ${r[2]}</em>${multi&&r[3]===bk&&bk>0?'<u>MVP</u>':''}</div><div class="pdsxg">${cell(pdNum(r[3]),'besiegt',r[3]===bk&&bk>0)}${cell(pdNum(r[4]),'Schaden',r[4]===bd&&bd>0)}${cell(pdNum(r[5]),'eingesteckt',false)}${cell(r[6],'K.O.',false)}${cell(r[7],'gerettet',r[7]===brv&&brv>0)}${cell(r[8],'Bosse',false)}</div></div>`; }).join('');
  return `<div class="pdsxl">${cards}</div>`;
@@ -2920,7 +2921,7 @@ function pdDrawKO(x,o,T){
  x.font='900 13px system-ui,sans-serif'; x.textAlign='center'; x.lineJoin='round'; x.lineWidth=4; x.strokeStyle='#000';
  const blink=urgent&&Math.floor(T*3)%2; x.strokeText(mm,o.x,cy+30); x.fillStyle=blink?'#ff5d5d':'#fff'; x.fillText(mm,o.x,cy+30);
  if(p>0){ x.font='800 10px system-ui,sans-serif'; x.strokeText('Rettung '+Math.round(p*100)+' %',o.x,cy+43); x.fillStyle='#7dff9a'; x.fillText('Rettung '+Math.round(p*100)+' %',o.x,cy+43); }
- x.font='800 11px system-ui,sans-serif'; x.strokeText(o.n,o.x,cy-19); x.fillStyle=o===PD.g?'#fff':PD_PCOL[(o.slot|0)%3]; x.fillText(o.n,o.x,cy-19);
+ x.font='800 11px system-ui,sans-serif'; x.strokeText(o.n,o.x,cy-19); x.fillStyle=o===PD.g?'#fff':PD_PCOL[(o.slot|0)%6]; x.fillText(o.n,o.x,cy-19);
  x.textAlign='left';
 }
 
