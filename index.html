@@ -1009,7 +1009,7 @@ function pdDraw(){
 function pdFmt(s){ s=Math.floor(s); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
 function pdHud(){
  const g=PD.g; const el=document.getElementById('pdHud'); if(!el) return;
- { const hb=document.getElementById('pdUpHint'); if(hb){ const nm=[]; for(const k of ['ak','gl','kn','c4']) if(g.up&&g.up[k]<PD_UPMAX[k]&&g.coins>=pdUpCost(g,k)) nm.push({ak:'AK-47',gl:'Glock',kn:'Wurfmesser',c4:'C4'}[k]); const pk=!!g.pick; hb.hidden=PD.fl.open||(!nm.length&&!pk); const key=pk?'Level-Up: Upgrade wählen':nm.join(' · '); if(hb.dataset.n!==key){ hb.dataset.n=key; hb.querySelector('small').textContent=key; hb.querySelector('b').textContent=pk?'⭐ Level-Up!':'🛒 Aufrüsten möglich'; } } pdFloatRefresh(); }
+ { const hb=document.getElementById('pdUpHint'); if(hb){ const nm=[]; for(const k of ['ak','gl','kn','c4']) if(g.up&&g.up[k]<PD_UPMAX[k]&&g.coins>=pdUpCost(g,k)) nm.push({ak:'AK-47',gl:'Glock',kn:'Wurfmesser',c4:'C4'}[k]); const pk=!!g.pick; hb.hidden=true; const key=pk?'Level-Up: Upgrade wählen':nm.join(' · '); if(hb.dataset.n!==key){ hb.dataset.n=key; hb.querySelector('small').textContent=key; hb.querySelector('b').textContent=pk?'⭐ Level-Up!':'🛒 Aufrüsten möglich'; } } pdFloatRefresh(); }
  const kb=document.getElementById('pdKN'); if(kb){ kb.hidden=g.knife<1; kb.querySelector('b').textContent='×'+g.knife; kb.classList.toggle('on',g.kfl.length>0); }
  const gb=document.getElementById('pdGL'); if(gb){ const tot=g.glA+g.glMag*pdGlMag(g); gb.hidden=tot<1; gb.querySelector('b').textContent=g.glA>0||g.glOn?g.glA+' / '+pdGlMag(g):'×'+g.glMag; gb.classList.toggle('on',!!g.glOn); gb.querySelector('small').textContent=g.glOn?'Feuert …':(g.glA>0?'Weiter':'Mag. '+(PD_GLMAGS-g.glMag+1)); }
  const nb=document.getElementById('pdNK'); if(nb) nb.hidden=!g.nuke;
@@ -1430,16 +1430,28 @@ function pdTreeClose(){
 function pdRenderPick(){ pdFloatRefresh(true); }
 /* ---------- Kleines schwebendes Menü: Level-Up-Auswahl + aufrüstbare Waffen ---------- */
 PD.fl={open:false,pk:''};
-function pdFloatToggle(){ PD.fl.open=!PD.fl.open; pdSnd('tap'); pdFloatRefresh(true); }
+function pdFloatToggle(){ if(PD.g&&PD.g.pick&&!PD.fl.open){ PD.fl.open=true; pdSnd('tap'); pdFloatRefresh(true); } else pdTreeOpen(); }
+function pdUpBar(g){
+ let el=document.getElementById('pdUpBar'); const U=g.up||{}, KS=['ak','gl','kn','c4'];
+ const show=KS.filter(k=>(U[k]|0)<PD_UPMAX[k]);
+ const sig=show.map(k=>k+(U[k]|0)+(g.coins>=pdUpCost(g,k)?'y':'n')).join('');
+ if(el&&el.dataset.s===sig) return;
+ if(!el){ el=document.createElement('div'); el.id='pdUpBar'; wzEnsure().appendChild(el);
+  el.onclick=e=>{ const b=e.target.closest('[data-k]'); if(!b||b.disabled) return; pdUpgrade(b.dataset.k); if(PD.st==='guest') setTimeout(()=>pdUpBar(PD.g),350); else pdUpBar(PD.g); }; }
+ const NM={ak:'AK-47',gl:'Glock',kn:'Messer',c4:'C4'};
+ el.dataset.s=sig;
+ el.innerHTML=show.map(k=>{ const can=g.coins>=pdUpCost(g,k); return `<button class="pdub${can?' can':''}" data-k="${k}"${can?'':' disabled'} aria-label="${NM[k]} aufrüsten (${pdUpCost(g,k)} Münzen)">${PD_ICO[k]}<i>${U[k]|0}</i></button>`; }).join('');
+}
 function pdFloatRefresh(force){
  const g=PD.g; if(!g||!WZ.on) return;
  let el=document.getElementById('pdFloat');
  const pkSig=g.pick?g.pick.map(o=>o.t+o.k+o.l).join(',')+':'+g.lv:'';
  if(pkSig&&PD.fl.pk!==pkSig){ PD.fl.pk=pkSig; PD.fl.open=true; }
  if(!pkSig) PD.fl.pk='';
- if(!PD.fl.open||g.over||PD.st==='over'||g.arenaCut){ if(el) el.remove(); return; }
+ pdUpBar(g);
+ if(!g.pick||!PD.fl.open||g.over||PD.st==='over'){ if(el) el.remove(); return; }
  const U=g.up||{}, KS=['ak','gl','kn','c4'];
- const sig=pkSig+'|'+KS.map(k=>(U[k]|0)+(g.coins>=pdUpCost(g,k)?'y':'n')).join('')+'|'+g.coins+'|'+g.lv;
+ const sig=pkSig+'|'+g.coins+'|'+g.lv;
  if(el&&el.dataset.s===sig&&!force) return;
  const NM={ak:['AK-47',PD_ICO.ak],gl:['Glock',PD_ICO.gl],kn:['Messer',PD_ICO.kn],c4:['C4',PD_ICO.c4]};
  let picks='';
@@ -1452,7 +1464,7 @@ function pdFloatRefresh(force){
  const ups=KS.filter(k=>(U[k]|0)<PD_UPMAX[k]).map(k=>{ const c=pdUpCost(g,k), can=g.coins>=c;
   return `<button class="pdflb${can?' can':''}" data-fl="up" data-k="${k}"${can?'':' disabled'}><span class="pdflbi">${NM[k][1]}</span><b>${NM[k][0]}</b><small>Stufe ${U[k]|0}/${PD_UPMAX[k]}</small><em>🛒 ${c}</em></button>`; }).join('');
  const head=g.pick?`<b>⭐ Level ${g.lv}</b><small>Wähle ein Upgrade${g.mp?' · nur für dich':''}</small>`:`<b>Aufrüsten</b><small>Waffen verbessern</small>`;
- const html=`<div class="pdflh"><div>${head}</div><span class="pdflcoin">🛒 ${g.coins}</span><button class="pdflx" data-fl="x" aria-label="Schließen">✕</button></div>${picks}${g.pick?'':`<div class="pdflu">${ups||'<span class="pdflmax">Alle Waffen auf Maximum</span>'}</div>`}`;
+ const html=`<div class="pdflh"><div>${head}</div><span class="pdflcoin">🛒 ${g.coins}</span><button class="pdflx" data-fl="x" aria-label="Schließen">✕</button></div>${picks}`;
  if(!el){ el=document.createElement('div'); el.id='pdFloat'; wzEnsure().appendChild(el);
   el.onclick=e=>{ const b=e.target.closest('[data-pd]'), f=e.target.closest('[data-fl]'); const gg=PD.g; if(!gg) return;
    if(b&&gg.pick){ const i=+b.dataset.pd;
@@ -1512,7 +1524,7 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 (function(){ const st=document.createElement('style'); st.textContent=`
 #wzOv{position:absolute;inset:0;z-index:420;background:#0a0a0c;color:#eee;display:flex;flex-direction:column;overflow:hidden;font-family:system-ui,sans-serif;-webkit-user-select:none;user-select:none;touch-action:none}
 #wzOv[hidden]{display:none}
-.pdcut #pdUpHint,.pdcut #pdC4,.pdcut #pdAK,.pdcut #pdNK,.pdcut #pdGL,.pdcut #pdKN,.pdcut .wzhome,.pdcut #pdHud{display:none!important}
+.pdcut #pdUpBar,.pdcut #pdFloat,.pdcut #pdUpHint,.pdcut #pdC4,.pdcut #pdAK,.pdcut #pdNK,.pdcut #pdGL,.pdcut #pdKN,.pdcut .wzhome,.pdcut #pdHud{display:none!important}
 .wzhome{display:grid;place-items:center;padding:0;position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:10px;width:46px;height:46px;border-radius:14px;border:1px solid #444;background:#1a1a1ecc;color:#fff;font-size:26px;line-height:1;cursor:pointer;z-index:9}
 .wzhome.wzpause{left:64px}.wzhome svg{display:block}
 #wzFabX{color:#e8eef5;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 14px 0 12px;position:absolute;right:10px;bottom:10px;z-index:5;height:46px;border-radius:14px;font-family:inherit;letter-spacing:.02em;background:#101a25ee;border:1px solid var(--line2);font:700 14px/1 system-ui,sans-serif;backdrop-filter:blur(6px);cursor:pointer;white-space:nowrap}
@@ -1572,8 +1584,14 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pduL{min-width:38px;padding:4px 6px}.pduL b{font-size:17px}.pdubar{height:4px}
 .pdgear i b{font-weight:800}
 
-#pdFloat{position:absolute;z-index:9;left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top,0px));width:min(270px,calc(100% - 16px));box-sizing:border-box;padding:5px 6px 6px;border-radius:14px;background:#0b0d14d9;border:1px solid #ffffff2a;box-shadow:0 6px 22px #0009;color:#fff;font-family:system-ui;backdrop-filter:blur(4px);animation:pdflin .22s ease-out}
-@keyframes pdflin{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+#pdFloat{position:absolute;z-index:9;right:8px;transform:none;top:calc(176px + env(safe-area-inset-top,0px));width:min(236px,calc(100% - 16px));box-sizing:border-box;padding:5px 6px 6px;border-radius:14px;background:#0b0d14d9;border:1px solid #ffffff2a;box-shadow:0 6px 22px #0009;color:#fff;font-family:system-ui;backdrop-filter:blur(4px);animation:pdflin .22s ease-out}
+@keyframes pdflin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+#pdUpBar{position:absolute;z-index:7;top:calc(12px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:none}
+#pdUpBar .pdub{pointer-events:auto;position:relative;width:40px;height:40px;border-radius:12px;border:1.5px solid #ffffff22;background:#0b0d14b0;display:flex;align-items:center;justify-content:center;padding:0;cursor:default;filter:grayscale(1);opacity:.5}
+#pdUpBar .pdub svg{width:26px;height:26px}
+#pdUpBar .pdub i{position:absolute;right:2px;bottom:0;font:800 9.5px system-ui;font-style:normal;color:#fff;text-shadow:0 0 3px #000}
+#pdUpBar .pdub.can{filter:none;opacity:1;cursor:pointer;border-color:#ffd23f;background:#2a2108d9;box-shadow:0 0 12px 1px #ffd23fa0;animation:pdubg 1.4s ease-in-out infinite}
+@keyframes pdubg{50%{box-shadow:0 0 18px 4px #ffd23fd0}}
 #pdFloat .pdflh{display:flex;align-items:center;gap:6px;margin-bottom:4px}#pdFloat .pdflh>div{flex:1;min-width:0;display:flex;flex-direction:column}
 #pdFloat .pdflh b{font:800 13px system-ui}#pdFloat .pdflh small{font:600 10.5px system-ui;color:#b9c0d4}
 #pdFloat .pdflcoin{font:800 12px system-ui;color:#ffd23f;background:#ffd23f1f;border-radius:9px;padding:3px 8px}
