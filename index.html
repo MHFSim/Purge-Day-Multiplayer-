@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='4.1';   /* bei jeder neuen Version erhöhen */
+const PD_VER='4.2';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -304,6 +304,7 @@ function pdSnd(k){
   case 'gem': pdT(r(1100,1500),r(1700,2100),.07,'sine',.04); break;
   case 'defi': pdN(.35,.16,3500,300,'bandpass',0,2); pdT(260,45,.38,'sawtooth',.11); pdT(1800,200,.2,'square',.04); for(let i=0;i<7;i++) pdN(.025,.12,r(2500,6000),2000,'highpass',i*.035+r(0,.02)); break;
   case 'sirene': for(let i=0;i<2;i++){ pdT(640,980,.22,'sawtooth',.055,i*.24); pdT(980,640,.22,'sawtooth',.055,i*.24+.12); } pdN(.45,.05,2000,800,'bandpass',0,3); break;
+  case 'fackel': pdN(.3,.1,1200,300,'bandpass',0,2); pdT(520,220,.25,'triangle',.07); break;
   case 'blau': pdT(r(1300,1700),r(1900,2300),.06,'sine',.025); break;
   case 'laser': pdT(110,95,.45,'sawtooth',.035); pdT(220,190,.45,'square',.015); pdN(.4,.03,3000,5000,'bandpass',0,6); break;
   case 'hurt': pdT(130,45,.22,'sawtooth',.16); pdN(.18,.14,1200,200,'lowpass'); break;
@@ -341,7 +342,8 @@ const PD_WPN={
  spritze:{n:'Naloxon-Spritze',ic:'💉',d:'Schießt auf den nächsten Suchti. Wird mit jeder Stufe schneller und stärker. Alle 5 Stufen 2 Spritzen mehr, die gleichzeitig feuern. Ab Stufe 5 fliegt jede Spritze durch bis zum 3. Gegner.',col:'#2ec4b6'},
  defi:{n:'Defi-Schockwelle',ic:'⚡',d:'Schockwelle rund um dich, die Gegner nur ganz leicht wegschubst. Wird mit der Stufe größer und stärker. Ab Stufe 5 mit jeder Stufe deutlich stärker und schneller.',col:'#ffd23f'},
  sirene:{n:'Sirene',ic:'📣',d:'Schallwelle in Laufrichtung, die Gegner kurz betäubt.',col:'#ff5bd0'},
- blau:{n:'Blaulicht',ic:'🚨',d:'Lichter kreisen um dich: blau, rot, blau, rot. Wer sie berührt, bleibt kurz stehen und bekommt Schaden. Alle 5 Stufen ein Licht mehr (blau, rot, …). Ab 6 Lichtern wird daraus ein Neonlaser in Rot und Blau. Ab Stufe 5 mit jeder Stufe stärker und schneller.',col:'#4f8cff'}
+ blau:{n:'Blaulicht',ic:'🚨',d:'Lichter kreisen um dich: blau, rot, blau, rot. Wer sie berührt, bleibt kurz stehen und bekommt Schaden. Alle 5 Stufen ein Licht mehr (blau, rot, …). Ab 6 Lichtern wird daraus ein Neonlaser in Rot und Blau. Ab Stufe 5 mit jeder Stufe stärker und schneller.',col:'#4f8cff'},
+ fackel:{n:'Notfall-Fackel',ic:'🔥',d:'Wirft Fackeln mitten in die Gegnermenge. Sie brennen eine Weile und machen im Feuer Schaden, ziehen aber keine Gegner an. Zu Beginn wirft sie nur selten. Alle 10 Stufen eine Fackel mehr, mit jeder Stufe größer, länger und stärker.',col:'#ff7a1a'}
 };
 const PD_PASS={
  hp:{n:'Warme Jause',ic:'🥪',d:'+5 maximales Leben und heilt 30 Leben.',col:'#ff7a59'},
@@ -640,8 +642,32 @@ function pdX5(L){ return Math.max(0,L-5); }
 function pdDefiDmg(L){ return 18+.9*L+1.6*pdX5(L); }
 function pdBlauDmg(L){ return 7+.22*L+.45*pdX5(L); }
 function pdBlauTick(L){ return Math.max(.09,.18-.0025*pdX5(L)); }
-function pdCd(k,L){ return k==='defi'?Math.max(1.3,3.4-.012*L-.03*pdX5(L)):k==='sirene'?Math.max(2.4,3.6-.02*L):0; }
+function pdCd(k,L){ return k==='fackel'?pdFkCd(L):k==='defi'?Math.max(1.3,3.4-.012*L-.03*pdX5(L)):k==='sirene'?Math.max(2.4,3.6-.02*L):0; }
 function pdSec(v){ return v.toFixed(2).replace('.',',').replace(/,?0$/,'')+' s'; }
+function pdFkCd(L){ return Math.max(2.2,7-.06*L-.05*pdX5(L)); }
+function pdFkN(L){ return Math.min(6,1+Math.floor(L/10)); }
+function pdFkR(L){ return 60+.65*L; }
+function pdFkDmg(L){ return 3+.14*L+.25*pdX5(L); }
+function pdFkLife(L){ return Math.min(6,3+.04*L); }
+/* Wurfziele: dichteste Gegnergruppen in Reichweite, jede weitere Fackel woanders */
+function pdFkTargets(g,L){
+ const R=pdFkR(L), n=pdFkN(L), pool=[];
+ for(const e of g.en){ if(e.hp<=0) continue; if((e.x-g.x)**2+(e.y-g.y)**2<460*460) pool.push(e); }
+ if(!pool.length) return [];
+ const cand=pool.length>50?pool.filter(()=>Math.random()<50/pool.length):pool, out=[];
+ for(let i=0;i<n;i++){ let b=null,bs=-1;
+  for(const c of cand){ if(out.some(q=>(q[0]-c.x)**2+(q[1]-c.y)**2<(R*1.1)**2)) continue; let sc=0; for(const e of pool) if((e.x-c.x)**2+(e.y-c.y)**2<R*R) sc++; if(sc>bs){ bs=sc; b=c; } }
+  if(!b) break; out.push([b.x,b.y]); }
+ return out;
+}
+function pdFkTick(dt){
+ const g=PD.g; if(!g.fz||!g.fz.length) return;
+ for(const z of g.fz){ z.t+=dt; if(z.t<0) continue;
+  if(!z.on){ z.on=1; g.fx.push({k:'fkf',x:z.x,y:z.y,t:0,life:z.life,R:z.R}); }
+  z.k-=dt; if(z.k<=0){ z.k+=.5; PD.src=z.o; for(const e of g.en){ if(e.hp<=0) continue; const dx=e.x-z.x, dy=e.y-z.y; if(dx*dx+dy*dy<(z.R+PD_EN[e.k].r)**2) pdHit(e,z.d,dx,dy,0,z.m); } } }
+ g.fz=g.fz.filter(z=>z.t<z.life); PD.src=null;
+}
+function pdFxSl(a,n){ const k=a.filter(f=>f.k==='fkf'), r=a.filter(f=>f.k!=='fkf'); return r.slice(-(n-Math.min(k.length,12))).concat(k.slice(-12)); }
 function pdNSpr(L){ return 1+2*Math.floor(L/5); }   /* alle 5 Stufen 2 Spritzen mehr, auf einmal abgefeuert */
 function pdNBlau(L){ return 1+Math.floor(L/5); }   /* alle 5 Stufen ein Licht mehr; ab 6 Lichtern Neonlaser */
 function pdBeams(L){ const n=pdNBlau(L); return n>=6?n-4:0; }
@@ -686,6 +712,7 @@ function pdWeapons(dt){
  const sl=o=>o===g?0:o.slot, tag=(o,n0)=>{ for(let i=n0;i<g.pr.length;i++) if(g.pr[i].o==null) g.pr[i].o=sl(o); };
  for(const o of pdPlayers(g)){ PD.src=sl(o); const n0=g.pr.length; pdGuns(g,o,dt); tag(o,n0); }
  for(const o of pdPlayers(g)){ PD.src=sl(o); const n0=g.pr.length; if(o===g) pdWeap(g,dt); else { const sv=[g.x,g.y,g.dx,g.dy,g.ang,g.cd,g.w,g.dmgM]; g.x=o.x; g.y=o.y; g.dx=o.dx; g.dy=o.dy; g.ang=o.ang||0; g.cd=o.cd||(o.cd={}); g.w=o.w; g.dmgM=o.dmgM; pdWeap(g,dt); o.ang=g.ang; [g.x,g.y,g.dx,g.dy,g.ang,g.cd,g.w,g.dmgM]=sv; } tag(o,n0); }
+ pdFkTick(dt);
  PD.src=null;
 }
 function pdWeap(g,dt){ const w=g.w, c=g.cd;
@@ -700,6 +727,8 @@ function pdWeap(g,dt){ const w=g.w, c=g.cd;
     if(bm){ const Ln=pdLaserLen(L); for(let i=0;i<bm;i++){ const a=g.ang*.7+i*6.283/bm, ca=Math.cos(a), sa=Math.sin(a);
       for(const e of g.en){ const rx=e.x-g.x, ry=e.y-g.y, t=rx*ca+ry*sa; if(t<0||t>Ln) continue; const dd=Math.abs(-rx*sa+ry*ca); if(dd<PD_EN[e.k].r+10){ pdHit(e,dm*1.4,rx,ry,40); pdStun(e,.5); } } } }
     else for(let i=0;i<n;i++){ const a=g.ang+i*6.283/n, px=g.x+Math.cos(a)*R, py=g.y+Math.sin(a)*R; for(const e of g.en){ if((e.x-px)**2+(e.y-py)**2<(PD_EN[e.k].r+14)**2){ pdHit(e,dm,e.x-g.x,e.y-g.y,60); pdStun(e,.5); } } } } }
+ if(w.fackel){ const L=w.fackel; c.F=(c.F||0)-dt; if(c.F<=0){ const tg=pdFkTargets(g,L); if(!tg.length) c.F=.5; else { c.F=pdFkCd(L); pdSnd('fackel'); g.fz||(g.fz=[]); const R=pdFkR(L), d=pdFkDmg(L), lf=pdFkLife(L);
+   for(const q of tg){ g.fx.push({k:'fkt',x:g.x,y:g.y-10,x2:q[0],y2:q[1],t:0,life:.5}); g.fz.push({x:q[0],y:q[1],R,d,m:g.dmgM,o:PD.src,life:lf,t:-.5,k:0}); } } } }
 }
 function pdEnd(){ pdScoreSend(); if(PD.g&&PD.g.mp){ if(NET.host&&NET.rid){ netRoundDel(NET.rid); NET.rid=null; } } else pdClearSave(); pdSnd('over'); setTimeout(pdRenderOver,700); }
 
@@ -981,6 +1010,15 @@ function pdDraw(){
   if(f.k==='prc'){ x.strokeStyle=`rgba(125,255,240,${1-f.t/f.life})`; x.lineWidth=3; x.beginPath(); x.moveTo(f.x,f.y); x.lineTo(f.x2,f.y2); x.stroke(); }
   if(f.k==='defi'){ x.strokeStyle=`rgba(255,238,120,${1-p})`; x.lineWidth=6*(1-p)+1; x.beginPath(); x.arc(f.x,f.y,f.R*(.25+.75*p),0,7); x.stroke(); x.fillStyle=`rgba(255,238,120,${.18*(1-p)})`; x.fill(); }
   if(f.k==='sir'){ x.save(); x.translate(f.x,f.y); x.rotate(f.a); for(let i=0;i<3;i++){ const r=f.L*(.3+.7*p)*(1-i*.18); x.strokeStyle=`rgba(255,120,200,${(1-p)*(1-i*.25)})`; x.lineWidth=5-i; x.beginPath(); x.arc(0,0,r,-.55,.55); x.stroke(); } x.restore(); } }
+ for(const f of g.fx){ const p=f.t/f.life;
+  if(f.k==='fkf'){ const a=Math.min(1,(1-p)*5), R=f.R*(p<.06?.5+p*8:1), fl=Math.sin(f.t*14+f.x)*.06;
+   const gr=x.createRadialGradient(f.x,f.y,2,f.x,f.y,R*(1+fl)); gr.addColorStop(0,`rgba(255,200,70,${.5*a})`); gr.addColorStop(.6,`rgba(255,110,20,${.3*a})`); gr.addColorStop(1,'rgba(255,60,0,0)'); x.fillStyle=gr; x.beginPath(); x.arc(f.x,f.y,R*(1+fl),0,7); x.fill();
+   x.strokeStyle=`rgba(255,150,40,${.45*a})`; x.lineWidth=2; x.beginPath(); x.arc(f.x,f.y,R,0,7); x.stroke();
+   for(let i=0;i<9;i++){ const an=i*2.399+f.x, rr=R*(.2+.65*((i*.37)%1)), fx0=f.x+Math.cos(an)*rr, fy0=f.y+Math.sin(an)*rr*.8, h=10+8*Math.abs(Math.sin(f.t*9+i*1.7));
+    x.fillStyle=`rgba(255,${120+(i*23)%90},30,${.8*a})`; x.beginPath(); x.moveTo(fx0-4,fy0); x.quadraticCurveTo(fx0-3,fy0-h*.6,fx0+Math.sin(f.t*7+i)*2,fy0-h); x.quadraticCurveTo(fx0+3,fy0-h*.6,fx0+4,fy0); x.closePath(); x.fill(); } }
+  if(f.k==='fkt'){ const px=f.x+(f.x2-f.x)*p, py=f.y+(f.y2-f.y)*p-Math.sin(p*Math.PI)*70;
+   x.save(); x.translate(px,py); x.rotate(f.t*18); x.fillStyle='#c33'; x.fillRect(-2.5,-9,5,18); x.fillStyle='#ffd23f'; x.fillRect(-2.5,-9,5,4); x.restore();
+   const gl=x.createRadialGradient(px,py,1,px,py,20); gl.addColorStop(0,'rgba(255,220,100,.95)'); gl.addColorStop(1,'rgba(255,90,0,0)'); x.fillStyle=gl; x.beginPath(); x.arc(px,py,20,0,7); x.fill(); } }
  /* Blaulicht */
  for(const o of pdPlayers(g)){ const L=(o.w&&o.w.blau)||0; if(!L) continue; const bm=pdBeams(L), g={x:o.x,y:o.y,ang:o.ang||0};
   if(bm){ const Ln=pdLaserLen(L); x.save(); x.globalCompositeOperation='lighter'; for(let i=0;i<bm;i++){ const a=g.ang*.7+i*6.283/bm, ex=g.x+Math.cos(a)*Ln, ey=g.y+Math.sin(a)*Ln; const gr=x.createLinearGradient(g.x,g.y,ex,ey); gr.addColorStop(0,'#3d7bff'); gr.addColorStop(1,'#ff2d55'); x.lineCap='round';
@@ -1055,7 +1093,7 @@ function pdHud(){
  if(el.dataset.sig!==sig){ el.dataset.sig=sig;
  el.innerHTML=`<div class="pdbars"><div class="pdhp"><span style="width:${hp}%"></span><em>❤ ${Math.ceil(g.hp)} / ${g.hpMax}</em></div><div class="pdxp" style="--tc:${tc}"><span style="width:${xp}%"></span><em><b>STUFE ${g.lv}</b>${mx?' · MAX':''}</em></div></div><div class="pdinfo"><b>${pdFmt(g.t)}</b><span>${pdMainOk()?'🪙 '+((G.pdKills||0)%PD_KILLS_PER_REWARD)+' / '+PD_KILLS_PER_REWARD+' · ':''}💤 ${g.kills}</span></div><div class="pdgear">${ws}</div>`;
  }
- for(const k of ['defi','sirene']){ if(!g.w[k]) continue; const t=pdCd(k,g.w[k]), c=(g.cd[k==='defi'?'D':'R']||0), v=el.querySelector('[data-w="'+k+'"] .pdcdb v'); if(v) v.style.width=Math.max(0,Math.min(100,(1-c/t)*100))+'%'; }
+ for(const k of ['defi','sirene','fackel']){ if(!g.w[k]) continue; const t=pdCd(k,g.w[k]), c=(g.cd[{defi:'D',sirene:'R',fackel:'F'}[k]]||0), v=el.querySelector('[data-w="'+k+'"] .pdcdb v'); if(v) v.style.width=Math.max(0,Math.min(100,(1-c/t)*100))+'%'; }
 }
 
 /* ---------- Schleife ---------- */
@@ -1359,6 +1397,7 @@ function pdEffText(o){
  if(o.t==='w'&&o.l>0){
   const nxt=o.l+1; let extra='';
   if(o.k==='spritze'&&pdNSpr(nxt)>pdNSpr(o.l)) extra='<em>+2 Spritzen!</em>';
+  if(o.k==='fackel'&&pdFkN(nxt)>pdFkN(o.l)) extra='<em>+1 Fackel!</em>';
   if(o.k==='blau'&&pdNBlau(nxt)>pdNBlau(o.l)) extra=pdNBlau(nxt)===6?'<em>Neonlaser!</em>':'<em>+1 Licht!</em>';
   const A=pdWStats(o.k,o.l,m,true), B=pdWStats(o.k,nxt,m,true);
   const chg=B.map((r,i)=>A[i][1]!==r[1]?`<span class="pdchg">${r[0]} <b>${A[i][1]}</b> → <b>${r[1]}</b></span>`:'').join('');
@@ -1376,6 +1415,7 @@ function pdWStats(k,L,m,fine){
  if(k==='spritze') return [['Spritzen',pdNSpr(L)+' auf einmal'],['Schaden je Spritze',pdF((8+1.0*L)*m,1)],['Schaden pro Salve',pdF(pdNSpr(L)*(8+1.0*L)*m,1)],['Abstand',pdF(Math.max(.28,1-.012*L),3)+' s'],['Durchschlag',L>=5?'bis 3 Gegner':'1 Gegner (ab Stufe 5: 3)']];
  if(k==='defi') return [['Radius',R(95+.8*L)+' px'],['Schaden',pdF(pdDefiDmg(L)*m,1)],['Rückstoß',R(55+.5*L)],['Wartezeit',pdSec(pdCd('defi',L))]];
  if(k==='sirene') return [['Reichweite',R(240+1.2*L)+' px'],['Schaden',pdF((9+.3*L)*m,1)],['Betäubung',pdF(1.2+.01*L,2)+' s'],['Wartezeit',pdSec(pdCd('sirene',L))]];
+ if(k==='fackel') return [['Fackeln',pdFkN(L)+' pro Wurf'],['Radius',R(pdFkR(L))+' px'],['Schaden',pdF(pdFkDmg(L)*m,1)+' alle 0,5 s'],['Brenndauer',pdF(pdFkLife(L),1)+' s'],['Wartezeit',pdSec(pdFkCd(L))]];
  const bm=pdBeams(L); return [[bm?'Laserstrahlen':'Lichter',bm?bm:pdNBlau(L)],[bm?'Länge':'Radius',R(bm?pdLaserLen(L):pdBlauR(L))+' px'],['Schaden',pdF(pdBlauDmg(L)*(bm?1.4:1)*m,1)+' / '+pdF(pdBlauTick(L),2)+' s'],['Drehtempo',pdF(2.6+.01*L+.035*pdX5(L),2)]];
 }
 /* Meilensteine: [Stufe, Kurztext, Langtext] */
@@ -1383,6 +1423,7 @@ function pdMiles(k){
  const a=[];
  if(k==='spritze') for(let L=5;L<=PD_MAXLV;L+=5) a.push([L,'×'+pdNSpr(L),pdNSpr(L)+' Spritzen']);
  else if(k==='blau') for(let L=5;L<=PD_MAXLV;L+=5){ const n=pdNBlau(L); a.push([L,pdBeams(L)?'⚡':String(n),n===6?'Neonlaser (2 Strahlen)':n>6?'Neonlaser ('+pdBeams(L)+' Strahlen)':n+' Lichter']); }
+ else if(k==='fackel') for(let L=10;L<=PD_MAXLV;L+=10) a.push([L,'×'+pdFkN(L),pdFkN(L)+' Fackeln']);
  else for(let L=10;L<=PD_MAXLV;L+=10) a.push([L,k==='defi'?Math.round(95+.8*L)+'':Math.round(240+1.2*L)+'',(k==='defi'?'Radius ':'Reichweite ')+Math.round(k==='defi'?95+.8*L:240+1.2*L)+' px']);
  return a;
 }
@@ -2058,7 +2099,7 @@ function netSnapBase(){
   R:g.pr.map(p=>[R(p.x),R(p.y),Math.round((p.a||0)*100)/100,p.ak?1:0]),
   Gm:g.gem.map(q=>[R(q.x),R(q.y),q.k]),
   Dm:xyt(g.dia),
-  fx:g.fx.slice(-60).map(f=>{ const o=Object.assign({},f); o.x=R(f.x); o.y=R(f.y); if(f.ps) o.ps=f.ps.map(q=>[R(q[0]),R(q[1])]); return o; }),
+  fx:pdFxSl(g.fx,60).map(f=>{ const o=Object.assign({},f); o.x=R(f.x); o.y=R(f.y); if(f.ps) o.ps=f.ps.map(q=>[R(q[0]),R(q[1])]); return o; }),
   tx:g.txt.slice(-40).map(t=>[R(t.x),R(t.y),t.s,t.c,r1(t.t),t.life]),
   bp:g.bp?[R(g.bp.x),R(g.bp.y)]:0, ci:xy(g.c4i), ai:xy(g.aki), gi:xyt(g.gli), ki:xyt(g.kni), ni:xy(g.nki),
   cs:g.c4s.map(q=>[R(q.x),R(q.y),r1(q.t||0),q.R|0]), kf:g.kfl.map(f=>[R(f.x),R(f.y),r1(f.t),f.dir]), nf:g.nf?[R(g.nf.x),R(g.nf.y),Math.round(g.nf.t*100)/100]:0,
@@ -2076,7 +2117,7 @@ function netSnapFor(b,v){
  o.R=b.R.filter(q=>n(q[0],q[1])).slice(-160);
  o.Gm=b.Gm.filter(q=>n(q[0],q[1])).slice(-220);
  o.tx=b.tx.filter(q=>n(q[0],q[1])).slice(-20);
- o.fx=b.fx.filter(f=>n(f.x,f.y)||f.k==='boom').slice(-24);
+ o.fx=pdFxSl(b.fx.filter(f=>n(f.x,f.y)||f.k==='boom'),24);
  if(b.bl) o.bl=b.bl.filter(q=>n(q[0],q[1]));
  o.w=v.w; o.p=v.p; o.up=v.up; o.lv=v.lv; o.xp=v.xp; o.xpN=v.xpN; o.sm=v.spdM; o.dm=v.dmgM; o.co=v.coins|0; o.mg=v.mag; o.pk=v.pick||0;
  return o;
