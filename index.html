@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='4.7';   /* bei jeder neuen Version erhöhen */
+const PD_VER='4.8';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -222,6 +222,8 @@ const PD_HOUSES={
 const PD_GLMAG=12, PD_GLMAGS=2, PD_GLRATE=4, PD_GLEVERY=250;   /* Glock 45: fällt bei jedem 250. besiegten Gegner, 2 Magazine à 12 Schuss, Schaden wie die AK */
 const PD_KNEVERY=400, PD_KNMAX=3, PD_KNT=2.3;   /* Wurfmesser: fällt bei jedem 400. besiegten Gegner, fliegt als Bumerang-Bogen und erledigt alle normalen Gegner auf der Bahn */
 const PD_DIA_LV=65, PD_DIA_XP=.15, PD_DIA_T=40, PD_DIA_BLINK=20, PD_DIA_P=.04;   /* Diamant: ab Spielerstufe 65 fällt pro Stufe einmal zufällig einer; 40 s liegen, 20 s blinken (Ton alle 4 s), gibt 15 % der nächsten Stufe */
+function pdCoinKills(g){ const L=g?pdTeamLv(g):1; return L<50?PD_COINKILLS:Math.min(600,PD_COINKILLS+5*(L-49)); }   /* ab Stufe 50: pro Stufe 5 Besiegte mehr je Münze (Stufe 50 → 85, Stufe 60 → 135, Stufe 100 → 335, höchstens 600) */
+function pdCoinNext(g){ return g.cnext>0?Math.max(0,g.cnext-g.kills):PD_COINKILLS-(g.kills%PD_COINKILLS); }
 const PD_COINKILLS=80, PD_UPMAX={ak:50,gl:50,kn:10,c4:10};   /* Einkaufswagen-Münze je 100 besiegte Gegner · Aufrüstung im Skill-Tree: AK +3 Schuss, Glock +2 Schuss je Magazin (max. 50 Stufen), Wurfmesser +1 Runde (max. 10 Stufen) */
 /* Waffen-Icons (Vektor): AK-47, Glock, Wurfmesser, C4, Atombombe */
 const PD_ICO={
@@ -475,7 +477,7 @@ function pdBuildBg(){
 function pdNorm(g){
  if(g.ver!==3){ g.ver=3; g.x=(PD_AR.x0+PD_AR.x1)/2; g.y=1450; g.en=[]; g.gem=[]; g.pr=[]; g.c4i=[]; g.c4s=[]; g.bp=null; g.fx=[]; g.txt=[]; g.blood=[]; }
  if(g.nuke===undefined){ g.nuke=0; g.nki=[]; g.nf=null; g.nukeNext=(Math.floor((g.kills||0)/PD_NUKE_KILLS)+1)*PD_NUKE_KILLS; } g.nf=null;
- if(!g.up) g.up={ak:0,gl:0,kn:0,c4:0}; if(g.up.c4===undefined) g.up.c4=0; if(g.coins===undefined) g.coins=Math.floor((g.kills||0)/PD_COINKILLS);
+ if(!g.up) g.up={ak:0,gl:0,kn:0,c4:0}; if(g.up.c4===undefined) g.up.c4=0; if(g.coins===undefined) g.coins=Math.floor((g.kills||0)/PD_COINKILLS); if(g.cnext===undefined) g.cnext=(Math.floor((g.kills||0)/PD_COINKILLS)+1)*PD_COINKILLS;
  if(!g.dia) g.dia=[]; if(!g.ps) g.ps=[];
  if(g.knife===undefined){ g.knife=0; g.kni=[]; } g.kfl=[];
  if(g.glMag===undefined){ g.glMag=0; g.glA=0; g.glOn=false; g.glC=0; } if(!g.gli) g.gli=[]; g.glOn=g.glOn&&g.glA>0;
@@ -560,7 +562,7 @@ function pdUpdate(dt){
     break; } } }
  g.pr=g.pr.filter(p=>p.life>0); PD.src=null;
  /* Tote → Pille */
- for(const e of g.en){ if(e.hp<=0&&!e.dead){ e.dead=1; const d=PD_EN[e.k]; g.kills++; if(e.lh!=null){ const P=pdBySlot(g,e.lh); if(P){ const S=pdSt(P); S.k++; if(d.boss) S.bk++; } } if(g.kills%PD_GLEVERY===0&&g.gli.length<2) g.gli.push({x:e.x,y:e.y,t:0}); if(g.kills%PD_KNEVERY===0&&g.kni.length<2) g.kni.push({x:e.x,y:e.y,t:0}); if(pdTeamLv(g)>=PD_DIA_LV&&g.diaLv!==pdTeamLv(g)&&!d.boss&&Math.random()<PD_DIA_P){ g.diaLv=pdTeamLv(g); g.dia.push({x:e.x,y:e.y,t:0,sn:0}); pdTxt(g.x,g.y-80,'💎 Diamant!','#7ff6ff',2); } if(g.kills%PD_COINKILLS===0){ for(const o of pdAll(g)){ o.coins=(o.coins|0)+1; if(!o.off&&!o.dead) pdTxt(o.x,o.y-62,'🪙 Münze ×'+o.coins,'#ffd23f',1.6); } } pdCountKill(); pdSnd(d.boss?'bossdie':'kill'); g.gem.push({x:e.x,y:e.y,v:e.xp||d.xp,k:e.k,t:0}); g.fx.push({k:'zz',x:e.x,y:e.y-10,t:0,life:.9}); pdBlood(e,d.boss?2.2:1);
+ for(const e of g.en){ if(e.hp<=0&&!e.dead){ e.dead=1; const d=PD_EN[e.k]; g.kills++; if(e.lh!=null){ const P=pdBySlot(g,e.lh); if(P){ const S=pdSt(P); S.k++; if(d.boss) S.bk++; } } if(g.kills%PD_GLEVERY===0&&g.gli.length<2) g.gli.push({x:e.x,y:e.y,t:0}); if(g.kills%PD_KNEVERY===0&&g.kni.length<2) g.kni.push({x:e.x,y:e.y,t:0}); if(pdTeamLv(g)>=PD_DIA_LV&&g.diaLv!==pdTeamLv(g)&&!d.boss&&Math.random()<PD_DIA_P){ g.diaLv=pdTeamLv(g); g.dia.push({x:e.x,y:e.y,t:0,sn:0}); pdTxt(g.x,g.y-80,'💎 Diamant!','#7ff6ff',2); } if(g.kills>=g.cnext){ g.cnext=g.kills+pdCoinKills(g); for(const o of pdAll(g)){ o.coins=(o.coins|0)+1; if(!o.off&&!o.dead) pdTxt(o.x,o.y-62,'🪙 Münze ×'+o.coins,'#ffd23f',1.6); } } pdCountKill(); pdSnd(d.boss?'bossdie':'kill'); g.gem.push({x:e.x,y:e.y,v:e.xp||d.xp,k:e.k,t:0}); g.fx.push({k:'zz',x:e.x,y:e.y-10,t:0,life:.9}); pdBlood(e,d.boss?2.2:1);
    if(e.mod===4) pdBlast(e.x,e.y,86,.5,22,'bomb',0);
    if(d.big) pdBigDie(g,e); else if(d.boss){ pdTxt(e.x,e.y-40,'Dealer-Papa eingeschlafen!','#ffd23f',2.6); if(Math.random()<.25) pdMkDrop(g,e.x,e.y); } else if(Math.random()<PD_MK_P*Math.max(1,pdPlayers(g).length)) pdMkDrop(g,e.x,e.y); } }
  g.en=g.en.filter(e=>!e.dead);
@@ -1475,8 +1477,8 @@ function pdTreeHTML(){
   const d=PD_PASS[k], n=g.p[k]||0; const eff={hp:'+'+n*5+' max. Leben',spd:'+'+n*2+' % Tempo',mag:'+'+n*4+' px Magnet',dmg:'+'+n*7+' % Schaden'}[k];
   return `<div class="pdtp${n?'':' dim'}" style="--cc:${d.col}"><span class="pdti">${d.ic}</span><div class="pdtt"><b>${d.n}</b><small>${d.d}</small></div><span class="pdtx">${n?'×'+n:'–'}<small>${n?'Stufen':'noch nicht'}</small></span>${pdChips([['Aktuell',n?eff:'–'],['Pro Stufe',{hp:'+5 Leben',spd:'+2 % Tempo',mag:'+4 px Magnet',dmg:'+7 % Schaden'}[k]]])}</div>`;
  }).join('');
- const nextC=PD_COINKILLS-(g.kills%PD_COINKILLS);
- const coinB=`<div class="pdcoin"><span class="pdcc">🪙</span><div><b>${g.coins} ${g.coins===1?'Münze':'Münzen'}</b><small>1 Münze je ${PD_COINKILLS} Besiegte · nächste in ${nextC}</small></div></div>`;
+ const nextC=pdCoinNext(g);
+ const coinB=`<div class="pdcoin"><span class="pdcc">🪙</span><div><b>${g.coins} ${g.coins===1?'Münze':'Münzen'}</b><small>1 Münze je ${pdCoinKills(g)} Besiegte · nächste in ${nextC}</small></div></div>`;
  const nw=Object.keys(PD_WPN).filter(k=>g.w[k]).length, hd=pdHand();
  const sp=Math.round(g.s.spd*g.spdM*100), sr=Math.round(g.dmgM*100), hpP=Math.max(0,Math.min(100,g.hp/g.hpMax*100));
  const stat=`<div class="pdstats"><div class="pdsc" style="--cc:#ff4d6d"><span>🎯</span><b>${sr} %</b><small>Stärke</small></div><div class="pdsc" style="--cc:#4fd1ff"><span>👟</span><b>${sp} %</b><small>Geschwindigkeit</small></div><div class="pdsc" style="--cc:#ff7a59"><span>❤</span><b>${Math.ceil(g.hp)} / ${g.hpMax}</b><small>Leben</small><i style="width:${hpP}%"></i></div></div>`;
@@ -2133,7 +2135,7 @@ function netSnapBase(){
   tx:g.txt.slice(-40).map(t=>[R(t.x),R(t.y),t.s,t.c,r1(t.t),t.life]),
   bp:g.bp?[R(g.bp.x),R(g.bp.y)]:0, ci:xy(g.c4i), ai:xy(g.aki), gi:xyt(g.gli), ki:xyt(g.kni), ni:xy(g.nki),
   cs:g.c4s.map(q=>[R(q.x),R(q.y),r1(q.t||0),q.R|0]), kf:g.kfl.map(f=>[R(f.x),R(f.y),r1(f.t),f.dir]), nf:g.nf?[R(g.nf.x),R(g.nf.y),Math.round(g.nf.t*100)/100]:0,
-  w:g.w,p:g.p,up:g.up,lv:g.lv,xp:g.xp,xpN:g.xpN,k:g.kills,tt:r1(g.t),sm:g.spdM,
+  w:g.w,p:g.p,up:g.up,lv:g.lv,xp:g.xp,xpN:g.xpN,k:g.kills,cn:g.cnext|0,tt:r1(g.t),sm:g.spdM,
   sq:NET.sq.splice(0),hz:g.hz.slice(-110).map(pdHzPack),an:g.ann?[g.ann.s,g.ann.s2,g.ann.col,Math.round(g.ann.t*100)/100,g.ann.life]:0,
   ar:g.arena?[g.arena.r,g.arena.total,g.arena.s,g.arena.alive|0,g.arena.exit?Math.round(g.arena.exit.x):0,g.arena.exit?Math.round(g.arena.exit.y):0,g.arena.v|0]:0,as:g.arenaSeq|0,dr:g.door?1:0,am:g.am?[R(g.am.x),R(g.am.y),r1(g.am.a),R(g.am.vx),R(g.am.vy)]:0,mc:g.mc?[g.mc.s==='out'?1:2,R(g.mc.x),R(g.mc.y),g.mc.face,r1(g.mc.a||0),g.mc.ammo|0,g.mc.mv?1:0]:0,mcl:pdMercLeft(g),mk:(g.mk||[]).map(q=>[R(q.x),R(q.y),r1(q.t)]),bt:g.bt?[Math.round(g.bt.x0),Math.round(g.bt.y0),Math.round(g.bt.x),Math.round(g.bt.y),r1(g.bt.t),g.bt.fly,g.bt.life]:0};
  if(g.over){ s.ss=pdStatRows(g); s.why=g.why||''; }
@@ -2341,7 +2343,7 @@ function netGuestStep(dt){
   NET.inT-=dt; if(NET.inT<=0&&NET.conn&&NET.conn.open){ NET.inT=.05; try{ NET.conn.send({t:'in',x:Math.round(g.x),y:Math.round(g.y),f:g.face,b:g.back?1:0,mv:(mx||my)?1:0,dx:Math.round(g.dx*100)/100,dy:Math.round(g.dy*100)/100}); }catch(e){} }
  } else { g.vx=g.vy=0; }
  /* Werte */
- g.t=c.tt; g.lv=c.lv; g.xp=c.xp; g.xpN=c.xpN; g.kills=c.k; g.w=c.w||{}; g.p=c.p||{}; if(!(NET.upgT&&performance.now()-NET.upgT<900)){ g.up=c.up||g.up; g.coins=c.co|0; } g.spdM=c.sm||1; g.dmgM=c.dm||1; g.mag=c.mg||70;
+ g.t=c.tt; g.lv=c.lv; g.xp=c.xp; g.xpN=c.xpN; g.kills=c.k; g.cnext=c.cn|0; g.w=c.w||{}; g.p=c.p||{}; if(!(NET.upgT&&performance.now()-NET.upgT<900)){ g.up=c.up||g.up; g.coins=c.co|0; } g.spdM=c.sm||1; g.dmgM=c.dm||1; g.mag=c.mg||70;
  g.ann=c.an?{s:c.an[0],s2:c.an[1],col:c.an[2],t:c.an[3]+(now-c.at)/1000,life:c.an[4]}:null;
  { const pk=c.pk||null;
    if(pk&&NET.pkSent!==c.lv){ g.pick=pk; NET.pkLv=c.lv; }
