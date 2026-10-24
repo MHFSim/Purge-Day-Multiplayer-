@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='3.7';   /* bei jeder neuen Version erhöhen */
+const PD_VER='3.8';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1254,7 +1254,7 @@ function pdMount(){
  pdApplyHand(); ov.innerHTML=`<canvas id="pdCv"></canvas><div id="pdHud"></div><div id="pdNetMsg" hidden></div><button class="wzhome" data-wz="home" aria-label="Zurück zum Spiel">⌂</button><button class="wzhome wzpause" data-wz="pause" aria-label="Pause"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="7.2" y="5.5" width="3" height="13" rx="1.5" fill="currentColor"/><rect x="13.8" y="5.5" width="3" height="13" rx="1.5" fill="currentColor"/></svg></button><button class="wzhome wztree" data-wz="tree" aria-label="Skill-Tree">🌳</button><button id="pdUpHint" data-wz="tree" aria-label="Aufrüsten im Skill-Tree" hidden><b>🪙 Aufrüsten möglich</b><small></small></button><button id="pdKN" data-wz="knife" aria-label="Wurfmesser werfen" hidden><span>${PD_ICO.kn}</span><b>×1</b><small>Werfen</small></button><button id="pdGL" data-wz="gl" aria-label="Glock Feuer" hidden><span>${PD_ICO.gl}</span><b>24</b><small>Feuer</small></button><button id="pdNK" data-wz="nuke" aria-label="Atombombe zünden" hidden><span>${PD_ICO.nk}</span><b>1/1</b><small>Zünden</small></button><button id="pdAK" data-wz="ak" aria-label="AK-47 Feuer" hidden><span>${PD_ICO.ak}</span><b>0/50</b><small>Feuer</small></button><button id="pdC4" data-wz="c4" aria-label="C4 legen"><span>${PD_ICO.c4}</span><b>0</b><small>C4 legen</small></button>`;
  PD.cv=document.getElementById('pdCv'); PD.cx=PD.cv.getContext('2d'); pdResize(); if(!PD.bg) pdBuildBg();
  const cv=PD.cv;
- cv.onpointerdown=e=>{ cv.setPointerCapture(e.pointerId); const r=cv.getBoundingClientRect(); PD.joy={id:e.pointerId,x0:e.clientX-r.left,y0:e.clientY-r.top,dx:0,dy:0}; };
+ cv.onpointerdown=e=>{ if(PD.joy&&!e.isPrimary) return; cv.setPointerCapture(e.pointerId); const r=cv.getBoundingClientRect(); PD.joy={id:e.pointerId,x0:e.clientX-r.left,y0:e.clientY-r.top,dx:0,dy:0}; };
  cv.onpointermove=e=>{ const j=PD.joy; if(!j||j.id!==e.pointerId) return; const r=cv.getBoundingClientRect(); let dx=e.clientX-r.left-j.x0, dy=e.clientY-r.top-j.y0; const l=Math.hypot(dx,dy), m=46; if(l>m){ dx=dx/l*m; dy=dy/l*m; } j.dx=dx/m; j.dy=dy/m; };
  cv.onpointerup=cv.onpointercancel=e=>{ if(PD.joy&&PD.joy.id===e.pointerId) PD.joy=null; };
  PD.joy=null; PD.keys={};
@@ -1516,15 +1516,29 @@ function pdRenderOver(){
 }
 
 /* ---------- Charakterwahl ---------- */
+const PD_FASTK=new Set(['c4','ak','gl','knife','nuke','bait']);
+function pdIsFs(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+function pdFsHint(){ PD.msg=pdIOS()?'Vollbild am iPhone: im Safari auf „Teilen“ → „Zum Home-Bildschirm“ tippen und das Spiel dann über das Icon starten – dann läuft es ohne Leisten.':'Vollbild wird von diesem Browser nicht unterstützt.'; if(PD.st==='menu') wzRender(); }
+function pdFullscreen(){
+ const d=document, el=d.documentElement;
+ try{
+  if(pdIsFs()){ const x=d.exitFullscreen||d.webkitExitFullscreen; if(x) x.call(d); }
+  else if(el.requestFullscreen){ const p=el.requestFullscreen({navigationUI:'hide'}); if(p&&p.catch) p.catch(pdFsHint); }
+  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else { pdFsHint(); return; }
+ }catch(e){ pdFsHint(); return; }
+ setTimeout(()=>{ if(PD.st==='menu') wzRender(); try{ pdResize(); }catch(e){} },350);
+}
+['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{ setTimeout(()=>{ try{ pdResize(); }catch(e){} const b=document.querySelector('.pdfsb'); if(b) b.textContent=pdIsFs()?'⤡ Vollbild aus':'⛶ Vollbild'; },120); }));
 function wzRender(){
  if(NET.on||NET.peer) netStop();
  const ov=wzEnsure(); cancelAnimationFrame(PD.raf); PD.st='menu'; PD.g=null;
  const cards=STAFF.map(s=>{ const st=pdStats(s.n); const w=PD_WPN[st.wp]; return `<button class="pdcard" data-pdn="${esc(s.n)}"><canvas class="pdav" width="192" height="208" data-n="${esc(s.n)}"></canvas><b>${esc(s.n)}</b><small>${esc(st.lbl)} · ${s.c==='NKA'?'NKA':s.c}</small><span class="pdst">❤ ${st.hp} · 👟 ${Math.round((st.spd||1)*100)}% · ${w.ic}</span></button>`; }).join('');
- ov.innerHTML=`<button class="wzhome" data-wz="home" aria-label="Zurück zum Spiel">⌂</button><div class="pdmenu"><div class="pdlogo"><small>Jedmayer rückt aus</small><b>PURGE-DAY</b><i class="pdver">Version ${PD_VER}</i></div>${PD.msg?`<div class="pdmsg">${esc(PD.msg)}</div>`:''}<div class="pdmpbox"><b>👥 Mehrspieler · bis zu 6 Handys</b><small>Einer erstellt den Raum, die anderen treten mit dem Code bei.</small>${location.protocol==='file:'&&pdIOS()?'<small style="color:#ffcf80">Auf dem iPhone bitte über einen Link (https) öffnen, nicht als Datei.</small>':''}<div><button data-wz="mphost">🌐 Raum erstellen</button><button data-wz="mpjoin">🔗 Raum beitreten</button></div></div><p class="pdsub">Oder alleine spielen: Wähle dein Besatzungsmitglied und halte die Horden vom Jedmayer in Schach.</p><button class="pdopt pdloadbtn" data-wz="slots"><span class="pdoi">💾</span><span class="pdot"><b>Spielstand laden</b><small>${pdSlots().filter(Boolean).length} von 3 Plätzen belegt</small></span></button><div class="pdgrid">${cards}</div></div>`;
+ ov.innerHTML=`<button class="wzhome" data-wz="home" aria-label="Zurück zum Spiel">⌂</button><button class="pdfsb" data-wz="fs" aria-label="Vollbild">${pdIsFs()?'⤡ Vollbild aus':'⛶ Vollbild'}</button><div class="pdmenu"><div class="pdlogo"><small>Jedmayer rückt aus</small><b>PURGE-DAY</b><i class="pdver">Version ${PD_VER}</i></div>${PD.msg?`<div class="pdmsg">${esc(PD.msg)}</div>`:''}<div class="pdmpbox"><b>👥 Mehrspieler · bis zu 6 Handys</b><small>Einer erstellt den Raum, die anderen treten mit dem Code bei.</small>${location.protocol==='file:'&&pdIOS()?'<small style="color:#ffcf80">Auf dem iPhone bitte über einen Link (https) öffnen, nicht als Datei.</small>':''}<div><button data-wz="mphost">🌐 Raum erstellen</button><button data-wz="mpjoin">🔗 Raum beitreten</button></div></div><p class="pdsub">Oder alleine spielen: Wähle dein Besatzungsmitglied und halte die Horden vom Jedmayer in Schach.</p><button class="pdopt pdloadbtn" data-wz="slots"><span class="pdoi">💾</span><span class="pdot"><b>Spielstand laden</b><small>${pdSlots().filter(Boolean).length} von 3 Plätzen belegt</small></span></button><div class="pdgrid">${cards}</div></div>`;
  ov.querySelectorAll('.pdav').forEach(c=>{ const x=c.getContext('2d'); const s=pdStats(c.dataset.n); x.scale(2,2); x.translate(48,70); pdDrawHero(x,s,0,0,0,0,1,2.25); });
  PD.msg='';
 }
-function wzAct(k){ if(PD.st==='guest'&&(k==='c4'||k==='ak'||k==='gl'||k==='knife'||k==='nuke'||k==='bait')){ netAct(k); return; } if(k==='c4') pdPlaceC4(); else if(k==='slots') pdRenderSlots('menu'); else if(k==='home') wzClose(); else if(k==='pause') pdPause(); else if(k==='tree') pdFloatToggle(); else if(k==='merc') pdMercAsk(); else if(k==='baitbuy') pdBaitBuyAsk(); else if(k==='bait') pdBaitThrow(); else if(k==='ak') pdToggleAK(); else if(k==='nuke') pdFireNuke(); else if(k==='gl') pdToggleGL(); else if(k==='knife') pdThrowKnife(); else if(k==='menu') wzRender(); else if(k==='mphost') netHost(); else if(k==='mpjoin') netJoinScreen(); else if(k==='mpleave'){ netStop(); wzRender(); } else if(k==='mpstart') netStartGame(); else if(k==='mpgo') netJoinGo(); else if(k==='mpload') netSlotsRender('lobby'); else if(k==='mpunload'){ NET.load=null; netBroadcastLobby(); } }
+function wzAct(k){ if(PD.st==='guest'&&(k==='c4'||k==='ak'||k==='gl'||k==='knife'||k==='nuke'||k==='bait')){ netAct(k); return; } if(k==='c4') pdPlaceC4(); else if(k==='slots') pdRenderSlots('menu'); else if(k==='home') wzClose(); else if(k==='pause') pdPause(); else if(k==='tree') pdFloatToggle(); else if(k==='fs') pdFullscreen(); else if(k==='merc') pdMercAsk(); else if(k==='baitbuy') pdBaitBuyAsk(); else if(k==='bait') pdBaitThrow(); else if(k==='ak') pdToggleAK(); else if(k==='nuke') pdFireNuke(); else if(k==='gl') pdToggleGL(); else if(k==='knife') pdThrowKnife(); else if(k==='menu') wzRender(); else if(k==='mphost') netHost(); else if(k==='mpjoin') netJoinScreen(); else if(k==='mpleave'){ netStop(); wzRender(); } else if(k==='mpstart') netStartGame(); else if(k==='mpgo') netJoinGo(); else if(k==='mpload') netSlotsRender('lobby'); else if(k==='mpunload'){ NET.load=null; netBroadcastLobby(); } }
 function wzOpen(){
  if(!G) return; const ov=wzEnsure();
  if(!WZ.on){ WZ.pausedBefore=(typeof PAUSED!=='undefined')?PAUSED:false; if(typeof PAUSED!=='undefined') PAUSED=true; }
@@ -1542,7 +1556,8 @@ function wzClose(){
 function wzEnsure(){
  let ov=document.getElementById('wzOv'); if(ov) return ov;
  ov=document.createElement('div'); ov.id='wzOv'; ov.hidden=true;
- ov.addEventListener('click',e=>{ const b=e.target.closest('[data-wz]'); if(b){ wzAct(b.dataset.wz); return; } const m=e.target.closest('[data-mpn]'); if(m){ if(!m.disabled) netPick(m.dataset.mpn); return; } const c=e.target.closest('[data-pdn]'); if(c) pdStartRun(c.dataset.pdn); });
+ ov.addEventListener('pointerdown',e=>{ const b=e.target.closest('[data-wz]'); if(!b||!PD_FASTK.has(b.dataset.wz)) return; e.preventDefault(); PD.fastT=performance.now(); wzAct(b.dataset.wz); });
+ ov.addEventListener('click',e=>{ const b=e.target.closest('[data-wz]'); if(b){ if(PD_FASTK.has(b.dataset.wz)&&performance.now()-(PD.fastT||0)<900) return; wzAct(b.dataset.wz); return; } const m=e.target.closest('[data-mpn]'); if(m){ if(!m.disabled) netPick(m.dataset.mpn); return; } const c=e.target.closest('[data-pdn]'); if(c) pdStartRun(c.dataset.pdn); });
  (document.getElementById('app')||document.body).appendChild(ov); return ov;
 }
 window.addEventListener('keydown',e=>{ if(!WZ.on) return; if((e.key==='c'||e.key==='C'||e.key===' ')&&PD.st==='play'){ e.preventDefault(); pdPlaceC4(); return; } if((e.key==='Escape'||e.key==='p'||e.key==='P')&&PD.st==='play'){ pdPause(); return; } PD.keys[e.key]=true; });
@@ -1625,6 +1640,8 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 #pdBaitB[hidden]{display:none}#pdBaitB b{font:800 13px system-ui;white-space:nowrap}#pdBaitB small{font:600 10.5px system-ui;color:#9fc5ac;white-space:nowrap}
 #pdBaitB.can{border-color:#7dff9a;background:#1d4a2c;color:#fff;box-shadow:0 0 14px #7dff9a88;animation:pdubg 1.4s ease-in-out infinite}
 .pdcut #pdBT,.pdcut #pdBaitB{display:none!important}
+.pdfsb{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:6;height:44px;padding:0 14px;border-radius:14px;border:1px solid #ffffff2a;background:#16171dd9;color:#fff;font:800 13px system-ui;cursor:pointer;touch-action:manipulation}
+#pdC4,#pdAK,#pdGL,#pdKN,#pdNK,#pdBT{touch-action:none;-webkit-user-select:none;user-select:none}
 #pdMerc{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(128px + env(safe-area-inset-bottom,0px));z-index:7;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 16px;border-radius:14px;border:1.5px solid #5f8a3a;background:#1a2412e6;color:#c9dcb8;font-family:system-ui;cursor:pointer;touch-action:manipulation}
 #pdMerc[hidden]{display:none}#pdMerc b{font:800 13px system-ui;white-space:nowrap}#pdMerc small{font:600 10.5px system-ui;color:#9fb58a;white-space:nowrap}
 #pdMerc.can{border-color:#9be07a;background:#2f4a1c;color:#fff;box-shadow:0 0 14px #9be07a88;animation:pdubg 1.4s ease-in-out infinite}
