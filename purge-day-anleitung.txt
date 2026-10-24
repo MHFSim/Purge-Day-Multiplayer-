@@ -1,0 +1,418 @@
+=====================================================================
+  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 4.9)
+=====================================================================
+
+Purge-Day ist ein Überlebensspiel von oben gesehen. Du bist ein Mitarbeiter
+der Suchthilfe "Jedmayer" und wirst von immer mehr Suchtis überrannt. Deine
+Waffen schießen und wirken von selbst, du musst nur laufen, ausweichen und
+klug aufrüsten. Du kannst alleine spielen oder mit bis zu 6 Handys zusammen.
+
+Ziel: so lange wie möglich durchhalten, viele Gegner einschläfern, höhere
+Stufen erreichen, Endgegner besiegen und die Arena im Jedmayer schaffen.
+
+
+---------------------------------------------------------------------
+1.  START UND CHARAKTER
+---------------------------------------------------------------------
+
+Beim allerersten Start wählst du deinen Charakter. Er bleibt ab jetzt
+immer deiner, alleine und im Mehrspielermodus. Wechseln kannst du ihn
+später im Hauptmenü ("Charakter wechseln"). Deine Skins und Skin-Marken
+bleiben dabei erhalten.
+
+Es gibt 14 Charaktere. Jeder gehört zu einer Klasse mit eigenen Werten.
+Alle starten mit der Naloxon-Spritze.
+
+  Klasse        Leben   Tempo    Charaktere
+  -----------   -----   ------   -------------------------------------
+  Flink          90     110 %    Flotschi, Vikal, Denis
+  Allrounder    100     100 %    René, Henri, Felix, Matthias, Höbi
+  Erfahren      110      95 %    Niklas (NKI), Flo der Große, Hari, Paul, Roni
+  Zäh           115      90 %    Berni
+
+Denis, Berni und Roni haben zusätzlich ein eigenes Aussehen
+(Roni ist der Offizier mit blauer Uniform).
+
+
+---------------------------------------------------------------------
+2.  HAUPTMENÜ
+---------------------------------------------------------------------
+
+  - Raum erstellen / Raum beitreten  : Mehrspieler (siehe Abschnitt 12)
+  - Alleine spielen                  : neues Solo-Spiel
+  - Skins                            : Skin-Shop (siehe Abschnitt 13)
+  - Charakter wechseln
+  - Spielstände                      : Solo-Stand und Mehrspieler-Runden
+  - Vollbild                         : Knopf oben rechts
+  - Version                          : steht unter dem Logo
+
+Der Haus-Button (Symbol Haus) links oben ist im Spiel nur in der Pause
+sichtbar. Er sichert deinen Stand und bringt dich ins Hauptmenü.
+
+
+---------------------------------------------------------------------
+3.  STEUERUNG
+---------------------------------------------------------------------
+
+Handy:
+  - Laufen: Finger auf den Bildschirm legen und ziehen (Joystick).
+  - Waffen-Buttons unten in der Ecke: AK, Glock, Messer, C4, Köder.
+    Du kannst sie drücken, ohne den Finger vom Joystick zu nehmen.
+  - Hand-Modus (Optionen): Rechtshand = Buttons links, Linkshand = Buttons
+    rechts.
+  - Obere Leiste: Pause links, Waffen-Upgrades in der Mitte (AK, Glock,
+    Messer, C4), Skill-Tree rechts.
+
+Tastatur (Computer):
+  - Laufen: Pfeiltasten oder W A S D
+  - C oder Leertaste: C4 legen
+  - P oder Esc: Pause
+
+Die Spielwaffen (Spritze, Defi, Sirene, Blaulicht, Fackel) feuern von
+selbst. Nur AK, Glock, Wurfmesser, C4, Köder und Atombombe löst du aus.
+
+
+---------------------------------------------------------------------
+4.  DER BILDSCHIRM
+---------------------------------------------------------------------
+
+Oben:       dünne rote Lebensleiste, darunter die Stufenleiste (Farbe
+            wechselt alle 10 Stufen).
+Darunter:   Waffen-Statistik (transparent): deine Waffen und Ausrüstung
+            mit Stufe und Wartezeit.
+Danach:     Spielzeit (links) und Anzahl eingeschläferter Gegner (rechts).
+Unten:      Aktions-Buttons mit Munition.
+Am Rand:    Pfeile weisen auf wichtige Dinge außerhalb des Bildes
+            (roter Rucksack, Tür, Söldner-Shop, Endgegner-Angriffe,
+            K.O.-Mitspieler).
+
+
+---------------------------------------------------------------------
+5.  STUFEN UND LEVEL-UP
+---------------------------------------------------------------------
+
+Besiegte Gegner lassen Drogensäckchen fallen. Sie bringen Erfahrung (XP)
+und werden automatisch eingesammelt (die Magnet-Weste vergrößert die
+Reichweite).
+
+Bei jeder neuen Stufe bekommst du 3 zufällige Karten zur Auswahl:
+  - eine neue oder bessere Waffe, oder
+  - eine Ausrüstung (Passiv).
+Gewählt wird eine Karte. Das Spiel läuft dabei nicht weiter.
+
+Jeder Spieler hat seine eigene Stufe (bis Stufe 500), seine eigenen Waffen
+und seine eigenen Münzen. Waffen gehen bis Stufe 60.
+
+
+---------------------------------------------------------------------
+6.  WAFFEN (per Level-Up wählbar und bis Stufe 60 aufrüstbar)
+---------------------------------------------------------------------
+
+Die Zahlen sind Grundwerte. Dein Schaden wird zusätzlich mit "Ruhige
+Hand" und dem allgemeinen Waffenbonus multipliziert.
+
+NALOXON-SPRITZE
+  Schießt auf den nächsten Gegner. Wird mit jeder Stufe schneller und
+  stärker. Alle 5 Stufen kommen 2 Spritzen mehr dazu, die gleichzeitig
+  feuern. Ab Stufe 5 fliegt jede Spritze durch bis zum 3. Gegner.
+  Schaden pro Spritze: 8 + 1 pro Stufe.
+
+DEFI-SCHOCKWELLE
+  Eine Schockwelle rund um dich, die Gegner nur leicht wegschubst. Wird
+  mit der Stufe größer und stärker. Ab Stufe 5 wird sie mit jeder Stufe
+  deutlich stärker und schneller (Wartezeit sinkt von 3,4 s bis auf 1,3 s).
+
+SIRENE
+  Schallwelle in Laufrichtung. Die Gegner werden kurz betäubt. Wartezeit
+  3,6 s, sinkt bis 2,4 s.
+
+BLAULICHT
+  Lichter kreisen um dich, abwechselnd blau und rot. Wer sie berührt,
+  bleibt kurz stehen und bekommt Schaden. Alle 5 Stufen ein Licht mehr.
+  Ab 6 Lichtern wird daraus ein Neonlaser in Rot und Blau. Ab Stufe 5 wird
+  es mit jeder Stufe stärker und schneller.
+
+NOTFALL-FACKEL  (neu in Version 4.2)
+  Wirft Fackeln mitten in die dichteste Gegnergruppe in deiner Nähe.
+  Die Fackel brennt eine Weile und macht im Feuer Schaden. Sie zieht
+  keine Gegner an.
+  - Anfangs wirft sie selten (alle 6,9 s), später alle 2,2 s.
+  - Alle 10 Stufen eine Fackel mehr (bis 6 Fackeln pro Wurf),
+    jede an einer anderen Gruppe.
+  - Größerer Radius (61 bis 99 px), mehr Schaden und längere Brenndauer
+    (3 bis 5,4 s) mit jeder Stufe.
+
+
+---------------------------------------------------------------------
+7.  AUSRÜSTUNG (Passive über Level-Up)
+---------------------------------------------------------------------
+
+  Warme Jause    +5 maximales Leben und heilt 30 Leben
+  Laufschuhe     +2 % Tempo
+  Magnet-Weste   Säckchen werden aus größerer Entfernung eingesammelt
+  Ruhige Hand    +7 % Schaden pro Stufe. Wirkt auf Spritze, Defi, Sirene,
+                 Blaulicht/Neonlaser und Fackel. Die AK und die Glock
+                 profitieren nur gegen Endgegner. Nicht verstärkt werden
+                 C4, Wurfmesser, Atombombe, Söldner und Rettungswagen.
+
+
+---------------------------------------------------------------------
+8.  WAFFEN, DIE MAN FINDET UND AUSLÖST
+---------------------------------------------------------------------
+
+AK-47
+  Liegt von Zeit zu Zeit bei Berni´s Waffenshop (links am Feldrand).
+  50 Schuss, 5 Schuss pro Sekunde. Ein Schuss erledigt jeden normalen
+  Gegner, bei Endgegnern nur Schaden. Button "Feuer" an und aus.
+
+GLOCK 45
+  Fällt bei jedem 250. besiegten Gegner. 2 Magazine mit je 12 Schuss.
+  Gleicher Schaden wie die AK.
+
+WURFMESSER
+  Fällt bei jedem 400. besiegten Gegner (höchstens 3). Fliegt als Bogen
+  wie ein Bumerang und erledigt alle normalen Gegner auf der Bahn.
+
+C4
+  Taucht alle 40 bis 80 s bei Berni´s auf. Höchstens 5 gleichzeitig.
+  Legen mit "C4 legen", nach 3 Sekunden explodiert es (Schaden 300,
+  Radius 120 px).
+
+ATOMBOMBE
+  Liegt bei Berni´s Waffenshop. Sie erscheint nach 3000 besiegten Gegnern,
+  später immer seltener. Nach dem Auslösen läuft kurz ein Ton, dann
+  explodiert sie über das ganze Feld. Endgegner verlieren 65 % ihres
+  aktuellen Lebens.
+
+ROTER RUCKSACK
+  Taucht regelmäßig im Feld auf (alle 50 bis 80 s). Heilt auf volles Leben.
+  Man kann ihn nur aufnehmen, wenn man nicht volles Leben hat. Auch
+  Endgegner und die Arena lassen manchmal einen fallen.
+
+DIAMANT
+  Ab Spielerstufe 65 fällt pro Stufe einmal zufällig ein Diamant. Er liegt
+  40 Sekunden (die letzten 20 s blinkt er) und gibt 15 % der nächsten
+  Stufe.
+
+
+---------------------------------------------------------------------
+9.  MÜNZEN, UPGRADES UND DER SKILL-TREE
+---------------------------------------------------------------------
+
+MÜNZEN
+  Du bekommst 1 Münze alle 80 besiegten Gegner. Ab Stufe 50 steigt die
+  Zahl, Stufe 50 = 85, Stufe 60 = 135, Stufe 100 = 335, höchstens 600
+  (im Mehrspielermodus zählt die höchste Stufe der Runde).
+  Zusätzliche Münzen gibt es vom Endgegner (+3) und von der Arena (+8).
+  Im Skill-Tree steht, wie weit die nächste Münze entfernt ist.
+
+UPGRADES (mit Münzen, nur für Ausrüstung)
+  Sie stehen in der oberen Reihe und im Skill-Tree. Die Leiste leuchtet
+  gelb, wenn du dir ein Upgrade leisten kannst.
+
+  AK-47     +3 Schuss je Magazin, 50 Stufen.
+            Kosten: Stufe 1-10: 3 · 11-20: 5 · 21-30: 7 · 31-40: 8 · 41-50: 10
+  Glock     +2 Schuss je Magazin, 50 Stufen. Gleiche Kosten wie die AK.
+  Messer    +1 Runde und etwas größer, 10 Stufen, je 15 Münzen.
+  C4        größerer Radius (+8 px je Stufe), 10 Stufen, je 15 Münzen.
+
+SKILL-TREE (Baum-Symbol oben rechts oder in der Pause)
+  Übersicht über alle Waffen mit aktuellen Werten, nächster Stufe und
+  Meilensteinen. Hier stehen auch deine Statistik und der Hand-Modus.
+
+
+---------------------------------------------------------------------
+10. DAS SPIELFELD
+---------------------------------------------------------------------
+
+Das Feld ist ein Stadtplatz mit Häusern am Rand:
+
+  Jedmayer                 Das Haupthaus oben. Hier ist die Tür zur Arena
+                           (siehe Abschnitt 11).
+  Gruft                    Haus rechts.
+  Berni´s Waffenshop       Haus links. Hier liegen AK, C4, Atombombe und
+                           hier stehen die Schilder für Söldner und Köder.
+  Rettungsstation Mariahilf  Haus unten Mitte. Von hier fährt der
+                           Rettungswagen los.
+  Alte Brücke              Haus unten rechts.
+
+Hindernisse: Parkbänke, Mülltonnen und Altglas-Container. Spieler und
+Gegner werden davon aufgehalten. Pfützen bremsen Spieler und Gegner.
+
+
+---------------------------------------------------------------------
+11. GEGNER, ENDGEGNER UND ARENA
+---------------------------------------------------------------------
+
+NORMALE GEGNER (werden mit der Zeit zahlreicher und stärker)
+  Suchti             Der Standardgegner. Läuft zu dir und schlägt zu.
+  Speedy             Ab ca. 2 Minuten. Klein und schnell.
+  Eingenickter       Ab ca. 4 Minuten. Langsam, zäh, haut stark zu.
+  Dicker Suchti      Ab ca. 6 Minuten. Viel Leben, langsam.
+
+GEGNER MIT FÄHIGKEITEN (kommen später, nur wenige gleichzeitig)
+  Spuck-Suchti       Ab ca. 6 Minuten. Schießt grüne Geschosse, sehr selten.
+  Sani-Junkie        Ab ca. 4,5 Minuten (Kreuz auf der Kleidung). Heilt nur
+                     andere Gegner, nicht dich. Höchstens 3 gleichzeitig,
+                     ohne Ton.
+  Rammbock           Ab ca. 5 Minuten. Große Gegner, die auf dich zuspringen.
+                     Höchstens 2 gleichzeitig.
+  Schleicher         Ab ca. 7 Minuten. Springt plötzlich in deine Nähe.
+                     Höchstens 2 gleichzeitig.
+
+Eingeschläferte Gegner lassen Säckchen fallen.
+
+ENDGEGNER (alle 50 Stufen)
+  Sobald der erste aktive Spieler Stufe 50 erreicht, erscheint der
+  Endgegner. Danach wieder bei Stufe 100, 150 und so weiter.
+  - Es gibt 6 Endgegner mit eigenem Aussehen (Dealer-Pate, Mama Rülps,
+    Der Chemiker, General Schnee, Kaiser Koks, Der Filialleiter).
+  - Er hat sehr viel Leben (90 000), kämpft in Phasen (Phase 2 und 3:
+    wütend, schneller) und ruft Gegner.
+  - Angriffe kündigen sich am Boden an (farbige Warnzonen). Wer sie
+    rechtzeitig verlässt, bekommt keinen Schaden.
+  - Pfeile am Rand zeigen, wo er steht und aus welcher Richtung er angreift.
+  - Die Atombombe zieht ihm 65 % seines aktuellen Lebens ab.
+  - Wenn der Endgegner besiegt ist, bekommt jeder Spieler 60 % einer Stufe
+    an XP, 3 Münzen, 2 Skin-Marken, volles Leben und der Rucksack erscheint.
+  - Danach öffnet sich im Jedmayer die Tür zur Arena.
+
+ARENA (Tür im Jedmayer)
+  - Alle Spieler gehen gemeinsam durch die Tür. Das Feld wird eingefroren.
+  - 20 Runden mit immer mehr Gegnern. Sie kommen aus den
+    Lieferanteneingängen. Es gibt Elite-Gegner mit Eigenschaften
+    (Schild, Regeneration, Wut, Bombe).
+  - Zwischen den Runden: kurze Pause, 12 % Heilung, ein Rucksack erscheint.
+  - Es gibt 3 Varianten, die sich abwechseln: Jedmayer (Nachtschicht),
+    Dach und Tiefgarage, jede mit eigenen Hindernissen.
+  - Nach Runde 20: Belohnung für alle: 2,2 Stufen XP, 8 Münzen,
+    3 Skin-Marken, volles Leben, alle K.O.-Spieler werden gerettet.
+  - Danach geht es durch den Ausgang unten zurück aufs Feld.
+
+
+---------------------------------------------------------------------
+12. HELFER (Berni´s Waffenshop)
+---------------------------------------------------------------------
+
+Gehe in die Nähe von Berni´s Waffenshop (links am Feldrand). Dort leuchten
+zwei Schilder, wie Werbung am Haus. Sie sind mit dem Haus verbunden und
+laufen nicht mit dir mit.
+
+SÖLDNER (grüne Uniform)
+  Kostet 5 Münzen plus 1 Münze pro 8 deiner Stufen (Stufe 16: 7,
+  Stufe 40: 10, Stufe 56: 12). Er hat 500 Schuss AK und schießt auf
+  Gegner. Auf Endgegner schießt er nicht, vor ihnen hat er Angst. Nach
+  dem Einsatz muss er Pause machen (Abklingzeit).
+
+KÖDER
+  Kostet 5 Münzen plus 1 Münze pro 10 deiner Stufen (Stufe 30: 8,
+  Stufe 50: 10). Du kannst höchstens 3 tragen. Der Köder wird weit
+  geworfen und alle Gegner laufen etwa 7 Sekunden dorthin.
+
+RETTUNGSWAGEN
+  Fährt alle ca. 200 Sekunden von der Rettungsstation Mariahilf los,
+  fährt quer über das Feld und erwischt viele Gegner. Er richtet viel
+  Schaden an.
+
+
+---------------------------------------------------------------------
+13. TOD, K.O. UND RETTUNG
+---------------------------------------------------------------------
+
+ALLEINE
+  Bei null Leben kommt ein Sanitäter und reanimiert dich. Du kommst
+  als Skelett zurück (volles Leben, kurz unverwundbar). Ein zweites Mal
+  gibt es das nicht: wirst du als Skelett erwischt, ist die Runde vorbei.
+
+MEHRSPIELER
+  Ein Spieler ohne Leben ist K.O. und bleibt 120 Sekunden liegen.
+  Ein anderer Spieler muss 2 Sekunden neben ihm bleiben (Radius 62 px),
+  dann steht er mit 70 % Leben wieder auf. Mit zwei Rettern geht es
+  schneller (x1,3). Läuft die Zeit ab, bleibt er raus. Sind alle Spieler
+  K.O. oder erschöpft, ist die Runde vorbei.
+
+Nach dem Spiel zeigt das Ergebnis eine Statistik pro Spieler: besiegte
+Gegner, Schaden, eingesteckter Schaden, K.O.s, Rettungen und besiegte
+Endgegner. Die besten Werte sind hervorgehoben.
+
+
+---------------------------------------------------------------------
+14. MEHRSPIELER (bis zu 6 Handys)
+---------------------------------------------------------------------
+
+Ein Spieler erstellt einen Raum ("Raum erstellen") und bekommt einen
+4-stelligen Code. Die anderen tippen "Raum beitreten" und geben den Code
+ein. Alle spielen im selben Feld. Der Host rechnet das Spiel, die anderen
+sehen den Stand live. Die Verbindung läuft über das Internet (PeerJS/WebRTC).
+
+Lobby:
+  - Jeder sieht die Mitspieler mit Name, Charakter und Skin.
+  - Der Host startet die Runde. Man kann auch eine gespeicherte Runde
+    laden.
+
+Im Spiel:
+  - Jeder hat eigene Stufe, Waffen, Münzen, Upgrades und Statistik.
+  - Pause: Der Host pausiert für alle. Ein Gast kann ebenfalls pausieren.
+  - Jeder kann im Pause-Menü den Skill-Tree öffnen und aufrüsten.
+  - Der Endgegner kommt, sobald der erste aktive Spieler Stufe 50
+    erreicht (dann bei 100, 150 ...).
+  - Zurück in die Lobby: im Pause-Menü, für alle Mitspieler.
+
+Spielstände:
+  - Solo: ein eigener gelb umrandeter Platz, wird bei einem neuen
+    Solo-Spiel automatisch überschrieben.
+  - Mehrspieler: bis zu 12 Runden, jede Runde bekommt automatisch einen
+    neuen Platz.
+  - Zusätzlich gibt es 3 manuelle Plätze im Pause-Menü.
+
+
+---------------------------------------------------------------------
+15. SKINS UND SKIN-MARKEN
+---------------------------------------------------------------------
+
+Skins verändern nur das Aussehen deines Charakters. Sie haben keinen
+Einfluss auf die Werte.
+
+  - Es gibt rund 100 Skins (Clown, Militär, Polizei, ...), die man im
+    Hauptmenü unter "Skins" kaufen und anziehen kann.
+  - Seltenheiten und Preise in Skin-Marken:
+        Gewöhnlich  2   ·   Selten  4   ·   Episch  7   ·   Legendär  12
+  - Skin-Marken lässt gelegentlich ein Gegner fallen (eher selten).
+    Der Endgegner gibt 2, die Arena 3.
+  - Im Shop gibt es Reiter: Alle, Gewöhnlich, Selten, Episch, Legendär,
+    Meine. Antippen zeigt eine große Vorschau mit Kaufen / Anziehen.
+  - Skins und Marken gehören deinem Profil und bleiben bei einem neuen
+    Spiel erhalten.
+
+
+---------------------------------------------------------------------
+16. OPTIONEN
+---------------------------------------------------------------------
+
+  - Hand-Modus: Rechtshand oder Linkshand (Lage der Buttons)
+  - Ton: an oder aus
+  - Blut: Aus, Normal oder Mehr
+  - Blutfarbe: Rot, Grün oder Blau
+  - Vollbild im Hauptmenü
+  - Das Spiel passt sich der Leistung des Handys automatisch an.
+
+
+---------------------------------------------------------------------
+17. TIPPS
+---------------------------------------------------------------------
+
+  - Bleibe in Bewegung. Stehenbleiben bedeutet in diesem Spiel meistens
+    Schaden.
+  - Nimm Ruhige Hand mit, sobald du eine starke Waffe hast.
+  - Fackel und Blaulicht passen gut zusammen: Gegner laufen in die
+    Flammen oder in die Lichter.
+  - Spare Münzen für AK und Glock-Upgrades. Bis Stufe 30 sind sie günstig.
+  - Hebe die Atombombe für den Endgegner auf.
+  - Lass im Mehrspielermodus niemanden liegen. Ein K.O.-Mitspieler fehlt
+    dem Team bei Schaden und Münzen.
+  - Zeigt ein roter Pfeil am Rand auf einen Rucksack, nimm ihn nur, wenn
+    du Leben verloren hast.
+
+=====================================================================
+Viel Erfolg beim Einschläfern!
+=====================================================================
