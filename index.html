@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='4.5';   /* bei jeder neuen Version erhöhen */
+const PD_VER='4.6';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1864,9 +1864,9 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 /* ---- v4.3: dezentere Bedienelemente ---- */
 .wzhome{top:calc(6px + env(safe-area-inset-top,0px));left:8px;width:34px;height:34px;border-radius:11px;font-size:19px;background:#1a1a1e99;border-color:#ffffff22}
 .wzhome.wzpause{left:48px}.wzhome.wztree{right:8px;font-size:15px}.wzhome svg{width:16px;height:16px}
-#pdUpBar{top:calc(6px + env(safe-area-inset-top,0px));right:48px;gap:4px}
-#pdUpBar .pdub{width:30px;height:30px;border-radius:10px;background:#0b0d1488}#pdUpBar .pdub svg{width:19px;height:19px}#pdUpBar .pdub i{font-size:8px;right:1px}
-#pdHud{padding:calc(46px + env(safe-area-inset-top,0px)) 10px 0;gap:4px}
+#pdUpBar{top:calc(6px + env(safe-area-inset-top,0px));right:48px;gap:5px}
+#pdUpBar .pdub{width:39px;height:39px;border-radius:12px;background:#0b0d1488}#pdUpBar .pdub svg{width:26px;height:26px}#pdUpBar .pdub i{font-size:10px;right:2px}
+#pdHud{padding:calc(50px + env(safe-area-inset-top,0px)) 10px 0;gap:4px}
 .pdbars{gap:3px}.pdhp,.pdxp{height:9px;border-radius:5px;border-width:1px;background:#0007}.pdxp{height:12px;border-radius:6px}
 .pdbars em{font-size:8px;letter-spacing:.03em;text-shadow:0 0 2px #000,0 0 3px #000}
 .pdgear{gap:4px;opacity:.7}.pdgear i{background:#0003;border-color:#fff1;border-radius:8px;padding:1px 5px;font-size:12px}.pdgear b{font-size:10px}.pdgear i small{font-size:9px}
