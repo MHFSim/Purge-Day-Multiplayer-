@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='4.4';   /* bei jeder neuen Version erhöhen */
+const PD_VER='4.5';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1617,6 +1617,8 @@ function wzEnsure(){
  ov.addEventListener('click',e=>{ const b=e.target.closest('[data-wz]'); if(b){ if(PD_FASTK.has(b.dataset.wz)&&performance.now()-(PD.fastT||0)<900) return; wzAct(b.dataset.wz); return; } const m=e.target.closest('[data-mpn]'); if(m){ if(!m.disabled) netPick(m.dataset.mpn); return; } const c=e.target.closest('[data-pdn]'); if(c) pdStartRun(c.dataset.pdn); });
  (document.getElementById('app')||document.body).appendChild(ov); return ov;
 }
+/* ⌂ nur in der Pause (und in der Gast-Pause) zeigen, nicht während des Spiels */
+setInterval(()=>{ const ov=document.getElementById('wzOv'); if(!ov) return; ov.classList.toggle('pdnohome',(PD.st==='play'||PD.st==='guest'||PD.st==='over')&&!ov.querySelector('#pdPick[data-gp]')); },150);
 window.addEventListener('keydown',e=>{ if(!WZ.on) return; if((e.key==='c'||e.key==='C'||e.key===' ')&&PD.st==='play'){ e.preventDefault(); pdPlaceC4(); return; } if((e.key==='Escape'||e.key==='p'||e.key==='P')&&PD.st==='play'){ pdPause(); return; } PD.keys[e.key]=true; });
 window.addEventListener('keyup',e=>{ delete PD.keys[e.key]; });
 window.addEventListener('resize',()=>{ if(WZ.on&&(PD.st==='play'||PD.st==='guest')) pdResize(); });
@@ -1875,7 +1877,9 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 #pdAK b,#pdGL b,#pdKN b,#pdC4 b,#pdNK b,#pdBT b{font-size:11px}#pdAK small,#pdGL small,#pdKN small,#pdC4 small,#pdNK small,#pdBT small{font-size:6.5px;letter-spacing:.03em}
 #pdGL,#pdC4{right:8px}#pdKN,#pdAK{right:66px}#pdNK,#pdBT{right:124px}
 #pdGL,#pdKN,#pdBT{bottom:calc(70px + env(safe-area-inset-bottom,0px))}#pdC4,#pdAK,#pdNK{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-.pdrh #pdGL,.pdrh #pdC4{right:auto;left:8px}.pdrh #pdKN,.pdrh #pdAK{right:auto;left:66px}.pdrh #pdNK,.pdrh #pdBT{right:auto;left:124px}
+.pdrh #pdGL,.pdrh #pdC4{right:auto;left:8px}
+#wzOv.pdnohome .wzhome[data-wz="home"]{display:none!important}
+#wzOv.pdnohome .wzhome.wzpause{left:8px}.pdrh #pdKN,.pdrh #pdAK{right:auto;left:66px}.pdrh #pdNK,.pdrh #pdBT{right:auto;left:124px}
 `; document.head.appendChild(st); })();
 
 /* =====================================================================
