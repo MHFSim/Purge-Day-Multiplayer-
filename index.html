@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='4.8';   /* bei jeder neuen Version erhöhen */
+const PD_VER='4.9';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -2506,7 +2506,7 @@ const PD_SPEC=[['spucker',360,.008],['heiler',270,.035],['rammer',300,.05],['sch
 
 /* ---------- Spieler: Stufen, Upgrades, Münzen gehören jedem Spieler selbst ---------- */
 function pdAll(g){ return [g,...(g.ps||[])]; }
-function pdAllLv(g){ let m=g.lv|0; for(const p of g.ps||[]) if(!p.off&&(p.lv|0)<m) m=p.lv|0; return m; }
+function pdAllLv(g){ let m=g.lv|0; for(const p of g.ps||[]) if(!p.off&&(p.lv|0)>m) m=p.lv|0; return m; }   /* höchste Stufe unter den aktiven Spielern: der Erste, der 50/100/150 … erreicht, löst den Endgegner aus */
 function pdTeamLv(g){ let m=g.lv|0; for(const p of g.ps||[]) if((p.lv|0)>m) m=p.lv|0; return m; }
 function pdRoll(o){
  const pool=[];
