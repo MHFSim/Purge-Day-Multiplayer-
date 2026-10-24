@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='4.0';   /* bei jeder neuen Version erhöhen */
+const PD_VER='4.1';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1662,7 +1662,7 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pdshx{width:44px;height:44px;border-radius:14px;border:1px solid #ffffff2a;background:#16171d;color:#fff;font:800 22px system-ui;cursor:pointer}
 .pdshm{font:900 17px system-ui;color:#2a1d00;background:linear-gradient(#ffe68a,#ffc23a);border-radius:14px;padding:8px 12px;box-shadow:0 4px 14px #ffc23a55}
 .pdsht{display:flex;gap:6px;overflow-x:auto;padding:4px 14px 10px;flex:none;touch-action:pan-x}.pdsht button{flex:none;border:1px solid #ffffff22;background:#16171d;color:#c9ced6;border-radius:999px;padding:7px 13px;font:800 12.5px system-ui;cursor:pointer}.pdsht button.on{background:#ffd23f;color:#2a1d00;border-color:#ffd23f}
-.pdshg{flex:1;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;padding:2px 14px 14px;align-content:start;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+.pdshg{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;padding:2px 14px 14px;align-content:start;touch-action:pan-y;-webkit-overflow-scrolling:touch}
 .pdshc{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 4px 8px;border-radius:14px;border:2px solid color-mix(in srgb,var(--rc) 55%,transparent);background:linear-gradient(color-mix(in srgb,var(--rc) 18%,#15161c),#101116);color:#fff;cursor:pointer;font-family:inherit}
 .pdshc canvas{width:80px;height:88px}.pdshc b{font:800 12px system-ui;text-align:center;line-height:1.15;min-height:28px;display:flex;align-items:center}.pdshc small{font:700 9.5px system-ui;color:var(--rc);text-transform:uppercase;letter-spacing:.06em}
 .pdshc em{font-style:normal;margin-top:4px;font:800 11.5px system-ui;background:#0006;border-radius:8px;padding:3px 8px;color:#ffd23f}.pdshc.own em{color:#7dff9a}.pdshc.on{box-shadow:0 0 0 2px #7dff9a,0 0 16px #7dff9a66}.pdshc.on em{background:#7dff9a;color:#062010}
@@ -3882,7 +3882,7 @@ function pdUnlockAudio(){
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&PDS.ac&&PDS.ac.state!=='running') try{ PDS.ac.resume(); }catch(e){} });
 /* Kein Zoomen durch Zwei-Finger- oder Doppeltippen, kein Hin-und-her-Wackeln der Seite */
 ['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
-document.addEventListener('touchmove',e=>{ if(WZ.on&&!(e.target&&e.target.closest&&e.target.closest('.pdmenu,.pdtscroll,.pdmpb,#pdSlots,#pdOpts'))) e.preventDefault(); },{passive:false});
+document.addEventListener('touchmove',e=>{ if(WZ.on&&!(e.target&&e.target.closest&&e.target.closest('.pdmenu,.pdtscroll,.pdmpb,#pdSlots,#pdOpts,.pdshg,.pdsht'))) e.preventDefault(); },{passive:false});
 /* Bildschirm bleibt an, solange gespielt wird (iOS 16.4+) – wichtig für den Host */
 const PDW={lock:null};
 async function pdWake(){
