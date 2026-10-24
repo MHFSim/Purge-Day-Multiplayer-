@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='3.8';   /* bei jeder neuen Version erhöhen */
+const PD_VER='3.9';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -701,7 +701,7 @@ function pdWeap(g,dt){ const w=g.w, c=g.cd;
       for(const e of g.en){ const rx=e.x-g.x, ry=e.y-g.y, t=rx*ca+ry*sa; if(t<0||t>Ln) continue; const dd=Math.abs(-rx*sa+ry*ca); if(dd<PD_EN[e.k].r+10){ pdHit(e,dm*1.4,rx,ry,40); pdStun(e,.5); } } } }
     else for(let i=0;i<n;i++){ const a=g.ang+i*6.283/n, px=g.x+Math.cos(a)*R, py=g.y+Math.sin(a)*R; for(const e of g.en){ if((e.x-px)**2+(e.y-py)**2<(PD_EN[e.k].r+14)**2){ pdHit(e,dm,e.x-g.x,e.y-g.y,60); pdStun(e,.5); } } } } }
 }
-function pdEnd(){ pdScoreSend(); pdClearSave(); pdSnd('over'); setTimeout(pdRenderOver,700); }
+function pdEnd(){ pdScoreSend(); if(PD.g&&PD.g.mp){ if(NET.host&&NET.rid){ netRoundDel(NET.rid); NET.rid=null; } } else pdClearSave(); pdSnd('over'); setTimeout(pdRenderOver,700); }
 
 /* ---------- Zeichnen ---------- */
 function pdDrawNukeItem(x,px,py,t){
@@ -1309,7 +1309,7 @@ function pdPause(force){
  el.innerHTML=`<div class="pdpt">Pause</div><div class="pdps">${esc(g.n)} · Stufe ${g.lv} · ${pdFmt(g.t)}${pdMainOk()?'<br>Nächste '+PD_REWARD_MAUT+' Maut in '+(PD_KILLS_PER_REWARD-((G.pdKills||0)%PD_KILLS_PER_REWARD))+' besiegten Gegnern':''}</div><div class="pdstat"><span><b>${pdFmt(g.t)}</b>durchgehalten</span><span><b>${g.kills}</b>eingeschläfert</span><span><b>${Math.ceil(g.hp)}</b>Leben</span></div><button class="pdopt" data-pdo="go"><span class="pdoi">▶</span><span class="pdot"><b>Weiter</b><small>Dein Stand ist gespeichert</small></span></button><button class="pdopt" data-pdo="tree"><span class="pdoi">🌳</span><span class="pdot"><b>Skill-Tree</b><small>Waffen ansehen und aufrüsten</small></span></button><button class="pdopt" data-pdo="mp"><span class="pdoi">🏆</span><span class="pdot"><b>Multiplayer Score</b><small>Rangliste aller Spieler</small></span></button><button class="pdopt" data-pdo="opts"><span class="pdoi">⚙</span><span class="pdot"><b>Optionen</b><small>Hand-Modus, Ton, Blut</small></span></button><button class="pdopt" data-pdo="slots"><span class="pdoi">💾</span><span class="pdot"><b>Spielstände</b><small>Speichern und laden, 3 Plätze</small></span></button><button class="pdopt" data-pdo="new"><span class="pdoi">👥</span><span class="pdot"><b>Neue Runde starten</b><small>Andere Figur wählen, dieser Stand geht verloren</small></span></button>`;
  if(g.mp){ el.querySelectorAll('[data-pdo="mp"]').forEach(b=>b.remove()); const sb=el.querySelector('[data-pdo="slots"]'); if(sb) sb.querySelector('small').textContent='Mehrspieler-Runde speichern, 3 Plätze'; const nb=el.querySelector('[data-pdo="new"]'); nb.querySelector('b').textContent='Zurück in die Lobby'; nb.querySelector('small').textContent='Runde beenden, alle Mitspieler kommen mit'; }
  ov.appendChild(el);
- el.onclick=e=>{ const b=e.target.closest('[data-pdo]'); if(!b) return; if(b.dataset.pdo==='go') pdResume(); else if(b.dataset.pdo==='mp'){ el.remove(); pdRenderMP(); } else if(b.dataset.pdo==='opts'){ el.remove(); pdRenderOpts(); } else if(b.dataset.pdo==='tree'){ el.remove(); pdTreeOpen(true); } else if(b.dataset.pdo==='slots'){ el.remove(); if(g.mp) netSlotsRender('pause'); else pdRenderSlots('pause'); } else if(g.mp) netBackToLobby(); else { pdClearSave(); wzRender(); } };
+ el.onclick=e=>{ const b=e.target.closest('[data-pdo]'); if(!b) return; if(b.dataset.pdo==='go') pdResume(); else if(b.dataset.pdo==='mp'){ el.remove(); pdRenderMP(); } else if(b.dataset.pdo==='opts'){ el.remove(); pdRenderOpts(); } else if(b.dataset.pdo==='tree'){ el.remove(); pdTreeOpen(true); } else if(b.dataset.pdo==='slots'){ el.remove(); if(g.mp) pdSaveList(NET.host?'mppause':'pause'); else pdSaveList('pause'); } else if(g.mp) netBackToLobby(); else { pdClearSave(); wzRender(); } };
 }
 
 /* ---------- Spielstände (3 Plätze: speichern & laden) ---------- */
@@ -1538,7 +1538,7 @@ function wzRender(){
  ov.querySelectorAll('.pdav').forEach(c=>{ const x=c.getContext('2d'); const s=pdStats(c.dataset.n); x.scale(2,2); x.translate(48,70); pdDrawHero(x,s,0,0,0,0,1,2.25); });
  PD.msg='';
 }
-function wzAct(k){ if(PD.st==='guest'&&(k==='c4'||k==='ak'||k==='gl'||k==='knife'||k==='nuke'||k==='bait')){ netAct(k); return; } if(k==='c4') pdPlaceC4(); else if(k==='slots') pdRenderSlots('menu'); else if(k==='home') wzClose(); else if(k==='pause') pdPause(); else if(k==='tree') pdFloatToggle(); else if(k==='fs') pdFullscreen(); else if(k==='merc') pdMercAsk(); else if(k==='baitbuy') pdBaitBuyAsk(); else if(k==='bait') pdBaitThrow(); else if(k==='ak') pdToggleAK(); else if(k==='nuke') pdFireNuke(); else if(k==='gl') pdToggleGL(); else if(k==='knife') pdThrowKnife(); else if(k==='menu') wzRender(); else if(k==='mphost') netHost(); else if(k==='mpjoin') netJoinScreen(); else if(k==='mpleave'){ netStop(); wzRender(); } else if(k==='mpstart') netStartGame(); else if(k==='mpgo') netJoinGo(); else if(k==='mpload') netSlotsRender('lobby'); else if(k==='mpunload'){ NET.load=null; netBroadcastLobby(); } }
+function wzAct(k){ if(PD.st==='guest'&&(k==='c4'||k==='ak'||k==='gl'||k==='knife'||k==='nuke'||k==='bait')){ netAct(k); return; } if(k==='c4') pdPlaceC4(); else if(k==='slots') pdSaveList('menu'); else if(k==='home') wzClose(); else if(k==='pause') pdPause(); else if(k==='tree') pdFloatToggle(); else if(k==='fs') pdFullscreen(); else if(k==='merc') pdMercAsk(); else if(k==='baitbuy') pdBaitBuyAsk(); else if(k==='bait') pdBaitThrow(); else if(k==='ak') pdToggleAK(); else if(k==='nuke') pdFireNuke(); else if(k==='gl') pdToggleGL(); else if(k==='knife') pdThrowKnife(); else if(k==='menu') wzRender(); else if(k==='mphost') netHost(); else if(k==='mpjoin') netJoinScreen(); else if(k==='mpleave'){ netStop(); wzRender(); } else if(k==='mpstart') netStartGame(); else if(k==='mpgo') netJoinGo(); else if(k==='mpload') pdSaveList('lobby'); else if(k==='mpunload'){ NET.load=null; netBroadcastLobby(); } }
 function wzOpen(){
  if(!G) return; const ov=wzEnsure();
  if(!WZ.on){ WZ.pausedBefore=(typeof PAUSED!=='undefined')?PAUSED:false; if(typeof PAUSED!=='undefined') PAUSED=true; }
@@ -1694,6 +1694,7 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pdslh{max-width:460px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:2px}.pdslh b{font:900 26px system-ui;color:#fff}.pdslh small{color:#9aa0ae;font-size:13px}
 .pdslnote{max-width:460px;width:100%;margin:0 auto;padding:8px 12px;border-radius:10px;background:#143d26;color:#8ef0b2;font:700 13px system-ui;box-sizing:border-box}
 .pdslist{display:flex;flex-direction:column;gap:10px;max-width:460px;width:100%;margin:0 auto}
+.pdslot.solo{border:2px solid #ffd23f;background:linear-gradient(#2a2410,#17150c)}.pdslot.cur{border:2px solid #7dff9a}
 .pdslot{display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;background:linear-gradient(#1f2028,#15161c);border:1px solid #ffffff22}.pdslot.empty{opacity:.75;border-style:dashed}
 .pdsi{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.pdsi b{font-size:15px}.pdsi span{font-size:13px;color:#d6dae3}.pdsi small{font-size:11.5px;color:#8c92a1}
 .pdsb{display:flex;gap:6px;flex:none}.pdsb button{border:1px solid #ffffff2a;background:#262833;color:#fff;border-radius:10px;padding:9px 11px;font:700 12.5px system-ui;cursor:pointer}.pdsb button.go{background:#1f8f5a;border-color:#2fbf80}.pdsb button.x{padding:9px 10px;color:#ff8a8a}
@@ -1874,7 +1875,7 @@ function netInGame(){ return !!(PD.g&&PD.g.mp&&(PD.st==='play'||PD.st==='paused'
 
 /* ---------- Host ---------- */
 async function netHost(){
- netStop(); NET.err=''; NET.host=true; NET.me=0; NET.lobby=[{slot:0,n:PD.sel&&SMAP[PD.sel]?PD.sel:null,uid:NET.uid}]; NET.st='Raum wird erstellt …';
+ netStop(); NET.err=''; NET.host=true; NET.me=0; NET.lobby=[{slot:0,n:PD.sel&&SMAP[PD.sel]?PD.sel:null,uid:NET.uid}]; NET.st='Raum wird erstellt …'; if(PD.wantLoad){ NET.load=PD.wantLoad; PD.wantLoad=null; }
  cancelAnimationFrame(PD.raf); PD.g=null; PD.st='lobby'; netLobbyRender();
  const gen=NET.gen;
  try{ await netLib(); }catch(e){ if(gen!==NET.gen) return; NET.err='Die Netzwerk-Bibliothek konnte nicht geladen werden. Für Mehrspieler braucht ihr Internet.'; NET.st=''; netLobbyRender(); return; }
@@ -1974,6 +1975,7 @@ function netApplyLoad(){
 function netStartGame(){
  if(!NET.host||PD.st!=='lobby'||!NET.code||!NET.lobby.length||!NET.lobby.every(l=>l.n)) return;
  NET.lobby=NET.lobby.filter(l=>!l.off); netApplyLoad(); PD.slot=null;
+ NET.rid=(NET.load&&NET.load.id)||pdNewId();
  if(NET.load){
   const L=NET.load, g=pdNorm(JSON.parse(JSON.stringify(L.g))), sp=netSavedPs();
   g.mp=1; g.over=false; g.hurt=0; g.inv=3; g.nf=null; g.kfl=[]; g.dead=0; g.akOn=false; g.glOn=false;
@@ -1985,7 +1987,7 @@ function netStartGame(){
   const hn=NET.lobby.find(l=>l.slot===0).n; PD.sel=hn; pdNew(hn);
   const g=PD.g; g.mp=1; g.ps=NET.lobby.filter(l=>l.slot!==0).map((l,i)=>netNewMate(l,g,i)); NET.eid=0;
  }
- NET.sq=[]; NET.n=0; NET.autoT=0;
+ NET.sq=[]; NET.n=0; NET.autoT=0; setTimeout(()=>{ try{ netAutoSave(); }catch(e){} },1500);
  if(!NET.iv) NET.iv=setInterval(netTick,NET_RATE);
  netSend({t:'start'});
  PD.st='play'; pdMount(); PD.last=0; PD.saveT=0; cancelAnimationFrame(PD.raf); PD.raf=requestAnimationFrame(pdLoop); pdSnd('go');
@@ -2001,7 +2003,7 @@ function netBackToLobby(){
 function pdMpTick(dt){
  const g=PD.g; if(!g.mp) return;
  pdKOTick(g,dt); if(g.over) return;
- NET.autoT+=dt; if(NET.autoT>=20&&PD.st==='play'){ NET.autoT=0; netSaveSlot('auto'); }
+ NET.autoT+=dt; if(NET.autoT>=20&&PD.st==='play'){ NET.autoT=0; netAutoSave(); }
  const now=Date.now();
  for(const p of g.ps){
   if(p.off){ if(now-p.offT>NET_OFFMAX){ p.gone=1; NET.lobby=NET.lobby.filter(l=>l.slot!==p.slot); pdTxt(g.x,g.y-60,p.n+' hat das Spiel verlassen','#ff8a8a',2.6); } continue; }
@@ -3410,6 +3412,66 @@ function pdBaitBtns(g){
  const txt=n>=PD_BAIT_MAX?`<b>🎯 Köder: Tasche voll</b><small>höchstens ${PD_BAIT_MAX}</small>`:`<b>🎯 Köder kaufen</b><small>${PD_BAIT_COST} 🪙 · lockt alle Gegner ${PD_BAIT_T} s an</small>`;
  if(b.dataset.t!==txt+can){ b.dataset.t=txt+can; b.innerHTML=txt; b.classList.toggle('can',can); }
  pdShopPin(b,1192); b.hidden=false;
+}
+
+/* ===================== Spielstände: Solo-Platz (gelb) + bis zu 12 Mehrspieler-Runden ===================== */
+const PD_MPKEY2='mhsim_purgeday_mp_v2', PD_MPMAX=12;
+function pdNewId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function netRounds(){
+ try{ const o=JSON.parse(localStorage.getItem(PD_MPKEY2)||'null'); if(o&&Array.isArray(o.r)) return o.r.filter(r=>r&&r.g);
+  /* einmalig: alte Plätze übernehmen */
+  const old=JSON.parse(localStorage.getItem(PD_MPKEY)||'{}'), L=[]; for(const r of [old.auto,...(old.s||[])]) if(r&&r.g){ r.id=r.id||pdNewId(); L.push(r); }
+  L.sort((a,b)=>b.ts-a.ts); const r=L.slice(0,PD_MPMAX); netRoundsWrite(r); return r; }catch(e){ return []; }
+}
+function netRoundsWrite(r){
+ for(let k=0;k<8;k++){ try{ localStorage.setItem(PD_MPKEY2,JSON.stringify({v:2,r})); return true; }catch(e){ if(r.length<=1) return false; r=r.slice().sort((a,b)=>b.ts-a.ts); r.pop(); } }
+ return false;
+}
+/* die laufende Runde in ihren eigenen Platz schreiben (neu anlegen, wenn es ihn noch nicht gibt) */
+function netAutoSave(){
+ const g=PD.g; if(!g||!g.mp||g.over||!NET.host) return false; if(!NET.rid) NET.rid=pdNewId();
+ let rec; try{ rec=netPack(); }catch(e){ return false; } rec.id=NET.rid;
+ let r=netRounds().filter(q=>q.id!==NET.rid); r.unshift(rec); r.sort((a,b)=>b.ts-a.ts); if(r.length>PD_MPMAX) r=r.slice(0,PD_MPMAX);
+ return netRoundsWrite(r);
+}
+(function(){ try{ if(localStorage.getItem('mhsim_purgeday_mig12')) return; localStorage.setItem('mhsim_purgeday_mig12','1'); if(!localStorage.getItem(PD_KEY)){ const a=JSON.parse(localStorage.getItem(PD_SLOTKEY)||'[]').filter(x=>x&&x.g&&!x.g.over&&SMAP[x.g.n]); if(a.length){ a.sort((x,y)=>y.ts-x.ts); localStorage.setItem(PD_KEY,JSON.stringify({v:1,ts:a[0].ts,g:a[0].g})); } } }catch(e){} })();
+function netRoundDel(id){ netRoundsWrite(netRounds().filter(q=>q.id!==id)); }
+function pdSlotRow(r,opts){
+ const solo=opts.solo, nm=solo?esc(r.g.n):esc((r.names||[]).join(', '));
+ const cur=!solo&&NET.rid&&r.id===NET.rid&&PD.g&&PD.g.mp;
+ return `<div class="pdslot${solo?' solo':''}${cur?' cur':''}"><div class="pdsi"><b>${solo?'⭐ Alleine':'👥 Runde'}${cur?' · läuft gerade':''}</b><span>Stufe ${r.lv!=null?r.lv:r.g.lv} · ${pdFmt(r.t!=null?r.t:r.g.t)} · 💤 ${r.g.kills|0}</span><small>${pdDateStr(r.ts)} · ${nm}</small></div><div class="pdsb">${opts.btns||''}</div></div>`;
+}
+/* Spielstände-Liste (Hauptmenü, Solo-Pause, Lobby, Mehrspieler-Pause) */
+function pdSaveList(from,note){
+ const ov=wzEnsure(); const old=document.getElementById('pdSlots'); if(old) old.remove();
+ const solo=pdLoadSave(), rounds=netRounds(), inMP=from==='mppause'||from==='lobby';
+ let html='';
+ if(!inMP){
+  html+=solo?pdSlotRow(solo,{solo:1,btns:from==='menu'?`<button class="go" data-sv="solo">Laden</button>`:`<button data-sv="solosave">Jetzt speichern</button>`})
+   :`<div class="pdslot solo empty"><div class="pdsi"><b>⭐ Alleine</b><small>Noch kein Spiel · wird bei jedem neuen Solo-Spiel automatisch überschrieben</small></div></div>`;
+ }
+ if(from!=='pause'){
+  html+=rounds.length?rounds.map(r=>pdSlotRow(r,{btns:
+    (from==='menu'?`<button class="go" data-sv="host" data-id="${r.id}">Raum öffnen</button>`:from==='lobby'?`<button class="go" data-sv="load" data-id="${r.id}">Laden</button>`:(NET.rid===r.id?`<button data-sv="mpsave">Jetzt speichern</button>`:''))
+    +(NET.rid===r.id&&PD.g&&PD.g.mp?'':`<button class="x" data-sv="del" data-id="${r.id}" aria-label="Löschen">✕</button>`)})).join('')
+   :`<div class="pdslot empty"><div class="pdsi"><b>👥 Mehrspieler-Runden</b><small>Noch keine · jede neue Runde bekommt automatisch einen eigenen Spielstand</small></div></div>`;
+ }
+ const sub=from==='menu'?`Solo-Spiel (gelb) und bis zu ${PD_MPMAX} Mehrspieler-Runden. Alles wird automatisch gespeichert.`
+  :from==='pause'?'Dein Solo-Spiel wird laufend automatisch gespeichert. Ein neues Solo-Spiel überschreibt es.'
+  :from==='lobby'?'Eine gespeicherte Runde auswählen – sie startet mit „Spiel starten“. Jeder bekommt seine Figur samt Waffen zurück.'
+  :`Diese Runde wird alle 20 s automatisch gespeichert. Höchstens ${PD_MPMAX} Runden, die älteste fällt dann weg.`;
+ const el=document.createElement('div'); el.id='pdSlots';
+ el.innerHTML=`<div class="pdslh"><b>Spielstände</b><small>${sub}</small></div>${note?`<div class="pdslnote">${note}</div>`:''}<div class="pdslist">${html}</div><button class="pdopt pdslback" data-sv="back"><span class="pdoi">‹</span><span class="pdot"><b>Zurück</b></span></button>`;
+ ov.appendChild(el);
+ el.onclick=e=>{ const b=e.target.closest('[data-sv]'); if(!b) return; const k=b.dataset.sv, id=b.dataset.id;
+  if(k==='back'){ el.remove(); if(from==='pause'||from==='mppause') pdPause(true); else if(from==='lobby') netLobbyRender(); return; }
+  if(k==='solo'){ const r=pdLoadSave(); if(r){ el.remove(); pdLoadRun(r); pdSnd('go'); } return; }
+  if(k==='solosave'){ pdSave(); pdSnd('ok'); pdSaveList(from,'✓ Gespeichert'); return; }
+  if(k==='mpsave'){ const ok=netAutoSave(); pdSnd(ok?'ok':'bad'); pdSaveList(from,ok?'✓ Gespeichert':'Speichern nicht möglich (Speicher voll?)'); return; }
+  if(k==='del'){ netRoundDel(id); pdSnd('tap'); pdSaveList(from,'Spielstand gelöscht'); return; }
+  if(k==='load'){ const r=netRounds().find(q=>q.id===id); if(!r||PD.st!=='lobby') return; NET.load=r; el.remove(); pdSnd('ok'); netBroadcastLobby(); return; }
+  if(k==='host'){ const r=netRounds().find(q=>q.id===id); if(!r) return; el.remove(); PD.wantLoad=r; netHost(); pdSnd('ok'); return; }
+ };
 }
 
 /* ===================== iPhone / iOS-Anpassungen ===================== */
