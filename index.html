@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='5.5';   /* bei jeder neuen Version erhöhen */
+const PD_VER='5.6';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1891,7 +1891,8 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pdbars{gap:3px}.pdhp,.pdxp{height:9px;border-radius:5px;border-width:1px;background:#0007}.pdxp{height:12px;border-radius:6px}
 .pdbars em{font-size:8px;letter-spacing:.03em;text-shadow:0 0 2px #000,0 0 3px #000}
 .pdgear{gap:4px;opacity:.7}.pdgear i{background:#0003;border-color:#fff1;border-radius:8px;padding:1px 5px;font-size:12px}.pdgear b{font-size:10px}.pdgear i small{font-size:9px}
-.pdinfo{font-size:11px;opacity:.85}.pdinfo b{font-size:15px}.pdinfo i.pdcn{font-style:normal;font:800 13px system-ui;color:#ffd23f;text-shadow:0 1px 3px #000}
+.pdinfo{font-size:11px;opacity:.85}.pdinfo b{font-size:15px}.pdinfo i.pdcn{position:absolute;left:50px;top:calc(6px + env(safe-area-inset-top,0px));height:34px;box-sizing:border-box;padding:0 11px;display:flex;align-items:center;border-radius:11px;background:#0b0d1499;border:1px solid #ffd23f55;font-style:normal;font:800 14px system-ui;color:#ffd23f;text-shadow:0 1px 3px #000;white-space:nowrap}
+#wzOv:not(.pdnohome) .pdinfo i.pdcn{left:90px}
 #pdAK,#pdGL,#pdKN,#pdC4,#pdNK,#pdBT{width:54px;height:54px;border-radius:16px;border-width:1.5px;opacity:.82;box-shadow:0 3px 10px #0009;gap:0}
 #pdAK span,#pdGL span,#pdKN span,#pdC4 span,#pdNK span,#pdBT span{font-size:17px}
 #pdAK span svg,#pdGL span svg,#pdKN span svg,#pdC4 span svg,#pdNK span svg{width:32px;height:23px}
