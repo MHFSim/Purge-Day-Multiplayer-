@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='5.4';   /* bei jeder neuen Version erhöhen */
+const PD_VER='5.5';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -2834,14 +2834,14 @@ function pdArenaEnter(g){
  pdAnn(g,PD_AV[av].t1,PD_AV[av].t2,'#ffd23f',3.4); pdSnd('boss');
 }
 function pdArenaWave(r){
- const L=[], np=Math.max(1,pdPlayers(PD.g).length), pool=r<=2?['rammer','speedy','dicker']:r<=6?['rammer','heiler','schatten','speedy','dicker','nodder']:['rammer','heiler','schatten','dicker','speedy','nodder','dicker'];
- const n=Math.min(70,Math.round((7+r*2.4)*(1+.3*(np-1)))), modsA=r<3?[]:r<8?[1,2]:[1,2,3], pm=Math.min(.7,.12+r*.04);
- for(let i=0;i<n;i++){ const k=pool[Math.floor(Math.random()*pool.length)]; L.push({k,mod:(modsA.length&&Math.random()<pm)?modsA[Math.floor(Math.random()*modsA.length)]:0}); }
- if(r===3||r===8||r===13||r===18) L.push({k:'dicker',mod:3,el:1});
- if(r===5){ L.push({k:'dicker',mod:1,el:1},{k:'rammer',mod:3,el:1},{k:'dicker',mod:2,el:1}); }
- if(r===10){ L.push({k:'dicker',mod:1,el:1},{k:'rammer',mod:3,el:1},{k:'schatten',mod:3,el:1},{k:'dicker',mod:3,el:1},{k:'rammer',mod:2,el:1}); }
- if(r===15){ L.push({k:'dicker',mod:1,el:1},{k:'dicker',mod:3,el:1},{k:'rammer',mod:2,el:1},{k:'schatten',mod:3,el:1},{k:'dicker',mod:2,el:1},{k:'rammer',mod:1,el:1}); }
- if(r===20){ L.length=Math.min(L.length,8); L.push({k:'big',fin:1}); }
+ const L=[], np=Math.max(1,pdPlayers(PD.g).length), pool=r<=2?['rammer','speedy','dicker','schatten']:r<=6?['rammer','heiler','schatten','spucker','speedy','dicker','nodder']:['rammer','heiler','schatten','spucker','dicker','speedy','nodder','dicker','rammer','schatten'];
+ const n=Math.min(90,Math.round((9+r*3)*(1+.3*(np-1)))), modsA=r<2?[]:r<6?[1,2]:[1,2,3], pm=Math.min(.85,.25+r*.04), pe=Math.min(.3,.05+r*.02);   /* pe: Anteil Elite-Gegner (größer, 3,4 × Leben, immer mit Eigenschaft) */
+ for(let i=0;i<n;i++){ const k=pool[Math.floor(Math.random()*pool.length)], el=r>=2&&Math.random()<pe; let mod=(modsA.length&&Math.random()<pm)?modsA[Math.floor(Math.random()*modsA.length)]:0; if(el&&!mod) mod=[1,2,3][Math.floor(Math.random()*3)]; L.push(el?{k,mod,el:1}:{k,mod}); }
+ if(r%5!==0&&r>=3) L.push({k:'dicker',mod:3,el:1},{k:r>=9?'rammer':'schatten',mod:[1,2,3][r%3],el:1});
+ if(r===5){ L.push({k:'dicker',mod:1,el:1},{k:'rammer',mod:3,el:1},{k:'dicker',mod:2,el:1},{k:'heiler',mod:1,el:1},{k:'schatten',mod:3,el:1}); }
+ if(r===10){ L.push({k:'dicker',mod:1,el:1},{k:'rammer',mod:3,el:1},{k:'schatten',mod:3,el:1},{k:'dicker',mod:3,el:1},{k:'rammer',mod:2,el:1},{k:'heiler',mod:1,el:1},{k:'spucker',mod:2,el:1},{k:'schatten',mod:3,el:1}); }
+ if(r===15){ L.push({k:'dicker',mod:1,el:1},{k:'dicker',mod:3,el:1},{k:'rammer',mod:2,el:1},{k:'schatten',mod:3,el:1},{k:'dicker',mod:2,el:1},{k:'rammer',mod:1,el:1},{k:'heiler',mod:1,el:1},{k:'spucker',mod:3,el:1},{k:'rammer',mod:3,el:1},{k:'schatten',mod:2,el:1}); }
+ if(r===20){ L.length=Math.min(L.length,16); L.push({k:'dicker',mod:1,el:1},{k:'rammer',mod:3,el:1},{k:'rammer',mod:2,el:1},{k:'schatten',mod:3,el:1},{k:'heiler',mod:1,el:1},{k:'big',fin:1}); }
  for(let i=L.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [L[i],L[j]]=[L[j],L[i]]; }
  return L;
 }
@@ -2854,7 +2854,7 @@ function pdArenaTick(dt){
   if(A.q.length&&A.sp<=0){ A.sp=.3; const cnt=Math.min(A.q.length,A.r>=10?4:3);
    for(let i=0;i<cnt;i++){ const it=A.q.shift(), PT=pdAPort(g), pt=PT[Math.floor(Math.random()*PT.length)];
     if(it.k==='big'){ pdBigSpawn(g,true); const be=g.en[g.en.length-1]; be.x=(PD_ARENA.x0+PD_ARENA.x1)/2; be.y=PD_ARENA.y0+130; continue; }
-    const hm=(1.5+.17*A.r+g.t/1200+.06*Math.min(200,pdTeamLv(g)))*1.5; if(((it.k==='schatten'||it.k==='spucker'||it.k==='rammer')&&pdKindN(it.k)>=2)||(it.k==='heiler'&&pdKindN('heiler')>=3)) it.k=pdKindN('dicker')<6?'dicker':'speedy'; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
+    const hm=(1.5+.17*A.r+g.t/1200+.06*Math.min(200,pdTeamLv(g)))*1.5; if(((it.k==='schatten'||it.k==='spucker'||it.k==='rammer')&&pdKindN(it.k)>=3+Math.floor(A.r/4))||(it.k==='heiler'&&pdKindN('heiler')>=3+Math.floor(A.r/6))) it.k=pdKindN('dicker')<8?'dicker':'speedy'; const m=pdMkEnemy(it.k,pt[0]+pdRand(-18,18),pt[1]+pdRand(-18,18),hm,it.mod,it.el); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.45}); } }
   A.alive=g.en.reduce((n,e)=>n+(e.hp>0?1:0),0);
   if(!A.q.length&&A.alive===0){ if(A.r>=A.total){ A.s='done'; A.t=1.5; } else { A.s='break'; A.t=4.2; pdAnn(g,'RUNDE '+A.r+' GESCHAFFT','Kurz durchatmen …','#7dff9a',2.6);
     if(!g.bp) g.bp={x:(PD_ARENA.x0+PD_ARENA.x1)/2,y:(PD_ARENA.y0+PD_ARENA.y1)/2+10}; for(const o of pdAll(g)) if(!o.dead&&!o.off) o.hp=Math.min(o.hpMax,o.hp+Math.round(o.hpMax*.12)); } } }
