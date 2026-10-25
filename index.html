@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='5.3';   /* bei jeder neuen Version erhöhen */
+const PD_VER='5.4';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -556,7 +556,7 @@ function pdUpdate(dt){
  pdMpTick(dt); pdWeapons(dt); pdAmbTick(g,dt); pdMercTick(g,dt); pdBaitTick(g,dt); pdMkTick(g,dt); pdNukeTick(dt); pdKnifeTick(dt); pdHzTick(dt); if(PD.st!=='play'||g.over) return;
  /* Projektile */
  for(const p of g.pr){ PD.src=p.o==null?null:p.o; p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt;
-  if(p.ak){ for(const e of g.en){ if(e.hp<=0||(PD_EN[e.k].boss&&!PD_EN[e.k].big)||(p.mc&&PD_EN[e.k].boss)) continue; const r=PD_EN[e.k].r+6, sx=p.vx*dt, sy=p.vy*dt, L2=sx*sx+sy*sy||1, u=Math.max(0,Math.min(1,((e.x-(p.x-sx))*sx+(e.y-(p.y-sy))*sy)/L2)), qx=p.x-sx+sx*u-e.x, qy=p.y-sy+sy*u-e.y; if(qx*qx+qy*qy<r*r){ if(PD_EN[e.k].big) pdHit(e,45,p.vx,p.vy,0,p.m); else { e.lh=PD.src; e.hp=0; e.flash=.12; e.kx+=p.vx*.05; e.ky+=p.vy*.05; } p.life=0; break; } } continue; }
+  if(p.ak){ for(const e of g.en){ if(e.hp<=0||(PD_EN[e.k].boss&&!PD_EN[e.k].big)||(p.mc&&PD_EN[e.k].boss)) continue; const r=PD_EN[e.k].r+6, sx=p.vx*dt, sy=p.vy*dt, L2=sx*sx+sy*sy||1, u=Math.max(0,Math.min(1,((e.x-(p.x-sx))*sx+(e.y-(p.y-sy))*sy)/L2)), qx=p.x-sx+sx*u-e.x, qy=p.y-sy+sy*u-e.y; if(qx*qx+qy*qy<r*r){ if(PD_EN[e.k].big) pdHit(e,45,p.vx,p.vy,0,p.m); else { e.lh=PD.src; if(pdTough(e)&&Math.random()<.4){ const dm=e.hpMax*.6; if(e.sh>0){ const ab=Math.min(e.sh,dm); e.sh-=ab; e.hp-=dm-ab; } else e.hp-=dm; g.txt.length<30&&g.txt.push({x:e.x,y:e.y-14,s:'−60 %',c:'#ffd23f',t:0,life:.6}); } else e.hp=0; e.flash=.12; e.kx+=p.vx*.05; e.ky+=p.vy*.05; } p.life=0; break; } } continue; }
   for(const e of g.en){ if(e.hp<=0||(p.hit&&p.hit.includes(e))) continue; const r=PD_EN[e.k].r+5; if((e.x-p.x)**2+(e.y-p.y)**2<r*r){ const hp0=e.hp; pdHit(e,p.dmg,p.vx,p.vy,60,p.m); pdSnd('hit'); if(p.pc>0){ p.pc--; (p.hit||(p.hit=[])).push(e); } else p.life=0;
     if(p.a!==undefined&&e.hp<=0&&p.dmg*(p.m||g.dmgM)*PD_WDMG>hp0) pdPierce(e,p);
     break; } } }
@@ -677,6 +677,8 @@ function pdNBlau(L){ return 1+Math.floor(L/5); }   /* alle 5 Stufen ein Licht me
 function pdBeams(L){ const n=pdNBlau(L); return n>=6?n-4:0; }
 function pdLaserLen(L){ return 170+.7*L; }
 function pdBlauR(L){ return 70+.7*L; }
+/* stärkere Gegner (Dicker, Eingenickter, Rammbock, Sani, Schleicher, Elite, Schild …): AK und Glock brauchen dort manchmal 2 Schuss */
+function pdTough(e){ return PD_EN[e.k].hp>=40||e.el||e.sh>0; }
 function pdNearestNB(g,maxd){ let b=null,bd=maxd*maxd; for(const e of PD.g.en){ if(e.hp<=0||PD_EN[e.k].boss) continue; const d=(e.x-g.x)**2+(e.y-g.y)**2; if(d<bd){ bd=d; b=e; } } return b; }
 function pdFireNuke_solo(){ const g=PD.g; if(!g||PD.st!=='play'||g.over||!g.nuke||g.nf) return; g.nuke=0; g.nf={t:-PD_NUKE_PRE,x:g.x,y:g.y,hit:false,boom:false}; pdSnd('nukeon'); }
 function pdNukeTick(dt){
@@ -1476,8 +1478,8 @@ function pdRenderOpts(){
 function pdTreeHTML(){
  const g=PD.g, tc=pdTierCol(g.lv);
  const U=g.up;
- const CH={ak:[['Magazin',pdAkMag(g)+' Schuss',U.ak<PD_UPMAX.ak?(pdAkMag(g)+3)+'':''],['Feuerrate',PD_AKRATE+' / s'],['Schaden','1 Schuss = Kill']],
-  gl:[['Magazine',PD_GLMAGS+' × '+pdGlMag(g),U.gl<PD_UPMAX.gl?(pdGlMag(g)+2)+'':''],['Feuerrate',PD_GLRATE+' / s'],['Schaden','1 Schuss = Kill']],
+ const CH={ak:[['Magazin',pdAkMag(g)+' Schuss',U.ak<PD_UPMAX.ak?(pdAkMag(g)+3)+'':''],['Feuerrate',PD_AKRATE+' / s'],['Schaden','1 Schuss = Kill, bei starken Gegnern oft 2']],
+  gl:[['Magazine',PD_GLMAGS+' × '+pdGlMag(g),U.gl<PD_UPMAX.gl?(pdGlMag(g)+2)+'':''],['Feuerrate',PD_GLRATE+' / s'],['Schaden','1 Schuss = Kill, bei starken Gegnern oft 2']],
   kn:[['Runden',pdKnRounds(g)+'',U.kn<PD_UPMAX.kn?(pdKnRounds(g)+1)+'':''],['Vorrat','max. '+PD_KNMAX],['Größe','+'+Math.round((pdKnSize(g)-1)*100)+' %',U.kn<PD_UPMAX.kn?'+'+Math.round((pdKnSize(g)+.08-1)*100)+' %':''],['Flug',pdF(PD_KNT,1)+' s / Runde']],
   c4:[['Radius',pdC4R(g)+' px',U.c4<PD_UPMAX.c4?(pdC4R(g)+8)+'':''],['Schaden',String(PD_C4DMG)],['Vorrat','max. '+PD_C4MAX]]};
  const curN={ak:()=>pdAkMag(g)+' Schuss',gl:()=>pdGlMag(g)+' Schuss',kn:()=>pdKnRounds(g)+(pdKnRounds(g)===1?' Runde':' Runden'),c4:()=>'Radius '+pdC4R(g)+' px'};
