@@ -210,7 +210,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='5.2';   /* bei jeder neuen Version erhöhen */
+const PD_VER='5.3';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -521,7 +521,7 @@ function pdUpdate(dt){
  if(mx||my){ const l=Math.hypot(mx,my); g.dx=mx/l; g.dy=my/l; if(Math.abs(mx)>.1) g.face=mx>0?1:-1; }
  /* Spawns: alle über die Tür des Jedmayer */
  g.spawnT-=dt;
- const rate=Math.max(.12,1.1-g.t/260)/PD_SPAWN, cap=g.arena?0:g.bigOn?6+3*(1+(g.ps||[]).length):(60+Math.min(200,g.t/2.2))*PD_SPAWN*(PD.lite>=2?.65:PD.lite===1?.85:1);
+ const rate=Math.max(.12,1.1-g.t/260)/PD_SPAWN, cap=g.arena?0:g.bigOn?6+3*(1+(g.ps||[]).length):(60+Math.min(200,g.t/2.2))*PD_SPAWN*.8*(PD.lite>=2?.65:PD.lite===1?.85:1);
  if(g.spawnT<=0&&g.en.length<cap){
   g.spawnT=rate; const burst=g.bigOn?1:1+Math.floor(g.t/70);
   for(let i=0;i<burst;i++){ const k=pdPickEnemy(g.t), d=PD_EN[k], gt=PD_GATES[Math.floor(Math.random()*PD_GATES.length)], off=pdRand(0,26); g.en.push({k,x:gt.x+pdRand(-gt.jx,gt.jx)+gt.ox*off,y:gt.y+pdRand(-gt.jy,gt.jy)+gt.oy*off,sd:Math.floor(Math.random()*1e6),hp:d.hp*PD_HPM*(1+g.t/420),hpMax:d.hp*PD_HPM*(1+g.t/420),face:1,stun:0,kx:0,ky:0,ph:Math.random()*6,flash:0,sleep:0}); }
@@ -529,7 +529,7 @@ function pdUpdate(dt){
  if(g.bigOn||g.arena) g.bossN=Math.floor(g.t/180);
  while(g.t>=180*(g.bossN+1)){ const n=g.bossN++, d=PD_EN.boss, hp=Math.round((700+600*n)*PD_BOSSM); g.en.push({k:'boss',sd:0,x:PD_DOOR.x,y:PD_DOOR.y+34,hp,hpMax:hp,xp:60*(n+1),face:1,stun:0,kx:0,ky:0,ph:0,flash:0,sleep:0}); pdTxt(g.x,g.y-60,'Dealer-Papa Nr. '+(n+1)+' kommt!','#ff6b6b',2.6); pdSnd('boss'); }
  /* Camper-Nachschub: steht der Spieler länger als 3 s, kommen Gegner direkt von außerhalb des Bildes */
- if(g.still>3&&!g.bigOn&&!g.arena){ g.campT=(g.campT||0)-dt; if(g.campT<=0&&g.en.length<(60+Math.min(200,g.t/2.2))*PD_SPAWN*1.4*(PD.lite>=2?.65:PD.lite===1?.85:1)){ g.campT=.5; const nn=2+Math.floor(g.t/120);
+ if(g.still>3&&!g.bigOn&&!g.arena){ g.campT=(g.campT||0)-dt; if(g.campT<=0&&g.en.length<(60+Math.min(200,g.t/2.2))*PD_SPAWN*.8*1.4*(PD.lite>=2?.65:PD.lite===1?.85:1)){ g.campT=.5; const nn=2+Math.floor(g.t/120);
   for(let i=0;i<nn;i++){ const k=pdPickEnemy(g.t), d=PD_EN[k], a=Math.random()*6.2832, R=pdRand(340,420), hp=d.hp*PD_HPM*(1+g.t/420);
    g.en.push({k,x:Math.max(PD_AR.x0,Math.min(PD_AR.x1,g.x+Math.cos(a)*R)),y:Math.max(PD_AR.y0,Math.min(PD_AR.y1,g.y+Math.sin(a)*R)),sd:Math.floor(Math.random()*1e6),hp,hpMax:hp,face:1,stun:0,kx:0,ky:0,ph:Math.random()*6,flash:0,sleep:0}); } } }
  /* Gegner */
@@ -603,7 +603,7 @@ function pdPickups(dt){
  for(const c of g.c4i){ for(const g of PL){ if(c.got) break; if(g.c4<PD_C4MAX&&Math.hypot(c.x-g.x,c.y-g.y)<28){ c.got=1; g.c4++; pdTxt(g.x,g.y-40,'C4 ×'+g.c4,'#ffd23f',1.2); pdSnd('pick'); } } }
  g.c4i=g.c4i.filter(c=>!c.got);
  /* Atombombe: alle 3000 besiegte Gegner bei Berni´s Waffenshop */
- if(g.kills>=g.nukeNext&&!g.arena){ g.nukeNext+=pdNukeGap(g.nukeNext); if(!g.nki.length&&!PL.some(p=>p.nuke)){ g.nki.push({x:PD_AR.x0+46,y:PD_HOUSES.shop.y+PD_HOUSES.shop.h/2}); pdTxt(g.x,g.y-70,'☢ Atombombe bei Berni´s Waffenshop!','#ffe14d',3); pdSnd('boss'); } }
+ if(g.kills>=g.nukeNext&&!g.arena){ g.nukeN=(g.nukeN|0)+1; g.nukeNext+=pdNukeGap(g.nukeN); if(!g.nki.length&&!PL.some(p=>p.nuke)){ g.nki.push({x:PD_AR.x0+46,y:PD_HOUSES.shop.y+PD_HOUSES.shop.h/2}); pdTxt(g.x,g.y-70,'☢ Atombombe bei Berni´s Waffenshop!','#ffe14d',3); pdSnd('boss'); } }
  for(const c of g.nki){ for(const g of PL){ if(c.got) break; if(!g.nuke&&Math.hypot(c.x-g.x,c.y-g.y)<34){ c.got=1; g.nuke=1; pdTxt(g.x,g.y-46,'☢ Atombombe!','#ffe14d',2); pdSnd('nukepick'); } } }
  g.nki=g.nki.filter(c=>!c.got);
  /* Glock 45: liegt dort, wo der 100. Gegner gefallen ist (verschwindet nach 60 s) */
@@ -1108,9 +1108,9 @@ function pdHud(){
  const cb=document.getElementById('pdC4'); if(cb){ cb.querySelector('b').textContent=g.c4+'/'+PD_C4MAX; cb.classList.toggle('off',g.c4<1); }
  const hp=Math.max(0,g.hp/g.hpMax*100), mx=g.lv>=PD_MAXPLV, xp=mx?100:Math.min(100,g.xp/g.xpN*100), tc=pdTierCol(g.lv);
  const ws=Object.keys(g.w).filter(k=>PD_WPN[k]).map(k=>{ const L=g.w[k], cd=pdCd(k,L); return `<i title="${PD_WPN[k].n}" data-w="${k}">${PD_WPN[k].ic}<b>Lv ${L}</b>${cd?`<small>alle ${pdSec(cd)}</small><u class="pdcdb"><v></v></u>`:''}</i>`; }).join('')+Object.keys(g.p).filter(k=>PD_PASS[k]&&g.p[k]).map(k=>`<i title="${PD_PASS[k].n}">${PD_PASS[k].ic}<b>×${g.p[k]}</b></i>`).join('')+(g.skel?'<i title="Skelett: noch ein Leben weniger">💀<b>Skelett</b></i>':'');
- const sig=(pdMainOk()?(G.pdKills||0):'')+'|'+hp.toFixed(0)+'|'+xp.toFixed(0)+'|'+pdFmt(g.t)+'|'+g.kills+'|'+g.lv+'|'+Math.ceil(g.hp)+'|'+g.hpMax+'|'+ws;
+ const sig=(pdMainOk()?(G.pdKills||0):'')+'|'+hp.toFixed(0)+'|'+xp.toFixed(0)+'|'+pdFmt(g.t)+'|'+g.kills+'|'+g.lv+'|'+Math.ceil(g.hp)+'|'+g.hpMax+'|'+(g.coins|0)+'|'+ws;
  if(el.dataset.sig!==sig){ el.dataset.sig=sig;
- el.innerHTML=`<div class="pdbars"><div class="pdhp"><span style="width:${hp}%"></span><em>❤ ${Math.ceil(g.hp)} / ${g.hpMax}</em></div><div class="pdxp" style="--tc:${tc}"><span style="width:${xp}%"></span><em><b>STUFE ${g.lv}</b>${mx?' · MAX':''}</em></div></div><div class="pdgear">${ws}</div><div class="pdinfo"><b>${pdFmt(g.t)}</b><span>${pdMainOk()?'🪙 '+((G.pdKills||0)%PD_KILLS_PER_REWARD)+' / '+PD_KILLS_PER_REWARD+' · ':''}💤 ${g.kills}</span></div>`;
+ el.innerHTML=`<div class="pdbars"><div class="pdhp"><span style="width:${hp}%"></span><em>❤ ${Math.ceil(g.hp)} / ${g.hpMax}</em></div><div class="pdxp" style="--tc:${tc}"><span style="width:${xp}%"></span><em><b>STUFE ${g.lv}</b>${mx?' · MAX':''}</em></div></div><div class="pdgear">${ws}</div><div class="pdinfo"><b>${pdFmt(g.t)}</b><i class="pdcn">🪙 ${g.coins|0}</i><span>${pdMainOk()?'🪙 '+((G.pdKills||0)%PD_KILLS_PER_REWARD)+' / '+PD_KILLS_PER_REWARD+' · ':''}💤 ${g.kills}</span></div>`;
  }
  for(const k of ['defi','sirene','fackel']){ if(!g.w[k]) continue; const t=pdCd(k,g.w[k]), c=(g.cd[{defi:'D',sirene:'R',fackel:'F'}[k]]||0), v=el.querySelector('[data-w="'+k+'"] .pdcdb v'); if(v) v.style.width=Math.max(0,Math.min(100,(1-c/t)*100))+'%'; }
 }
@@ -1489,7 +1489,7 @@ function pdTreeHTML(){
  const lw=Object.keys(PD_WPN).map(k=>{
   const d=PD_WPN[k], L=g.w[k]||0, A=pdWStats(k,L||1,g.dmgM*PD_WDMG,true), B=pdWStats(k,L+1,g.dmgM*PD_WDMG,true), nl=pdMiles(k).find(m=>m[0]>L);
   return `<div class="pdtp${L?'':' dim'}" style="--cc:${d.col}"><span class="pdti">${d.ic}</span><div class="pdtt"><b>${d.n}</b><small>${L?(L>=PD_MAXLV?'Höchste Stufe':'Nächster Meilenstein: Stufe '+(nl?nl[0]:PD_MAXLV)):'Noch nicht gefunden (Level-Up)'}</small><div class="pdupbar"><i style="width:${Math.min(100,L/PD_MAXLV*100)}%"></i></div></div><span class="pdtx">${L?'Stufe '+L:'–'}<small>${L?'von '+PD_MAXLV:'noch nicht'}</small></span>${pdChips(A.map((r,i)=>[r[0],r[1],L&&L<PD_MAXLV&&B[i][1]!==r[1]?B[i][1]:'']))}</div>`; }).join('');
- const nk=`<div class="pdtp" style="--cc:#ffe14d"><span class="pdti">${PD_ICO.nk}</span><div class="pdtt"><b>Atombombe</b><small>Alle ${PD_NUKE_KILLS} Besiegte (ab 24000: nur noch alle 10000–20000) bei Berni´s Waffenshop · erledigt alle Gegner</small></div><span class="pdtx">${g.nuke?'bereit':'–'}<small>${g.nuke||!g.nukeNext?'':'bei '+g.nukeNext}</small></span>${pdChips([['Gegner','alle erledigt'],['Bosse','−'+Math.round(PD_NUKE_BOSS*100)+' % Leben'],['Vorlauf',pdF(PD_NUKE_PRE,0)+' s']])}</div>`;
+ const nk=`<div class="pdtp" style="--cc:#ffe14d"><span class="pdti">${PD_ICO.nk}</span><div class="pdtt"><b>Atombombe</b><small>Die erste bei ${PD_NUKE_KILLS} Besiegten, danach braucht jede weitere 1500 Besiegte mehr als die davor, bei Berni´s Waffenshop · erledigt alle Gegner</small></div><span class="pdtx">${g.nuke?'bereit':'–'}<small>${g.nuke||!g.nukeNext?'':'bei '+g.nukeNext}</small></span>${pdChips([['Gegner','alle erledigt'],['Bosse','−'+Math.round(PD_NUKE_BOSS*100)+' % Leben'],['Vorlauf',pdF(PD_NUKE_PRE,0)+' s']])}</div>`;
  const pc=Object.keys(PD_PASS).map(k=>{
   const d=PD_PASS[k], n=g.p[k]||0; const eff={hp:'+'+n*5+' max. Leben',spd:'+'+n*2+' % Tempo',mag:'+'+n*4+' px Magnet',dmg:'+'+n*7+' % Schaden'}[k];
   return `<div class="pdtp${n?'':' dim'}" style="--cc:${d.col}"><span class="pdti">${d.ic}</span><div class="pdtt"><b>${d.n}</b><small>${d.d}</small></div><span class="pdtx">${n?'×'+n:'–'}<small>${n?'Stufen':'noch nicht'}</small></span>${pdChips([['Aktuell',n?eff:'–'],['Pro Stufe',{hp:'+5 Leben',spd:'+2 % Tempo',mag:'+4 px Magnet',dmg:'+7 % Schaden'}[k]]])}</div>`;
@@ -1889,7 +1889,7 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pdbars{gap:3px}.pdhp,.pdxp{height:9px;border-radius:5px;border-width:1px;background:#0007}.pdxp{height:12px;border-radius:6px}
 .pdbars em{font-size:8px;letter-spacing:.03em;text-shadow:0 0 2px #000,0 0 3px #000}
 .pdgear{gap:4px;opacity:.7}.pdgear i{background:#0003;border-color:#fff1;border-radius:8px;padding:1px 5px;font-size:12px}.pdgear b{font-size:10px}.pdgear i small{font-size:9px}
-.pdinfo{font-size:11px;opacity:.85}.pdinfo b{font-size:15px}
+.pdinfo{font-size:11px;opacity:.85}.pdinfo b{font-size:15px}.pdinfo i.pdcn{font-style:normal;font:800 13px system-ui;color:#ffd23f;text-shadow:0 1px 3px #000}
 #pdAK,#pdGL,#pdKN,#pdC4,#pdNK,#pdBT{width:54px;height:54px;border-radius:16px;border-width:1.5px;opacity:.82;box-shadow:0 3px 10px #0009;gap:0}
 #pdAK span,#pdGL span,#pdKN span,#pdC4 span,#pdNK span,#pdBT span{font-size:17px}
 #pdAK span svg,#pdGL span svg,#pdKN span svg,#pdC4 span svg,#pdNK span svg{width:32px;height:23px}
@@ -2699,7 +2699,7 @@ function pdAbility(e,d,dt,tp,dist,dx,dy,vx,vy,PLs){
  }
  return [vx,vy];
 }
-function pdNukeGap(n){ if(n<24000) return 3000; const x=n-24000, lo=10000+x*.08, hi=20000+x*.16; return Math.round((lo+Math.random()*(hi-lo))/100)*100; }
+function pdNukeGap(k){ return Math.min(30000,3000+1500*k); }   /* 1. bei 3000, dann +4500, +6000, +7500 … (höchstens 30000 Besiegte Abstand) */
 
 /* ---------- Ansagen ---------- */
 function pdAnn(g,s,s2,col,life){ g.ann={s,s2:s2||'',col:col||'#ffe14d',t:0,life:life||3.2}; }
