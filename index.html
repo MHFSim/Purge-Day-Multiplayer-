@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='6.6';   /* bei jeder neuen Version erhöhen */
+const PD_VER='6.7';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1566,14 +1566,15 @@ function pdFloatRefresh(force){
  if(g.pick){
   picks='<div class="pdflp">'+g.pick.map((o,i)=>{
    const d=o.t==='w'?PD_WPN[o.k]:PD_PASS[o.k], w=o.t==='w';
-   const tag=w?(o.l?'Stufe '+o.l+' → '+(o.l+1):'NEUE WAFFE'):'Ausrüstung · '+o.l+'×';
-   return `<button class="pdflc" data-pd="${i}" style="--cc:${d.col}"><span class="pdflci">${d.ic}</span><b>${d.n}</b><small>${tag}</small></button>`; }).join('')+'</div>';
+   const SH={hp:'+5 Leben, heilt',spd:'+2 % Tempo',mag:'Magnet größer',dmg:'+7 % Schaden'};
+   const tag=w?(o.l?'Stufe '+o.l+' → '+(o.l+1):'Neue Waffe'):(SH[o.k]||'Ausrüstung');
+   return `<button class="pdflc" data-pd="${i}" style="--cc:${d.col}"><span class="pdflci">${d.ic}</span><span class="pdflt"><b>${d.n}</b><small>${tag}</small></span></button>`; }).join('')+'</div>';
  }
  const ups=KS.filter(k=>(U[k]|0)<PD_UPMAX[k]).map(k=>{ const c=pdUpCost(g,k), can=g.coins>=c;
   return `<button class="pdflb${can?' can':''}" data-fl="up" data-k="${k}"${can?'':' disabled'}><span class="pdflbi">${NM[k][1]}</span><b>${NM[k][0]}</b><small>Stufe ${U[k]|0}/${PD_UPMAX[k]}</small><em>🪙 ${c}</em></button>`; }).join('');
  const head=g.pick?`<b>⭐ Level ${g.lv}</b><small>Wähle ein Upgrade${g.mp?' · nur für dich':''}</small>`:`<b>Aufrüsten</b><small>Waffen verbessern</small>`;
- const html=`<div class="pdflh"><div>${head}</div><span class="pdflcoin">🪙 ${g.coins}</span><button class="pdflx" data-fl="x" aria-label="Schließen">✕</button></div>${picks}`;
- if(!el){ el=document.createElement('div'); el.id='pdFloat'; wzEnsure().appendChild(el);
+ const html=g.pick?`<span class="pdflb2">⭐<b>${g.lv}</b></span>${picks}<button class="pdflx" data-fl="x" aria-label="Schließen">✕</button>`:`<div class="pdflh"><div>${head}</div><span class="pdflcoin">🪙 ${g.coins}</span><button class="pdflx" data-fl="x" aria-label="Schließen">✕</button></div>${picks}`;
+ if(!el){ el=document.createElement('div'); el.id='pdFloat'; el.className='pdfl2'; wzEnsure().appendChild(el);
   el.onclick=e=>{ const b=e.target.closest('[data-pd]'), f=e.target.closest('[data-fl]'); const gg=PD.g; if(!gg) return;
    if(b&&gg.pick){ const i=+b.dataset.pd;
     if(PD.st==='guest'){ NET.pkSent=gg.lv; try{ NET.conn.send({t:'pk',i}); }catch(er){} gg.pick=null; pdSnd('tap'); }
@@ -1767,6 +1768,18 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 #pdUpBar .pdub{touch-action:manipulation}
 #pdUpBar .pdub.can{filter:none;opacity:1;cursor:pointer;border-color:#fff3b0;background:#ffd23f;box-shadow:0 0 12px 1px #ffd23fa0;animation:pdubg 1.4s ease-in-out infinite}
 @keyframes pdubg{50%{box-shadow:0 0 18px 4px #ffd23fd0}}
+
+/* v6.7: kleines Level-Up-Band oben statt Kasten in der Bildmitte */
+#pdFloat.pdfl2{display:flex!important;align-items:center;gap:4px;top:calc(82px + env(safe-area-inset-top,0px))!important;width:min(400px,calc(100% - 16px))!important;padding:3px 4px!important;border-radius:11px!important;background:#0b0d1466!important;opacity:.92}
+#pdFloat.pdfl2 .pdflb2{flex:none;display:flex;flex-direction:column;align-items:center;font:800 9px/1 system-ui;color:#ffe14d;padding:0 3px}#pdFloat.pdfl2 .pdflb2 b{font:900 12px/1.1 system-ui;color:#fff}
+#pdFloat.pdfl2 .pdflp{flex:1;min-width:0;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px!important}
+#pdFloat.pdfl2 .pdflc{flex-direction:row!important;justify-content:flex-start;gap:4px!important;padding:3px 4px!important;text-align:left}
+#pdFloat.pdfl2 .pdflci{font-size:16px!important;flex:none}#pdFloat.pdfl2 .pdflci svg{width:16px!important;height:16px!important}
+#pdFloat.pdfl2 .pdflt{display:flex;flex-direction:column;min-width:0;line-height:1.1}
+#pdFloat.pdfl2 .pdflc b{font:800 10px/1.1 system-ui!important;text-align:left!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+#pdFloat.pdfl2 .pdflc small{font:600 8.5px/1.15 system-ui!important;text-align:left!important;color:#c9d0e4cc!important}
+#pdFloat.pdfl2 .pdflx{flex:none;width:18px!important;height:18px!important;font-size:9px!important}
+@media (orientation:portrait){#pdFloat.pdfl2{top:calc(132px + env(safe-area-inset-top,0px))!important}}
 #pdFloat .pdflh{display:flex;align-items:center;gap:6px;margin-bottom:4px}#pdFloat .pdflh>div{flex:1;min-width:0;display:flex;flex-direction:column}
 #pdFloat .pdflh b{font:800 13px system-ui}#pdFloat .pdflh small{font:600 10.5px system-ui;color:#b9c0d4}
 #pdFloat .pdflcoin{font:800 12px system-ui;color:#ffd23f;background:#ffd23f1f;border-radius:9px;padding:3px 8px}
