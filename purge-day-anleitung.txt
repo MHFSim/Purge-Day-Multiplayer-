@@ -1,5 +1,5 @@
 =====================================================================
-  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 6.2)
+  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 6.3)
 =====================================================================
 
 Purge-Day ist ein Überlebensspiel von oben gesehen. Du bist ein Mitarbeiter
@@ -256,8 +256,22 @@ Gegner ändern sich.
                                 Abbruchhaus, Container-Notquartier,
                                 Drogenküche. Hindernisse: brennende Tonnen,
                                 Matratzen, Einkaufswägen.
-  Ab Level 5 wiederholen sich Säufer-Park, Passage und Hinterhof
-  (mit "II", "III" ...), werden aber jedes Mal schwerer.
+  Level 5  Westbahnhof          Gleise, Zeitungen, Zugluft. Fahrkarten,
+                                Würstelstand, Schließfächer.
+  Level 6  Bierzelt             Holzboden, Konfetti, Bierlachen. Toi-Toi-Klos,
+                                Festzelt, Schießbude. Biertische.
+  Level 7  Spielhölle           Casino-Teppich, Jetons, Karten. Hinterzimmer
+                                (Poker), Casino, Inkasso. Spielautomaten.
+  Level 8  Donaukanal           Beton, Graffiti, Kanalwasser. Lagerhalle,
+                                Bootshaus, Kanal-Beisl. Kisten, Poller.
+  Level 9  Klinik-Ruine         Fliesen, Pillen, Risse. Apotheke, Station 7,
+                                Pathologie. Krankenbetten, Rollstühle.
+  Level 10 Rave-Bunker          Neonlicht und Konfetti. Chill-Out, Bunker-Club,
+                                DJ-Pult. Lautsprecher.
+  Level 11 Kartell-Villa        Marmor und Pool. Garage, Villa des Paten,
+                                Poolhaus. Palmen, Liegen.
+  Jedes Level ist ein eigenes Design – bis zur höchsten Stufe (500) wiederholt
+  sich keines.
 
 Schwierigkeit: Pro Level haben die Gegner 35 % mehr Leben und machen 12 %
 mehr Schaden. Es kommen etwas mehr gleichzeitig (bis +25 %). Direkt nach
@@ -296,7 +310,20 @@ NEUE GEGNER JE LEVEL
     Drogenkoch       Wirft Giftwolken genau dorthin, wo du stehst.
     Paranoiker       Rast los, sobald er halb besiegt ist.
     Crack-Koloss     Riesig, sehr viel Leben, springt auf dich zu.
-  Ab Level 5 mischen sich auch die Gegner der anderen Level dazu.
+  Westbahnhof:   Schnorrer (Zickzack), Pfandsammler (wirft Flaschen),
+                 Gleis-Junkie (springt dich an)
+  Bierzelt:      Maßkrug-Stemmer (Koloss), Trachtler (Kotzlachen),
+                 Schunkler (Zickzack)
+  Spielhölle:    Zocker (wirft Jetons im Fächer), Türsteher (Koloss),
+                 Kartenhai (springt dich an)
+  Donaukanal:    Schmuggler (wirft im Fächer), Besoffener Matrose
+                 (Kotzlachen), Kanalratte (sehr schnell)
+  Klinik-Ruine:  Entlaufener Patient (Zickzack), Pillendreher (Pillen im
+                 Fächer), Falscher Pfleger (heilt Gegner)
+  Rave-Bunker:   Raver (sehr schnell), Pillenfee (rast bei halbem Leben),
+                 Bass-Bro (Koloss)
+  Kartell-Villa: Bodyguard (Koloss), Sicario (Fächer), Kartell-Chemiker
+                 (Giftwolken)
 
 Eingeschläferte Gegner lassen Drogensäckchen fallen.
 
@@ -455,7 +482,7 @@ CHEAT-MENÜ
 ---------------------------------------------------------------------
 
 Im Pause-Menü gibt es ein Cheat-Menü mit Passwort. Damit kann man jedes
-Level (1 bis 7) ohne Gegner ansehen oder im aktuellen Level die Gegner aus-
+Level (1 bis 11) ohne Gegner ansehen oder im aktuellen Level die Gegner aus-
 und wieder einschalten. Ohne Gegner kommt auch kein Endgegner.
 
 
