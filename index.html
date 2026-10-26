@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='7.2';   /* bei jeder neuen Version erhöhen */
+const PD_VER='7.3';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -271,7 +271,7 @@ function pdPlay(k,v,pan){
 function pdAC(){
  if(typeof SOUND!=='undefined'&&!SOUND) return null;
  try{ if(!PDS.ac){ const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; PDS.ac=new C();
-   const cp=PDS.ac.createDynamicsCompressor(); cp.threshold.value=-14; cp.ratio.value=6; const mg=PDS.ac.createGain(); mg.gain.value=.9; cp.connect(mg); mg.connect(PDS.ac.destination); PDS.m=cp;
+   const cp=PDS.ac.createDynamicsCompressor(); cp.threshold.value=-14; cp.ratio.value=6; const mg=PDS.ac.createGain(); mg.gain.value=.9*(PDO.vol===undefined?1:PDO.vol); PDS.mg=mg; cp.connect(mg); mg.connect(PDS.ac.destination); PDS.m=cp;
    const n=PDS.ac.createBuffer(1,PDS.ac.sampleRate,PDS.ac.sampleRate), d=n.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; PDS.nb=n; pdLoadSmp(); }
   if(PDS.ac.state==='suspended') PDS.ac.resume(); }catch(e){ PDS.ac=null; }
  return PDS.ac;
@@ -1087,7 +1087,7 @@ function pdDraw0(){
  if(g.nf&&g.nf.t>=0) pdDrawNuke(x,g.nf);
  for(const f of g.kfl){ for(let i=0;i<f.tr.length;i++){ const q=f.tr[i], a=(i+1)/f.tr.length; x.fillStyle=`rgba(210,230,255,${a*.35})`; x.beginPath(); x.arc(q[0],q[1],2+a*5,0,7); x.fill(); } x.save(); x.translate(f.x,f.y); x.scale(pdKnSize(g),pdKnSize(g)); x.translate(-f.x,-f.y); pdDrawKnife(x,f.x,f.y,f.t*22*f.dir,false,g.t,true,pdWskOf(f.ow|0).kn); x.restore(); }
  /* Zahlen */
- x.textAlign='center'; for(const t of g.txt){ const nm=/^\d+$/.test(t.s); x.globalAlpha=Math.max(0,Math.min(1,(1-t.t/t.life)*(nm?1.6:1))); x.font=nm?'900 11px system-ui':'800 13px system-ui'; if(nm){ x.lineJoin='round'; x.lineWidth=3; x.strokeStyle='#000e'; x.strokeText(t.s,t.x,t.y); } else if(g.txt.length<=14){ x.fillStyle='#000'; x.fillText(t.s,t.x+1,t.y+1); } x.fillStyle=t.c; x.fillText(t.s,t.x,t.y); } x.globalAlpha=1;
+ x.textAlign='center'; for(const t of g.txt){ const nm=/^\d+$/.test(t.s); if(nm&&!PDO.dnum) continue; x.globalAlpha=Math.max(0,Math.min(1,(1-t.t/t.life)*(nm?1.6:1))); x.font=nm?'900 11px system-ui':'800 13px system-ui'; if(nm){ x.lineJoin='round'; x.lineWidth=3; x.strokeStyle='#000e'; x.strokeText(t.s,t.x,t.y); } else if(g.txt.length<=14){ x.fillStyle='#000'; x.fillText(t.s,t.x+1,t.y+1); } x.fillStyle=t.c; x.fillText(t.s,t.x,t.y); } x.globalAlpha=1;
  x.restore();
  pdOverlay(x,g,W,H); pdWarn(x,g,W,H);
 
@@ -1457,8 +1457,8 @@ function pdMiles(k){
  return a;
 }
 const PD_OPTKEY='mhsim_pd_opts';
-const PDO={snd:1,blood:1,col:'r'};
-try{ const o=JSON.parse(localStorage.getItem(PD_OPTKEY)||'null'); if(o){ if(o.snd===0) PDO.snd=0; if([0,1,2].includes(o.blood)) PDO.blood=o.blood; if(['r','g','b'].includes(o.col)) PDO.col=o.col; } }catch(e){}
+const PDO={snd:1,blood:1,col:'r',vol:1,dnum:1};
+try{ const o=JSON.parse(localStorage.getItem(PD_OPTKEY)||'null'); if(o){ if(o.snd===0) PDO.snd=0; if([0,1,2].includes(o.blood)) PDO.blood=o.blood; if(['r','g','b'].includes(o.col)) PDO.col=o.col; if(typeof o.vol==='number'&&o.vol>=0&&o.vol<=1) PDO.vol=o.vol; if(o.dnum===0) PDO.dnum=0; } }catch(e){}
 function pdOptSave(){ try{ localStorage.setItem(PD_OPTKEY,JSON.stringify(PDO)); }catch(e){} }
 const PD_BCOL={r:{n:'Rot',f:[150,20,28],p:[190,24,34],c:'#d0212c'},g:{n:'Grün',f:[40,150,50],p:[80,205,80],c:'#3fbf4a'},b:{n:'Blau',f:[40,90,200],p:[90,150,255],c:'#3d7dff'}};
 const PD_HANDKEY='mhsim_pd_hand';
@@ -1474,14 +1474,18 @@ function pdRenderOpts(){
  el.innerHTML=`<div class="pdslh"><b>Optionen</b><small>Gilt sofort und bleibt gespeichert</small></div>
  <div class="pdhand"><div class="pdtt"><b>Hand-Modus</b><small>Wo die Waffen-Buttons liegen</small></div>${seg('hand',[['r','Rechtshand','Buttons links'],['l','Linkshand','Buttons rechts']],hd)}</div>
  <div class="pdhand"><div class="pdtt"><b>Ton</b><small>Alle Spielgeräusche</small></div>${seg('snd',[[1,'🔊 An'],[0,'🔇 Aus']],PDO.snd)}</div>
+ <div class="pdhand"><div class="pdtt"><b>Lautstärke</b><small id="pdVolL">${Math.round(PDO.vol*100)} %</small></div><input class="pdvol" type="range" min="0" max="100" step="5" value="${Math.round(PDO.vol*100)}" data-vol="1" aria-label="Lautstärke"></div>
+ <div class="pdhand"><div class="pdtt"><b>Schadenszahlen</b><small>Zahlen über getroffenen Gegnern</small></div>${seg('dnum',[[1,'An'],[0,'Aus']],PDO.dnum)}</div>
  <div class="pdhand"><div class="pdtt"><b>Blut</b><small>Menge der Blutspritzer und Flecken</small></div>${seg('blood',[[0,'Aus'],[1,'Normal'],[2,'Mehr']],PDO.blood)}</div>
  <div class="pdhand"><div class="pdtt"><b>Blutfarbe</b><small>Rot, Grün oder Blau</small></div><div class="pdseg pdseg3">${['r','g','b'].map(k=>`<button data-po="col" data-v="${k}" class="${PDO.col===k?'on':''}"><i class="pdbd" style="background:${PD_BCOL[k].c}"></i>${PD_BCOL[k].n}</button>`).join('')}</div></div>
  <button class="pdopt pdslback" data-po="back"><span class="pdoi">‹</span><span class="pdot"><b>Zurück</b></span></button>`;
  ov.appendChild(el);
  el.onclick=e=>{ const b=e.target.closest('[data-po]'); if(!b) return; const k=b.dataset.po, v=b.dataset.v;
   if(k==='back'){ el.remove(); pdPause(true); return; }
-  if(k==='hand') pdSetHand(v); else if(k==='snd') PDO.snd=+v; else if(k==='blood') PDO.blood=+v; else if(k==='col') PDO.col=v;
+  if(k==='hand') pdSetHand(v); else if(k==='snd') PDO.snd=+v; else if(k==='dnum') PDO.dnum=+v; else if(k==='blood') PDO.blood=+v; else if(k==='col') PDO.col=v;
   pdOptSave(); const y=el.scrollTop; pdRenderOpts(); const n=document.getElementById('pdOpts'); if(n) n.scrollTop=y; pdSnd('tap'); };
+ el.addEventListener('input',e=>{ const r=e.target.closest('[data-vol]'); if(!r) return; PDO.vol=Math.max(0,Math.min(1,+r.value/100)); if(PDS.mg) PDS.mg.gain.value=.9*PDO.vol; const l=document.getElementById('pdVolL'); if(l) l.textContent=Math.round(PDO.vol*100)+' %'; pdOptSave(); });
+ el.addEventListener('change',e=>{ if(e.target.closest('[data-vol]')) pdSnd('kill'); });
 }
 function pdTreeHTML(){
  const g=PD.g, tc=pdTierCol(g.lv);
@@ -1901,6 +1905,7 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pdur{border-color:#ffd23f88;background:linear-gradient(120deg,#26210f,#16171d)}
 .pdupb.sm{width:auto;min-width:64px;padding:9px 12px;font-size:14px;flex:none}
 .pdhand{padding:10px;border-radius:16px;background:#16171d;border:1px solid #ffffff1f;display:flex;flex-direction:column;gap:8px}
+.pdvol{width:100%;margin-top:6px;accent-color:#ffd23f;height:26px}
 .pdseg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pdseg button{padding:9px 6px;border-radius:12px;border:1px solid #ffffff22;background:#1d1f27;color:#cfd3dc;font:800 14px system-ui;cursor:pointer}
 .pdseg button small{display:block;font:600 10.5px system-ui;color:#8b92a0;margin-top:2px}.pdseg button.on{background:linear-gradient(#ffe27a,#f0b22c);color:#2a1d00;border-color:#f0b22c}.pdseg button.on small{color:#5a4210}
 .pdrh #pdKN{right:auto;left:102px}.pdrh #pdGL{right:auto;left:14px}.pdrh #pdNK{right:auto;left:190px}
@@ -2795,9 +2800,48 @@ function pdBigAI(e,d,dt,tp,dist,dx,dy,PLs){
  if(dist<190) return [0,0];
  return [dx/dist*spd,dy/dist*spd];
 }
+
+/* ---------- Endboss: ein eigener Spezialangriff je Level-Design (nutzt nur synchronisierte Gefahren-Typen) ---------- */
+const PD_SIGN=['DEAL GEPLATZT!','PROST!','NADEL-FÄCHER!','BRANDHERD!','DER LETZTE ZUG!','SCHUNKELN!','JACKPOT!','FLUTWELLE!','PILLENREGEN!','LASER-SHOW!','KOPFGELD!'];
+const PD_SIGC=[4,4,1,0,5,4,3,5,2,3,4];
+function pdSigRun(e,A,ph,sp,q,T,rp){
+ const g=PD.g, v=pdLvd(g), col=PD_SIGC[v]||0, C=PD_HZC[col], R=pdRand, AR=PD_AR;
+ const ann=(sub)=>pdAnn(g,PD_SIGN[v]||'ANGRIFF!',sub||'',C,1.5);
+ const cone=(ang,w,arc,len,dmg,c)=>g.hz.length<125&&g.hz.push({k:'n',x:e.x,y:e.y-14,a:ang,arc,len,t:0,w,dur:.55,dmg,col:c,hit:{}});
+ switch(v){
+  case 0: { const p=rp(), an=Math.atan2(p.y-e.y,p.x-e.x), cn=5+ph*2; A.pose=3; A.ct=T(cn*.17+1.0); ann('Die Ware fliegt auf!');
+    for(let i=0;i<cn;i++){ const d=90+i*62; q(i*.17,()=>pdBlast(e.x+Math.cos(an)*d,e.y+Math.sin(an)*d,56,T(.9),34,'slam',col)); } pdSnd('boss'); break; }
+  case 1: { const cn=6+ph*2; A.pose=5; A.ct=T(cn*.16+.9); ann('Bierflaschen von oben!');
+    for(let i=0;i<cn;i++) q(i*.16,()=>{ const p=rp(); pdBlast(p.x+R(-110,110),p.y+R(-110,110),62,T(1.05),32,'slam',col); }); pdSnd('boss'); break; }
+  case 2: { const wv=2+ph; A.pose=6; A.ct=T(wv*.55+.7); ann('Ein Fächer aus Spritzen!');
+    for(let w=0;w<wv;w++) q(w*.55,()=>{ const p=rp(), an=Math.atan2(p.y-e.y,p.x-e.x); for(let k=-3;k<=3;k++) pdShoot(e.x,e.y-10,an+k*.17,190,12,col,7,3.2); pdSnd('shot3'); }); break; }
+  case 3: { A.pose=5; A.ct=T(1.4); ann('Der Hinterhof brennt!'); const zn=4+ph, o=Math.random()*6.2832;
+    for(let i=0;i<zn;i++){ const an=o+i*6.2832/zn; if(g.hz.length<120) g.hz.push({k:'z',x:Math.max(AR.x0+40,Math.min(AR.x1-40,e.x+Math.cos(an)*210)),y:Math.max(AR.y0+40,Math.min(AR.y1-40,e.y+Math.sin(an)*210)),r:82,t:0,w:T(1),life:8,tk:0,dmg:8,col}); }
+    for(const p of pdPlayers(g).slice(0,2)) if(g.hz.length<120) g.hz.push({k:'z',x:p.x,y:p.y+4,r:82,t:0,w:T(1),life:8,tk:0,dmg:8,col}); pdSnd('boss'); break; }
+  case 4: { const p=rp(), rows=ph>=3?2:1, cn=9; A.pose=5; A.ct=T(cn*.1+1.6); ann('Alle Gleise frei halten!');
+    for(let r=0;r<rows;r++){ const y=Math.max(AR.y0+50,Math.min(AR.y1-50,p.y+(r?140*(Math.random()<.5?-1:1):0))), dir=(r?1:-1)*(Math.random()<.5?1:-1), w=AR.x1-AR.x0-100;
+      for(let i=0;i<cn;i++){ const x=dir>0?AR.x0+50+w*i/(cn-1):AR.x1-50-w*i/(cn-1); q(i*.1,()=>pdBlast(x,y,58,T(.8),36,'slam',col)); } } pdSnd('boss'); break; }
+  case 5: { const st=18+ph*4, arms=ph>=3?3:2, a0=Math.random()*6.2832; A.pose=6; A.ct=T(st*.1+.8); ann('Alle schunkeln mit!');
+    for(let i=0;i<st;i++) q(i*.1,()=>{ for(let k=0;k<arms;k++) pdShoot(e.x,e.y-10,a0+i*.55+k*6.2832/arms,150,11,col,7,3.4); if(i%3===0) pdSnd('shot3'); }); break; }
+  case 6: { const cn=2+ph; A.pose=3; A.ct=T(cn*.3+1.9); ann('Die Bank gewinnt immer!');
+    for(let i=0;i<cn;i++) q(i*.3,()=>{ const p=rp(); pdBlast(p.x+R(-40,40),p.y+R(-40,40),96,T(1.5),40,'slam',col); }); pdSnd('boss'); break; }
+  case 7: { const p=rp(), an=Math.atan2(p.y-e.y,p.x-e.x), w=T(1.2); A.pose=4; A.ct=w+T(ph>=2?2.2:.9); ann('Das Wasser steigt!');
+    for(let i=0;i<3;i++) cone(an+i*2.094,w,.7,620,40,col);
+    if(ph>=2) q(1.5,()=>{ for(let i=0;i<3;i++) cone(an+1.047+i*2.094,T(1.0),.7,620,40,col); pdSnd('boss'); }); pdSnd('boss'); break; }
+  case 8: { const wv=2+ph; A.pose=6; A.ct=T(wv*.5+.9); ann('Pillen von allen Seiten!');
+    for(let w=0;w<wv;w++) q(w*.5,()=>{ const p=rp(), n=10+2*ph, o=Math.random()*6.2832; for(let i=0;i<n;i++){ const an=o+i*6.2832/n; pdShoot(p.x+Math.cos(an)*250,p.y+Math.sin(an)*250,an+Math.PI,140,12,col,7,2.6); } pdSnd('shot3'); }); break; }
+  case 9: { const bm=4+ph, b0=Math.random()*6.2832; A.pose=4; A.ct=T(bm*.28+1.4); ann('Bass auf Anschlag!');
+    for(let i=0;i<bm;i++) q(i*.28,()=>{ cone(b0+i*.55,T(.7),.22,720,30,col); pdSnd('boss'); }); break; }
+  case 10: { A.pose=5; A.ct=T(2.2); ann('Auf euch ist ein Kopfgeld ausgesetzt!');
+    for(let j=0;j<3;j++) q(.2+j*.55,()=>{ for(const p of pdPlayers(g).slice(0,4)) pdBlast(p.x,p.y+4,70,T(.9),38,'slam',col); pdSnd('boss'); });
+    q(.7,()=>{ if(g.en.length>44) return; const sp2=PD_LVD[10].spec, cn=2+ph; for(let i=0;i<cn;i++){ const an=i*6.2832/cn, k=pdKindFix(sp2[i%sp2.length][0]); const m=pdMkEnemy(k,e.x+Math.cos(an)*90,e.y+Math.sin(an)*90,1+(e.bn%50)*.1+g.t/900); g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.5}); } }); break; }
+  default: { A.pose=5; A.ct=T(1); pdBlast(e.x,e.y,120,T(1),34,'slam',0); }
+ }
+}
 function pdBigPick(e,A,ph,sp){
  const g=PD.g, PLs=pdPlayers(g); if(!PLs.length) return;
  const pool=e.af?['c4','burp','slam','hail','summon']:ph===1?['c4','burp','slam','hail','summon']:ph===2?['c4','burp','burp2','slam','hail','summon','leap']:['c4','burp2','slam','hail','leap','gas','combo','burp'];
+ pool.push('sig'); if(ph>=2) pool.push('sig');   /* Spezialangriff passend zum Level-Design */
  let a; let n=0; do{ a=pool[Math.floor(Math.random()*pool.length)]; }while(a===A.last&&++n<6);
  A.last=a;
  const rp=()=>{ const L=pdPlayers(g); return L[Math.floor(Math.random()*L.length)]||g; };
@@ -2824,6 +2868,7 @@ function pdBigPick(e,A,ph,sp){
     const tx=p.x, ty=p.y; q(1.05,()=>{ g.fx.push({k:'puff',x:e.x,y:e.y,t:0,life:.5}); e.x=Math.max(PD_AR.x0+50,Math.min(PD_AR.x1-50,tx)); e.y=Math.max(PD_AR.y0+60,Math.min(PD_AR.y1-50,ty)); g.fx.push({k:'puff',x:e.x,y:e.y,t:0,life:.5}); pdSnd('boss'); }); break; }
   case 'gas': { A.pose=5; A.ct=T(1.1); const L=pdPlayers(g).slice(); L.push(rp());
     for(const p of L){ if(g.hz.length>120) break; g.hz.push({k:'z',x:p.x,y:p.y+4,r:88,t:0,w:T(.95),life:7,tk:0,dmg:7,col:1}); } pdSnd('boss'); break; }
+  case 'sig': pdSigRun(e,A,ph,sp,q,T,rp); break;
   case 'combo': { const p=rp(); const ang=Math.atan2(p.y-e.y,p.x-e.x), w=T(1.15); A.pose=4; A.ct=w+T(1.5); pdAnn(g,'RÜLPS & HAGEL!','',PD_HZC[col],1.4);
     burp(ang,w,.75,40,col); q(.5,()=>{ for(let i=0;i<20;i++) pdShoot(e.x,e.y-10,i*6.2832/20,175,13,3,7,3.4); }); q(1.3,()=>{ for(let i=0;i<20;i++) pdShoot(e.x,e.y-10,.15+i*6.2832/20,175,13,1,7,3.4); }); pdSnd('boss'); break; }
  }
