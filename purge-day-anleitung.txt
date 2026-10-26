@@ -1,5 +1,5 @@
 =====================================================================
-  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 4.9)
+  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 6.0)
 =====================================================================
 
 Purge-Day ist ein Überlebensspiel von oben gesehen. Du bist ein Mitarbeiter
@@ -8,7 +8,8 @@ Waffen schießen und wirken von selbst, du musst nur laufen, ausweichen und
 klug aufrüsten. Du kannst alleine spielen oder mit bis zu 6 Handys zusammen.
 
 Ziel: so lange wie möglich durchhalten, viele Gegner einschläfern, höhere
-Stufen erreichen, Endgegner besiegen und die Arena im Jedmayer schaffen.
+Stufen erreichen, Endgegner besiegen und durch den Jedmayer in immer neue,
+schwerere Level vordringen.
 
 
 ---------------------------------------------------------------------
@@ -76,11 +77,13 @@ selbst. Nur AK, Glock, Wurfmesser, C4, Köder und Atombombe löst du aus.
 4.  DER BILDSCHIRM
 ---------------------------------------------------------------------
 
-Oben:       dünne rote Lebensleiste, darunter die Stufenleiste (Farbe
+Ganz oben:  Pause, deine Münzen (gelb), Waffen-Upgrades und Skill-Tree.
+Darunter:   dünne rote Lebensleiste, darunter die Stufenleiste (Farbe
             wechselt alle 10 Stufen).
 Darunter:   Waffen-Statistik (transparent): deine Waffen und Ausrüstung
             mit Stufe und Wartezeit.
-Danach:     Spielzeit (links) und Anzahl eingeschläferter Gegner (rechts).
+Danach:     Spielzeit (links) und Anzahl eingeschläferter
+            Gegner (rechts).
 Unten:      Aktions-Buttons mit Munition.
 Am Rand:    Pfeile weisen auf wichtige Dinge außerhalb des Bildes
             (roter Rucksack, Tür, Söldner-Shop, Endgegner-Angriffe,
@@ -110,15 +113,18 @@ und seine eigenen Münzen. Waffen gehen bis Stufe 60.
 
 Die Zahlen sind Grundwerte. Dein Schaden wird zusätzlich mit "Ruhige
 Hand" und dem allgemeinen Waffenbonus multipliziert.
+Keine Waffe stößt Gegner zurück: Treffer machen nur Schaden (die Sirene
+betäubt kurz).
 
 NALOXON-SPRITZE
   Schießt auf den nächsten Gegner. Wird mit jeder Stufe schneller und
   stärker. Alle 5 Stufen kommen 2 Spritzen mehr dazu, die gleichzeitig
-  feuern. Ab Stufe 5 fliegt jede Spritze durch bis zum 3. Gegner.
-  Schaden pro Spritze: 8 + 1 pro Stufe.
+  feuern. Besiegt eine Spritze einen Gegner, trifft sie den nächsten dahinter noch
+  mit 50 % von dessen Leben.
+  Schaden pro Spritze: 7 + 0,8 pro Stufe.
 
 DEFI-SCHOCKWELLE
-  Eine Schockwelle rund um dich, die Gegner nur leicht wegschubst. Wird
+  Eine Schockwelle rund um dich, die Schaden macht, aber Gegner weder wegschubst noch aufhält. Wird
   mit der Stufe größer und stärker. Ab Stufe 5 wird sie mit jeder Stufe
   deutlich stärker und schneller (Wartezeit sinkt von 3,4 s bis auf 1,3 s).
 
@@ -127,13 +133,14 @@ SIRENE
   3,6 s, sinkt bis 2,4 s.
 
 BLAULICHT
-  Lichter kreisen um dich, abwechselnd blau und rot. Wer sie berührt,
-  bleibt kurz stehen und bekommt Schaden. Alle 5 Stufen ein Licht mehr.
+  Lichter kreisen um dich, abwechselnd blau und rot. Wer sie berührt, bekommt
+  Schaden, wird aber nicht aufgehalten. Alle 5 Stufen ein Licht mehr.
   Ab 6 Lichtern wird daraus ein Neonlaser in Rot und Blau. Ab Stufe 5 wird
   es mit jeder Stufe stärker und schneller.
 
 NOTFALL-FACKEL  (neu in Version 4.2)
-  Wirft Fackeln mitten in die dichteste Gegnergruppe in deiner Nähe.
+  Wirft Fackeln nur auf kurze Distanz (200 bis 248 px) in die dichteste
+  Gegnergruppe.
   Die Fackel brennt eine Weile und macht im Feuer Schaden. Sie zieht
   keine Gegner an.
   - Anfangs wirft sie selten (alle 6,9 s), später alle 2,2 s.
@@ -162,8 +169,10 @@ NOTFALL-FACKEL  (neu in Version 4.2)
 
 AK-47
   Liegt von Zeit zu Zeit bei Berni´s Waffenshop (links am Feldrand).
-  50 Schuss, 5 Schuss pro Sekunde. Ein Schuss erledigt jeden normalen
-  Gegner, bei Endgegnern nur Schaden. Button "Feuer" an und aus.
+  50 Schuss, 5 Schuss pro Sekunde. Ein Schuss erledigt kleine
+  Gegner. Starke Gegner (Dicke, Eingenickte, Rammböcke, Sanis, Schleicher,
+  Elite-Gegner und Gegner mit Schild) brauchen manchmal 2 Schüsse. Bei
+  Endgegnern macht sie nur Schaden. Button "Feuer" an und aus.
 
 GLOCK 45
   Fällt bei jedem 250. besiegten Gegner. 2 Magazine mit je 12 Schuss.
@@ -179,15 +188,16 @@ C4
   Radius 120 px).
 
 ATOMBOMBE
-  Liegt bei Berni´s Waffenshop. Sie erscheint nach 3000 besiegten Gegnern,
-  später immer seltener. Nach dem Auslösen läuft kurz ein Ton, dann
+  Liegt bei Berni´s Waffenshop. Die erste erscheint nach 3000 besiegten
+  Gegnern. Für jede weitere braucht es 1500 Besiegte mehr als für die davor
+  (7500, 13500, 21000, 30000 ... bis höchstens 30000 Abstand). Nach dem Auslösen läuft kurz ein Ton, dann
   explodiert sie über das ganze Feld. Endgegner verlieren 65 % ihres
   aktuellen Lebens.
 
 ROTER RUCKSACK
   Taucht regelmäßig im Feld auf (alle 50 bis 80 s). Heilt auf volles Leben.
   Man kann ihn nur aufnehmen, wenn man nicht volles Leben hat. Auch
-  Endgegner und die Arena lassen manchmal einen fallen.
+  Auch der Endgegner lässt einen fallen.
 
 DIAMANT
   Ab Spielerstufe 65 fällt pro Stufe einmal zufällig ein Diamant. Er liegt
@@ -203,7 +213,7 @@ MÜNZEN
   Du bekommst 1 Münze alle 80 besiegten Gegner. Ab Stufe 50 steigt die
   Zahl, Stufe 50 = 85, Stufe 60 = 135, Stufe 100 = 335, höchstens 600
   (im Mehrspielermodus zählt die höchste Stufe der Runde).
-  Zusätzliche Münzen gibt es vom Endgegner (+3) und von der Arena (+8).
+  Zusätzliche Münzen gibt es vom Endgegner (+3).
   Im Skill-Tree steht, wie weit die nächste Münze entfernt ist.
 
 UPGRADES (mit Münzen, nur für Ausrüstung)
@@ -222,26 +232,43 @@ SKILL-TREE (Baum-Symbol oben rechts oder in der Pause)
 
 
 ---------------------------------------------------------------------
-10. DAS SPIELFELD
+10. DIE LEVEL
 ---------------------------------------------------------------------
 
-Das Feld ist ein Stadtplatz mit Häusern am Rand:
+Jedes Level ist gleich groß. Der Jedmayer (oben) und Berni´s Waffenshop
+(links, mit AK, C4, Atombombe, Söldner und Köder) sind in jedem Level da.
+Die anderen drei Gebäude, der Boden, die Hindernisse und ein Teil der
+Gegner ändern sich.
 
-  Jedmayer                 Das Haupthaus oben. Hier ist die Tür zur Arena
-                           (siehe Abschnitt 11).
-  Gruft                    Haus rechts.
-  Berni´s Waffenshop       Haus links. Hier liegen AK, C4, Atombombe und
-                           hier stehen die Schilder für Söldner und Köder.
-  Rettungsstation Mariahilf  Haus unten Mitte. Von hier fährt der
-                           Rettungswagen los.
-  Alte Brücke              Haus unten rechts.
+  Level 1  Mariahilf            Straßen rund um den Jedmayer. Gruft,
+                                Rettungsstation Mariahilf, Alte Brücke.
+                                Hindernisse: Parkbänke, Mülltonnen, Altglas.
+  Level 2  Säufer-Park          Wiese voller Flaschen und Bierlachen.
+                                Trinkhalle 24/7, Notarzt-Container,
+                                Beisl "Zum letzten Krug". Hindernisse:
+                                Bierkisten, Bänke, brennende Tonnen,
+                                Einkaufswägen.
+  Level 3  Karlsplatz-Passage   Gefliester Durchgang mit Kartons und Nadeln.
+                                U-Bahn U4, Spritzentausch-Bus,
+                                Wettcafé & Pfandhaus. Hindernisse: Säulen,
+                                Mülltonnen, Matratzen, Einkaufswägen.
+  Level 4  Crack-Hinterhof      Schlamm, Brandflecken, Schutt.
+                                Abbruchhaus, Container-Notquartier,
+                                Drogenküche. Hindernisse: brennende Tonnen,
+                                Matratzen, Einkaufswägen.
+  Ab Level 5 wiederholen sich Säufer-Park, Passage und Hinterhof
+  (mit "II", "III" ...), werden aber jedes Mal schwerer.
 
-Hindernisse: Parkbänke, Mülltonnen und Altglas-Container. Spieler und
-Gegner werden davon aufgehalten. Pfützen bremsen Spieler und Gegner.
+Schwierigkeit: Pro Level haben die Gegner 35 % mehr Leben und machen 12 %
+mehr Schaden. Es kommen etwas mehr gleichzeitig (bis +25 %). Direkt nach
+dem Levelwechsel steigt die Zahl der Gegner langsam an.
+
+Der Rettungswagen fährt in jedem Level aus dem Gebäude unten in der Mitte.
+Pfützen bremsen Spieler und Gegner (im Säufer-Park sind es Bierlachen).
 
 
 ---------------------------------------------------------------------
-11. GEGNER, ENDGEGNER UND ARENA
+11. GEGNER UND ENDGEGNER
 ---------------------------------------------------------------------
 
 NORMALE GEGNER (werden mit der Zeit zahlreicher und stärker)
@@ -250,44 +277,49 @@ NORMALE GEGNER (werden mit der Zeit zahlreicher und stärker)
   Eingenickter       Ab ca. 4 Minuten. Langsam, zäh, haut stark zu.
   Dicker Suchti      Ab ca. 6 Minuten. Viel Leben, langsam.
 
-GEGNER MIT FÄHIGKEITEN (kommen später, nur wenige gleichzeitig)
-  Spuck-Suchti       Ab ca. 6 Minuten. Schießt grüne Geschosse, sehr selten.
-  Sani-Junkie        Ab ca. 4,5 Minuten (Kreuz auf der Kleidung). Heilt nur
-                     andere Gegner, nicht dich. Höchstens 3 gleichzeitig,
-                     ohne Ton.
-  Rammbock           Ab ca. 5 Minuten. Große Gegner, die auf dich zuspringen.
-                     Höchstens 2 gleichzeitig.
-  Schleicher         Ab ca. 7 Minuten. Springt plötzlich in deine Nähe.
-                     Höchstens 2 gleichzeitig.
+GEGNER MIT FÄHIGKEITEN (in allen Leveln, nur wenige gleichzeitig)
+  Spuck-Suchti       Schießt grüne Geschosse, sehr selten.
+  Sani-Junkie        Kreuz auf der Kleidung. Heilt nur andere Gegner.
+  Rammbock           Große Gegner, die auf dich zuspringen.
+  Schleicher         Springt plötzlich in deine Nähe.
 
-Eingeschläferte Gegner lassen Säckchen fallen.
+NEUE GEGNER JE LEVEL
+  Säufer-Park:
+    Säufer           Torkelt und wirft Bierflaschen.
+    Kotzer           Bleibt stehen und hinterlässt giftige Lachen.
+    Stammgast        Dicker Brocken im Unterhemd, springt auf dich zu.
+  Karlsplatz-Passage:
+    Entzügler        Sehr schnell, zittert im Zickzack.
+    Straßendealer    Hält Abstand und wirft Pillen im Fächer.
+    Nadel-Junkie     Springt plötzlich in deine Nähe.
+  Crack-Hinterhof:
+    Drogenkoch       Wirft Giftwolken genau dorthin, wo du stehst.
+    Paranoiker       Rast los, sobald er halb besiegt ist.
+    Crack-Koloss     Riesig, sehr viel Leben, springt auf dich zu.
+  Ab Level 5 mischen sich auch die Gegner der anderen Level dazu.
+
+Eingeschläferte Gegner lassen Drogensäckchen fallen.
 
 ENDGEGNER (alle 50 Stufen)
-  Sobald der erste aktive Spieler Stufe 50 erreicht, erscheint der
-  Endgegner. Danach wieder bei Stufe 100, 150 und so weiter.
-  - Es gibt 6 Endgegner mit eigenem Aussehen (Dealer-Pate, Mama Rülps,
-    Der Chemiker, General Schnee, Kaiser Koks, Der Filialleiter).
-  - Er hat sehr viel Leben (90 000), kämpft in Phasen (Phase 2 und 3:
-    wütend, schneller) und ruft Gegner.
+  - Sobald der erste aktive Spieler Stufe 50 erreicht (danach 100, 150 ...),
+    erscheint eine große rote Warnung: "ACHTUNG! Der Chef vom Jedmayer ist
+    hier … und er ist sauer!" Ein paar Sekunden später ist er da.
+  - Er hat deutlich mehr Leben als früher (in höheren Leveln noch mehr),
+    kämpft in Phasen (Phase 2 und 3: wütend, schneller) und ruft Gegner.
+  - Er kommt nicht allein: Freunde mit Fähigkeiten (Elite-Gegner mit
+    Schild, Regeneration oder Wut) begleiten ihn, und alle 22 Sekunden
+    kommen neue dazu.
   - Angriffe kündigen sich am Boden an (farbige Warnzonen). Wer sie
     rechtzeitig verlässt, bekommt keinen Schaden.
-  - Pfeile am Rand zeigen, wo er steht und aus welcher Richtung er angreift.
   - Die Atombombe zieht ihm 65 % seines aktuellen Lebens ab.
-  - Wenn der Endgegner besiegt ist, bekommt jeder Spieler 60 % einer Stufe
-    an XP, 3 Münzen, 2 Skin-Marken, volles Leben und der Rucksack erscheint.
-  - Danach öffnet sich im Jedmayer die Tür zur Arena.
+  - Sieg: Alle bekommen 60 % einer Stufe an XP, 3 Münzen, 2 Skin-Marken und
+    volles Leben, K.O.-Spieler stehen wieder auf, ein Rucksack erscheint.
 
-ARENA (Tür im Jedmayer)
-  - Alle Spieler gehen gemeinsam durch die Tür. Das Feld wird eingefroren.
-  - 20 Runden mit immer mehr Gegnern. Sie kommen aus den
-    Lieferanteneingängen. Es gibt Elite-Gegner mit Eigenschaften
-    (Schild, Regeneration, Wut, Bombe).
-  - Zwischen den Runden: kurze Pause, 12 % Heilung, ein Rucksack erscheint.
-  - Es gibt 3 Varianten, die sich abwechseln: Jedmayer (Nachtschicht),
-    Dach und Tiefgarage, jede mit eigenen Hindernissen.
-  - Nach Runde 20: Belohnung für alle: 2,2 Stufen XP, 8 Münzen,
-    3 Skin-Marken, volles Leben, alle K.O.-Spieler werden gerettet.
-  - Danach geht es durch den Ausgang unten zurück aufs Feld.
+NACH DEM ENDGEGNER: AB INS NÄCHSTE LEVEL
+  - Alle übrigen Gegner lösen sich auf, es kommen keine neuen mehr.
+  - Die Tür vom Jedmayer leuchtet grün ("NÄCHSTES LEVEL").
+  - Sobald ein Spieler hineingeht, geht es für alle ins nächste Level.
+    Liegengebliebene Säckchen werden dabei als XP gutgeschrieben.
 
 
 ---------------------------------------------------------------------
@@ -378,7 +410,7 @@ Einfluss auf die Werte.
   - Seltenheiten und Preise in Skin-Marken:
         Gewöhnlich  2   ·   Selten  4   ·   Episch  7   ·   Legendär  12
   - Skin-Marken lässt gelegentlich ein Gegner fallen (eher selten).
-    Der Endgegner gibt 2, die Arena 3.
+    Der Endgegner gibt 2.
   - Im Shop gibt es Reiter: Alle, Gewöhnlich, Selten, Episch, Legendär,
     Meine. Antippen zeigt eine große Vorschau mit Kaufen / Anziehen.
   - Skins und Marken gehören deinem Profil und bleiben bei einem neuen
