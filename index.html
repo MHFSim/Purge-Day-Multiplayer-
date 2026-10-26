@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='6.9';   /* bei jeder neuen Version erhöhen */
+const PD_VER='7.0';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -568,7 +568,7 @@ function pdUpdate(dt){
     break; } } }
  g.pr=g.pr.filter(p=>p.life>0); PD.src=null;
  /* Tote → Pille */
- for(const e of g.en){ if(e.hp<=0&&!e.dead){ e.dead=1; const d=PD_EN[e.k]; g.kills++; if(e.lh!=null){ const P=pdBySlot(g,e.lh); if(P){ const S=pdSt(P); S.k++; if(d.boss) S.bk++; } } if(g.kills%PD_GLEVERY===0&&g.gli.length<2) g.gli.push({x:e.x,y:e.y,t:0}); if(g.kills%PD_KNEVERY===0&&g.kni.length<2) g.kni.push({x:e.x,y:e.y,t:0}); if(pdTeamLv(g)>=PD_DIA_LV&&g.diaLv!==pdTeamLv(g)&&!d.boss&&Math.random()<PD_DIA_P){ g.diaLv=pdTeamLv(g); g.dia.push({x:e.x,y:e.y,t:0,sn:0}); pdTxt(g.x,g.y-80,'💎 Diamant!','#7ff6ff',2); } if(g.kills>=g.cnext){ g.cnext=g.kills+pdCoinKills(g); for(const o of pdAll(g)){ o.coins=(o.coins|0)+1; if(!o.off&&!o.dead) pdTxt(o.x,o.y-62,'🪙 Münze ×'+o.coins,'#ffd23f',1.6); } } pdCountKill(); pdSnd(d.boss?'bossdie':'kill'); { if(g.gem.length>=500){ const mg=g.gem[(Math.random()*g.gem.length)|0]; mg.v+=e.xp||d.xp; } else g.gem.push({x:e.x,y:e.y,v:e.xp||d.xp,k:e.k,t:0}); }; g.fx.push({k:'zz',x:e.x,y:e.y-10,t:0,life:.9}); pdBlood(e,d.boss?2.2:1);
+ for(const e of g.en){ if(e.hp<=0&&!e.dead){ e.dead=1; const d=PD_EN[e.k]; g.kills++; if(e.lh!=null){ const P=pdBySlot(g,e.lh); if(P){ const S=pdSt(P); S.k++; if(d.boss) S.bk++; } } if(g.kills%PD_GLEVERY===0&&g.gli.length<2) g.gli.push({x:e.x,y:e.y,t:0}); if(g.kills%PD_KNEVERY===0&&g.kni.length<2) g.kni.push({x:e.x,y:e.y,t:0}); if(pdTeamLv(g)>=PD_DIA_LV&&g.diaLv!==pdTeamLv(g)&&!d.boss&&Math.random()<PD_DIA_P){ g.diaLv=pdTeamLv(g); g.dia.push({x:e.x,y:e.y,t:0,sn:0}); pdTxt(g.x,g.y-80,'💎 Diamant!','#7ff6ff',2); } if(g.kills>=g.cnext){ g.cnext=g.kills+pdCoinKills(g); for(const o of pdAll(g)){ o.coins=(o.coins|0)+1; if(!o.off&&!o.dead) pdTxt(o.x,o.y-62,'🪙 Münze ×'+o.coins,'#ffd23f',1.6); } } pdCountKill(); pdSnd(d.boss?'bossdie':'kill'); { if(g.gem.length>=500){ const mg=g.gem[(Math.random()*g.gem.length)|0]; mg.v+=e.xp||d.xp; } else g.gem.push({x:e.x,y:e.y,v:e.xp||d.xp,k:e.k,t:0}); };  pdBlood(e,d.boss?2.2:1);
    if(e.mod===4) pdBlast(e.x,e.y,86,.5,22,'bomb',0);
    if(d.big) pdBigDie(g,e); else if(d.boss){ pdTxt(e.x,e.y-40,'Dealer-Papa eingeschlafen!','#ffd23f',2.6); if(Math.random()<.25) pdMkDrop(g,e.x,e.y); } else if(Math.random()<PD_MK_P*Math.max(1,pdPlayers(g).length)) pdMkDrop(g,e.x,e.y); } }
  g.en=g.en.filter(e=>!e.dead);
@@ -1085,7 +1085,6 @@ function pdDraw0(){
  for(const f of g.fx){ if(f.k==='boom'){ const p=f.t/f.life; const gr=x.createRadialGradient(f.x,f.y,4,f.x,f.y,f.R*(.35+.75*p)); gr.addColorStop(0,`rgba(255,240,170,${.9*(1-p)})`); gr.addColorStop(.55,`rgba(255,150,40,${.7*(1-p)})`); gr.addColorStop(1,'rgba(255,60,20,0)'); x.fillStyle=gr; x.beginPath(); x.arc(f.x,f.y,f.R*(.35+.75*p),0,7); x.fill(); x.strokeStyle=`rgba(255,220,140,${1-p})`; x.lineWidth=5*(1-p)+1; x.beginPath(); x.arc(f.x,f.y,f.R*(.2+.9*p),0,7); x.stroke(); } }
  for(const f of g.fx){ if(f.k==='bl'){ const p=f.t/f.life; const pcl=PD_BCOL[PDO.col].p; x.fillStyle=`rgba(${pcl[0]},${pcl[1]},${pcl[2]},${1-p})`; for(const q of f.ps){ x.beginPath(); x.arc(f.x+q[0]*p,f.y+q[1]*p+60*p*p,2.2*(1-p*.5),0,7); x.fill(); } } }
  /* ZZZ */
- for(const f of g.fx){ if(f.k==='zz'){ const p=f.t/f.life; x.fillStyle=`rgba(200,220,255,${1-p})`; x.font='700 14px system-ui'; x.textAlign='center'; x.fillText('z',f.x-4,f.y-p*22); x.font='700 10px system-ui'; x.fillText('z',f.x+6,f.y-8-p*26); } }
  if(g.nf&&g.nf.t>=0) pdDrawNuke(x,g.nf);
  for(const f of g.kfl){ for(let i=0;i<f.tr.length;i++){ const q=f.tr[i], a=(i+1)/f.tr.length; x.fillStyle=`rgba(210,230,255,${a*.35})`; x.beginPath(); x.arc(q[0],q[1],2+a*5,0,7); x.fill(); } x.save(); x.translate(f.x,f.y); x.scale(pdKnSize(g),pdKnSize(g)); x.translate(-f.x,-f.y); pdDrawKnife(x,f.x,f.y,f.t*22*f.dir,false,g.t,true,pdWskOf(f.ow|0).kn); x.restore(); }
  /* Zahlen */
