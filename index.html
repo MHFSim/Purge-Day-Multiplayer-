@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='7.0';   /* bei jeder neuen Version erhöhen */
+const PD_VER='7.1';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -582,7 +582,7 @@ function pdUpdate(dt){
  for(const o of pdAll(g)) pdXpCheck(o);
  g.fx.forEach(f=>f.t+=dt); g.fx=g.fx.filter(f=>f.t<f.life);
  if(g.fx.length>150){ let ex=g.fx.length-150; g.fx=g.fx.filter(f=>{ if(ex>0&&(f.k==='bl'||f.k==='prc'||f.k==='puff'||f.k==='zz')){ ex--; return false; } return true; }); }
- g.txt.forEach(t=>{ t.t+=dt; t.y-=24*dt; }); g.txt=g.txt.filter(t=>t.t<t.life);
+ g.txt.forEach(t=>{ t.t+=dt; t.y-=(t.src!=null?10:24)*dt; }); g.txt=g.txt.filter(t=>t.t<t.life);
  g.blood.forEach(b=>b.t+=dt); g.blood=g.blood.filter(b=>b.t<(PDO.blood===2?14:9));
  g.pop.forEach(p=>p.t+=dt); g.pop=g.pop.filter(p=>p.t<p.life);
 }
@@ -637,8 +637,8 @@ function pdStun(e,t){ if(e.imm>0||PD_EN[e.k].big) return; e.stun=Math.max(e.stun
 function pdHit(e,dmg,vx,vy,kb,m){
  const g=PD.g; const d=dmg*(m===undefined?g.dmgM:m)*PD_WDMG; if(PD.src!=null&&e.hp>0){ e.lh=PD.src; const P=pdBySlot(g,PD.src); if(P) pdSt(P).d+=Math.min(d,e.hp+(e.sh||0)); } if(e.sh>0){ const ab=Math.min(e.sh,d); e.sh-=ab; e.hp-=d-ab; } else e.hp-=d; e.flash=.12;
  { const sl=PD.src==null?0:PD.src, q=e.dtx;
-  if(q&&q.src===sl&&q.t<q.life*.8&&g.t-q.born<.45){ q.sum+=d; q.s=String(Math.max(1,Math.round(q.sum))); q.x=e.x; q.y=e.y-14; q.t=Math.min(q.t,.12); }
-  else if(g.txt.length<30){ const o={x:e.x,y:e.y-14,s:String(Math.max(1,Math.round(d))),c:PD_PCOL[sl%6],t:0,life:.55,src:sl,sum:d,born:g.t}; g.txt.push(o); e.dtx=o; } }
+  if(q&&q.src===sl&&q.t<q.life*.8&&g.t-q.born<.8){ q.sum+=d; q.s=String(Math.max(1,Math.round(q.sum))); q.x=e.x; q.y=e.y-14; q.t=Math.min(q.t,.2); }
+  else if(g.txt.length<40){ const o={x:e.x,y:e.y-14,s:String(Math.max(1,Math.round(d))),c:PD_PCOL[sl%6],t:0,life:1.3,src:sl,sum:d,born:g.t}; g.txt.push(o); e.dtx=o; } }
 }
 /* Naloxon durchschlägt: übersteigt der Schaden das Leben, trifft die Spritze den nächsten Gegner dahinter mit 50 % Lebensabzug */
 function pdPierce(e0,p){
@@ -1005,7 +1005,7 @@ function pdDraw(){
  if(!g||!C||!g.fx||!PD.W||PD.cs) return pdDraw0();
  const w2=PD.W/C.z/2+320, h2=PD.H/C.z/2+320, vis=f=>Math.abs(f.x-C.cx)<w2&&Math.abs(f.y-C.cy)<h2;
  const f0=g.fx, t0=g.txt, p0=g.pr; PD.crowd=g.en.length>90;
- g.fx=f0.filter(f=>vis(f)||(f.x2!==undefined&&Math.abs(f.x2-C.cx)<w2&&Math.abs(f.y2-C.cy)<h2)); g.txt=t0.filter(vis).slice(-26); g.pr=p0.filter(vis).slice(-170);
+ g.fx=f0.filter(f=>vis(f)||(f.x2!==undefined&&Math.abs(f.x2-C.cx)<w2&&Math.abs(f.y2-C.cy)<h2)); g.txt=t0.filter(vis).slice(-36); g.pr=p0.filter(vis).slice(-170);
  try{ pdDraw0(); }finally{ g.fx=f0; g.txt=t0; g.pr=p0; }
 }
 function pdDraw0(){
@@ -1088,7 +1088,7 @@ function pdDraw0(){
  if(g.nf&&g.nf.t>=0) pdDrawNuke(x,g.nf);
  for(const f of g.kfl){ for(let i=0;i<f.tr.length;i++){ const q=f.tr[i], a=(i+1)/f.tr.length; x.fillStyle=`rgba(210,230,255,${a*.35})`; x.beginPath(); x.arc(q[0],q[1],2+a*5,0,7); x.fill(); } x.save(); x.translate(f.x,f.y); x.scale(pdKnSize(g),pdKnSize(g)); x.translate(-f.x,-f.y); pdDrawKnife(x,f.x,f.y,f.t*22*f.dir,false,g.t,true,pdWskOf(f.ow|0).kn); x.restore(); }
  /* Zahlen */
- x.textAlign='center'; for(const t of g.txt){ const nm=/^\d+$/.test(t.s); x.globalAlpha=Math.max(0,Math.min(1,(1-t.t/t.life)*(nm?1.6:1))); x.font=nm?'900 11px system-ui':'800 13px system-ui'; if(nm){ x.lineJoin='round'; x.lineWidth=3; x.strokeStyle='#000e'; x.strokeText(t.s,t.x,t.y); } else if(g.txt.length<=14){ x.fillStyle='#000'; x.fillText(t.s,t.x+1,t.y+1); } x.fillStyle=t.c; x.fillText(t.s,t.x,t.y); } x.globalAlpha=1;
+ x.textAlign='center'; for(const t of g.txt){ const nm=/^\d+$/.test(t.s); x.globalAlpha=Math.max(0,Math.min(1,(1-t.t/t.life)*(nm?2.5:1))); x.font=nm?'900 11px system-ui':'800 13px system-ui'; if(nm){ x.lineJoin='round'; x.lineWidth=3; x.strokeStyle='#000e'; x.strokeText(t.s,t.x,t.y); } else if(g.txt.length<=14){ x.fillStyle='#000'; x.fillText(t.s,t.x+1,t.y+1); } x.fillStyle=t.c; x.fillText(t.s,t.x,t.y); } x.globalAlpha=1;
  x.restore();
  pdOverlay(x,g,W,H); pdWarn(x,g,W,H);
 
@@ -2198,7 +2198,7 @@ function netSnapBase(){
   Gm:g.gem.map(q=>[R(q.x),R(q.y),q.k]),
   Dm:xyt(g.dia),
   fx:pdFxSl(g.fx,60).map(f=>{ const o=Object.assign({},f); o.x=R(f.x); o.y=R(f.y); if(f.ps) o.ps=f.ps.map(q=>[R(q[0]),R(q[1])]); return o; }),
-  tx:g.txt.slice(-40).map(t=>[R(t.x),R(t.y),t.s,t.c,r1(t.t),t.life]),
+  tx:g.txt.slice(-50).map(t=>[R(t.x),R(t.y),t.s,t.c,r1(t.t),t.life]),
   bp:g.bp?[R(g.bp.x),R(g.bp.y)]:0, ci:xy(g.c4i), ai:xy(g.aki), gi:xyt(g.gli), ki:xyt(g.kni), ni:xy(g.nki),
   cs:g.c4s.map(q=>[R(q.x),R(q.y),r1(q.t||0),q.R|0,q.o|0]), kf:g.kfl.map(f=>[R(f.x),R(f.y),r1(f.t),f.dir,f.ow|0]), nf:g.nf?[R(g.nf.x),R(g.nf.y),Math.round(g.nf.t*100)/100]:0,
   w:g.w,p:g.p,up:g.up,lv:g.lv,xp:g.xp,xpN:g.xpN,k:g.kills,cn:g.cnext|0,tt:r1(g.t),sm:g.spdM,
@@ -2214,7 +2214,7 @@ function netSnapFor(b,v){
  if(o.E.length>NET_EMAX){ const dd=e=>PD_EN[e[1]].boss?-1:Math.abs(e[3]-vx)+Math.abs(e[4]-vy); o.E.sort((a,b)=>dd(a)-dd(b)); o.E.length=NET_EMAX; }
  o.R=b.R.filter(q=>n(q[0],q[1])).slice(-160);
  o.Gm=b.Gm.filter(q=>n(q[0],q[1])).slice(-220);
- o.tx=b.tx.filter(q=>n(q[0],q[1])).slice(-20);
+ o.tx=b.tx.filter(q=>n(q[0],q[1])).slice(-32);
  o.fx=pdFxSl(b.fx.filter(f=>n(f.x,f.y)||f.k==='boom'),24);
  if(b.bl) o.bl=b.bl.filter(q=>n(q[0],q[1]));
  o.w=v.w; o.p=v.p; o.up=v.up; o.lv=v.lv; o.xp=v.xp; o.xpN=v.xpN; o.sm=v.spdM; o.dm=v.dmgM; o.co=v.coins|0; o.mg=v.mag; o.pk=v.pick||0;
@@ -2437,7 +2437,7 @@ function netGuestStep(dt){
  } else if(live){
   for(const p of g.pr){ p.x+=p.vx*dt; p.y+=p.vy*dt; }
   for(const f of g.fx) f.t=Math.min(f.t+dt,f.life-.001);
-  for(const t of g.txt){ t.t+=dt; t.y-=24*dt; }
+  for(const t of g.txt){ t.t+=dt; t.y-=(/^\d+$/.test(t.s)?10:24)*dt; }
   for(const q of g.gem) q.t+=dt;
   for(const b of g.c4s) b.t+=dt;
   for(const h of g.hz){ h.t+=dt; if(h.k==='b'){ h.x+=h.vx*dt; h.y+=h.vy*dt; } }
