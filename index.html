@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='6.4';   /* bei jeder neuen Version erhöhen */
+const PD_VER='6.5';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -3397,7 +3397,7 @@ const PD_PROFKEY='mhsim_purgeday_profile_v1';
 function pdProf(){ if(PD.prof) return PD.prof; let p=null; try{ p=JSON.parse(localStorage.getItem(PD_PROFKEY)||'null'); }catch(e){} p=p||{}; if(!Array.isArray(p.own)) p.own=[]; p.mk=p.mk|0; if(p.ch&&!SMAP[p.ch]) p.ch=null; if(p.sk&&!PD_SKM[p.sk]) p.sk=''; PD.prof=p; return p; }
 function pdProfSave(){ try{ localStorage.setItem(PD_PROFKEY,JSON.stringify(PD.prof||{})); }catch(e){} }
 function pdMySk(){ const p=pdProf(); return (p.sk&&p.own.includes(p.sk))?p.sk:''; }
-const PD_RAR=[null,{n:'Gewöhnlich',c:'#b9c0cc',p:2},{n:'Selten',c:'#4fa3ff',p:4},{n:'Episch',c:'#c36bff',p:7},{n:'Legendär',c:'#ffb02e',p:12}];
+const PD_RAR=[null,{n:'Gewöhnlich',c:'#b9c0cc',p:2},{n:'Selten',c:'#4fa3ff',p:4},{n:'Episch',c:'#c36bff',p:7},{n:'Legendär',c:'#ffb02e',p:36}];
 /* Skin: [id, Name, Seltenheit, {c:[Jacke hell, dunkel], p:Hose, sh:Schultern, st:Streifen(0=keine), logo, pat:Muster, pc:Musterfarbe, hat, hc, acc, ac, fx, fc, skin, hair:[Farbe,Länge], cape}] */
 const PD_SKINS=[
  /* ---- Gewöhnlich ---- */
