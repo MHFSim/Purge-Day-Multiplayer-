@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='6.8';   /* bei jeder neuen Version erhöhen */
+const PD_VER='6.9';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1089,7 +1089,7 @@ function pdDraw0(){
  if(g.nf&&g.nf.t>=0) pdDrawNuke(x,g.nf);
  for(const f of g.kfl){ for(let i=0;i<f.tr.length;i++){ const q=f.tr[i], a=(i+1)/f.tr.length; x.fillStyle=`rgba(210,230,255,${a*.35})`; x.beginPath(); x.arc(q[0],q[1],2+a*5,0,7); x.fill(); } x.save(); x.translate(f.x,f.y); x.scale(pdKnSize(g),pdKnSize(g)); x.translate(-f.x,-f.y); pdDrawKnife(x,f.x,f.y,f.t*22*f.dir,false,g.t,true,pdWskOf(f.ow|0).kn); x.restore(); }
  /* Zahlen */
- x.textAlign='center'; for(const t of g.txt){ const nm=/^\d+$/.test(t.s); x.globalAlpha=Math.max(0,1-t.t/t.life)*(nm?.8:1); x.font=nm?'700 11px system-ui':'800 13px system-ui'; if(g.txt.length<=14){ x.fillStyle='#000'; x.fillText(t.s,t.x+1,t.y+1); } x.fillStyle=t.c; x.fillText(t.s,t.x,t.y); } x.globalAlpha=1;
+ x.textAlign='center'; for(const t of g.txt){ const nm=/^\d+$/.test(t.s); x.globalAlpha=Math.max(0,Math.min(1,(1-t.t/t.life)*(nm?1.6:1))); x.font=nm?'900 11px system-ui':'800 13px system-ui'; if(nm){ x.lineJoin='round'; x.lineWidth=3; x.strokeStyle='#000e'; x.strokeText(t.s,t.x,t.y); } else if(g.txt.length<=14){ x.fillStyle='#000'; x.fillText(t.s,t.x+1,t.y+1); } x.fillStyle=t.c; x.fillText(t.s,t.x,t.y); } x.globalAlpha=1;
  x.restore();
  pdOverlay(x,g,W,H); pdWarn(x,g,W,H);
 
