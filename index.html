@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='7.1';   /* bei jeder neuen Version erhöhen */
+const PD_VER='7.2';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -645,7 +645,6 @@ function pdPierce(e0,p){
  const g=PD.g, l=Math.hypot(p.vx,p.vy)||1, ux=p.vx/l, uy=p.vy/l; let b=null, bt=1e9;
  for(const e of g.en){ if(e===e0||e.hp<=0) continue; const rx=e.x-e0.x, ry=e.y-e0.y, t=rx*ux+ry*uy; if(t<0||t>170) continue; const dd=Math.abs(-rx*uy+ry*ux); if(dd<PD_EN[e.k].r+8&&t<bt){ bt=t; b=e; } }
  if(!b) return; const d=Math.max(1,(b.hpMax||b.hp)*.5); b.hp-=d; b.flash=.12;
- g.txt.push({x:b.x,y:b.y-14,s:'−50 %',c:'#7dfff0',t:0,life:.6});
  g.fx.push({k:'prc',x:e0.x,y:e0.y,x2:b.x,y2:b.y,t:0,life:.2}); pdSnd('hit');
 }
 function pdNearest(g,maxd){ let b=null,bd=maxd*maxd; for(const e of PD.g.en){ const d=(e.x-g.x)**2+(e.y-g.y)**2; if(d<bd){ bd=d; b=e; } } return b; }
