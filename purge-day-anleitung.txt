@@ -1,5 +1,5 @@
 =====================================================================
-  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 6.1)
+  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 6.2)
 =====================================================================
 
 Purge-Day ist ein Überlebensspiel von oben gesehen. Du bist ein Mitarbeiter
@@ -426,6 +426,28 @@ Einfluss auf die Werte.
     Meine. Antippen zeigt eine große Vorschau mit Kaufen / Anziehen.
   - Skins und Marken gehören deinem Profil und bleiben bei einem neuen
     Spiel erhalten.
+
+
+---------------------------------------------------------------------
+WAFFEN-SKINS
+---------------------------------------------------------------------
+
+Im Shop (Hauptmenü → Skins) schaltest du oben zwischen "Kleidung" und
+"Waffen" um. Für AK-47, Glock, Wurfmesser und C4 gibt es je 6 Waffen-Skins,
+bezahlt wird mit Skin-Marken (Gewöhnlich 2, Selten 4, Episch 7, Legendär 12):
+
+  AK-47       Wüstentarn, Rostlaube, Blaulicht, Bierflasche, Neon-Rave,
+              Pures Gold
+  Glock       Polizei-Grau, Tarnfleck, Pink Panther, Kupfer, Eiszapfen,
+              Diamant
+  Wurfmesser  Küchenmesser, Rostklinge, Smaragd, Blutrot, Obsidian,
+              Goldklinge
+  C4          Militärgrün, Pizzakarton, Geschenkpaket, Bierkiste,
+              Radioaktiv, Goldbarren
+
+Waffen-Skins sind nur Optik. Man sieht sie an den Buttons, in der oberen
+Leiste, im Skill-Tree, als Waffe in der Hand und beim gelegten C4 und
+fliegenden Messer. Mitspieler sehen deine Waffen-Skins auch.
 
 
 ---------------------------------------------------------------------

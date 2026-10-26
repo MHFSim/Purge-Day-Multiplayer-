@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='6.1';   /* bei jeder neuen Version erhöhen */
+const PD_VER='6.2';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -781,14 +781,15 @@ function pdDrawNuke(x,f){
  /* Feuerball */
  const fr=E(t/.5)*240*(1-E((t-.6)/1.4)*.7); if(t<2.2){ const g3=x.createRadialGradient(px,py-20,4,px,py-20,fr+1); g3.addColorStop(0,`rgba(255,255,230,${E(1-t/1.6)})`); g3.addColorStop(.4,`rgba(255,200,70,${E(1-t/2)*.9})`); g3.addColorStop(1,'rgba(255,80,20,0)'); x.fillStyle=g3; x.beginPath(); x.arc(px,py-20,fr+1,0,7); x.fill(); }
 }
-function pdDrawKnife(x,px,py,rot,hide,t,fly){
+function pdDrawKnife(x,px,py,rot,hide,t,fly,wid){
+ const KC=pdWCol('kn',wid);
  if(hide) return; const b=fly?0:Math.sin(t*3.2)*1.6; x.save(); x.translate(px,py+b);
  if(!fly){ const gl=x.createRadialGradient(0,0,2,0,0,26); gl.addColorStop(0,'rgba(210,230,255,.5)'); gl.addColorStop(1,'rgba(210,230,255,0)'); x.fillStyle=gl; x.beginPath(); x.arc(0,0,26,0,7); x.fill(); x.fillStyle='rgba(0,0,0,.35)'; x.beginPath(); x.ellipse(0,9,12,3,0,0,7); x.fill(); x.rotate(-.5); } else x.rotate(rot);
- const bg=x.createLinearGradient(0,-3,0,3); bg.addColorStop(0,'#f4f8fc'); bg.addColorStop(.5,'#c3cdd8'); bg.addColorStop(1,'#8a95a3');
+ const bg=x.createLinearGradient(0,-3,0,3); bg.addColorStop(0,KC.b1); bg.addColorStop(.5,KC.b2); bg.addColorStop(1,KC.b3);
  x.fillStyle=bg; x.beginPath(); x.moveTo(-3,-3); x.lineTo(11,-2); x.quadraticCurveTo(18,0,14,3); x.lineTo(-3,3); x.closePath(); x.fill();   /* Klinge */
  x.strokeStyle='rgba(255,255,255,.7)'; x.lineWidth=.8; x.beginPath(); x.moveTo(-1,-1.2); x.lineTo(13,-.6); x.stroke();
- x.fillStyle='#2a2d33'; pdERR(x,-12,-2.6,9,5.2,2); x.fill(); x.fillStyle='#d9a21f'; x.fillRect(-4,-4,1.6,8);   /* Griff + Parierstange */
- x.fillStyle='#4a4f58'; for(let i=0;i<3;i++) x.fillRect(-10+i*2.5,-2.4,.8,4.8);
+ x.fillStyle=KC.ha; pdERR(x,-12,-2.6,9,5.2,2); x.fill(); x.fillStyle=KC.gu; x.fillRect(-4,-4,1.6,8);   /* Griff + Parierstange */
+ x.fillStyle=KC.hl; for(let i=0;i<3;i++) x.fillRect(-10+i*2.5,-2.4,.8,4.8);
  x.restore();
 }
 function pdDrawGlock(x,px,py,t,age){
@@ -818,14 +819,15 @@ function pdDrawAK(x,px,py,t){
  x.fillStyle='#16181c'; x.fillRect(-9,3,4,8);
  x.restore();
 }
-function pdDrawC4(x,px,py,left,t){
+function pdDrawC4(x,px,py,left,t,wid){
+ const CC=pdWCol('c4',wid);
  x.save(); x.translate(px,py); x.fillStyle='rgba(0,0,0,.35)'; x.beginPath(); x.ellipse(0,7,12,3.4,0,0,7); x.fill();
- x.fillStyle='#c9bd8a'; x.beginPath(); x.roundRect(-12,-7,24,14,2.5); x.fill(); x.strokeStyle='rgba(40,34,10,.7)'; x.lineWidth=1; x.stroke();
+ x.fillStyle=CC.c1; x.beginPath(); x.roundRect(-12,-7,24,14,2.5); x.fill(); x.strokeStyle='rgba(40,34,10,.7)'; x.lineWidth=1; x.stroke();
  x.fillStyle='rgba(255,255,255,.28)'; x.fillRect(-12,-7,24,3);
- x.fillStyle='#3a3a2a'; x.font='800 8px system-ui,sans-serif'; x.textAlign='center'; x.fillText('C4',0,3);
- x.strokeStyle='#d33'; x.lineWidth=1; x.beginPath(); x.moveTo(-12,-2); x.quadraticCurveTo(-17,-8,-14,-11); x.stroke();
+ x.fillStyle=CC.bd; x.globalAlpha=.4; x.fillRect(-12,-1,24,2); x.globalAlpha=1; x.fillStyle=CC.tx; x.font='800 8px system-ui,sans-serif'; x.textAlign='center'; x.fillText('C4',0,3);
+ x.strokeStyle=CC.w1; x.lineWidth=1; x.beginPath(); x.moveTo(-12,-2); x.quadraticCurveTo(-17,-8,-14,-11); x.stroke();
  const on=left>0?Math.floor(t*(left<1?10:4))%2===0:Math.floor(t*2)%2===0;
- x.fillStyle=on?'#ff3b30':'#5a1210'; x.beginPath(); x.arc(8,-3.5,2,0,7); x.fill();
+ x.fillStyle=on?CC.led:'#2a0a08'; x.beginPath(); x.arc(8,-3.5,2,0,7); x.fill();
  if(left>0){ x.fillStyle='#fff'; x.font='800 13px system-ui,sans-serif'; x.fillText(String(Math.ceil(left)),0,-14); }
  x.textAlign='left'; x.restore();
 }
@@ -1068,7 +1070,7 @@ function pdDraw0(){
  for(const c of g.gli){ pdDrawGlock(x,c.x,c.y,g.t,c.t); }
  for(const c of g.kni){ pdDrawKnife(x,c.x,c.y,0,c.t>45&&Math.floor(c.t*6)%2,g.t); }
  for(const c of g.nki){ pdDrawNukeItem(x,c.x,c.y,g.t); }
- for(const b of g.c4s){ pdDrawC4(x,b.x,b.y,PD_C4FUSE-b.t,g.t); x.strokeStyle='rgba(255,176,46,.22)'; x.lineWidth=2; x.setLineDash([5,5]); x.beginPath(); x.arc(b.x,b.y,(b.R||pdC4R(g)),0,7); x.stroke(); x.setLineDash([]); }
+ for(const b of g.c4s){ pdDrawC4(x,b.x,b.y,PD_C4FUSE-b.t,g.t,pdWskOf(b.o|0).c4); x.strokeStyle='rgba(255,176,46,.22)'; x.lineWidth=2; x.setLineDash([5,5]); x.beginPath(); x.arc(b.x,b.y,(b.R||pdC4R(g)),0,7); x.stroke(); x.setLineDash([]); }
  /* Figuren nach Y sortiert */
  for(const o of [g,...(g.ps||[])]) if(o.dead&&!o.off) pdDrawKO(x,o,g.t);
  const list=[...g.en.filter(e=>e.x>vx0&&e.x<vx1&&e.y>vy0&&e.y<vy1).map(e=>({y:e.y,e})),...pdObsList().filter(b=>(b.r?b.x+b.r>vx0&&b.x-b.r<vx1&&b.y+b.r>vy0&&b.y-b.r<vy1:b.x1>vx0&&b.x0<vx1&&b.y1>vy0&&b.y0<vy1)).map(b=>({y:b.r?b.y+b.r-14:b.y1-14,ob:b})),...(g.dead?[]:[{y:g.y,h:1}]),...(g.mc?[{y:g.mc.y,mcx:1}]:[]),...(g.am?[{y:g.am.y+6,amx:1}]:[]),...(g.ps||[]).filter(p=>!p.dead).map(p=>({y:p.y,p}))]; list.sort((a,b)=>a.y-b.y);
@@ -1083,7 +1085,7 @@ function pdDraw0(){
  /* ZZZ */
  for(const f of g.fx){ if(f.k==='zz'){ const p=f.t/f.life; x.fillStyle=`rgba(200,220,255,${1-p})`; x.font='700 14px system-ui'; x.textAlign='center'; x.fillText('z',f.x-4,f.y-p*22); x.font='700 10px system-ui'; x.fillText('z',f.x+6,f.y-8-p*26); } }
  if(g.nf&&g.nf.t>=0) pdDrawNuke(x,g.nf);
- for(const f of g.kfl){ for(let i=0;i<f.tr.length;i++){ const q=f.tr[i], a=(i+1)/f.tr.length; x.fillStyle=`rgba(210,230,255,${a*.35})`; x.beginPath(); x.arc(q[0],q[1],2+a*5,0,7); x.fill(); } x.save(); x.translate(f.x,f.y); x.scale(pdKnSize(g),pdKnSize(g)); x.translate(-f.x,-f.y); pdDrawKnife(x,f.x,f.y,f.t*22*f.dir,false,g.t,true); x.restore(); }
+ for(const f of g.kfl){ for(let i=0;i<f.tr.length;i++){ const q=f.tr[i], a=(i+1)/f.tr.length; x.fillStyle=`rgba(210,230,255,${a*.35})`; x.beginPath(); x.arc(q[0],q[1],2+a*5,0,7); x.fill(); } x.save(); x.translate(f.x,f.y); x.scale(pdKnSize(g),pdKnSize(g)); x.translate(-f.x,-f.y); pdDrawKnife(x,f.x,f.y,f.t*22*f.dir,false,g.t,true,pdWskOf(f.ow|0).kn); x.restore(); }
  /* Zahlen */
  x.textAlign='center'; for(const t of g.txt){ x.globalAlpha=Math.max(0,1-t.t/t.life); x.font='800 13px system-ui'; if(g.txt.length<=14){ x.fillStyle='#000'; x.fillText(t.s,t.x+1,t.y+1); } x.fillStyle=t.c; x.fillText(t.s,t.x,t.y); } x.globalAlpha=1;
  x.restore();
@@ -1272,7 +1274,7 @@ function pdCutOverlay(){
 /* Waffe sichtbar in der Hand: AK oder Glock (beim Feuern zielt sie auf den nächsten Gegner) */
 function pdHeld(x,g){
  const hasAk=g.ak>0, hasGl=g.glA>0||g.glMag>0; if(!hasAk&&!hasGl) return;
- const useAk=g.akOn||(!g.glOn&&hasAk), k=useAk?'ak':'gl', im=pdIcoImg(k); if(!(im.complete&&im.naturalWidth)) return;
+ const useAk=g.akOn||(!g.glOn&&hasAk), k=useAk?'ak':'gl', im=pdWImg(k,(g===PD.g?pdMyWsk():pdWskDec(g.wsk))[k]); if(!(im.complete&&im.naturalWidth)) return;
  const firing=useAk?g.akOn:g.glOn, t=firing?pdNearestNB(g,640):null;
  let a=t?Math.atan2(t.y-g.y,t.x-g.x):(g.back?(g.face>0?-.95:Math.PI+.95):(g.face>0?.12:Math.PI-.12));
  const hx=g.x+Math.cos(a)*6+(g.back?(g.face>0?7:-7):0), hy=g.y-1+Math.sin(a)*4+(Math.abs(g.vx)+Math.abs(g.vy)>5?Math.sin(g.anim*11)*.8:0);
@@ -1324,7 +1326,7 @@ function pdLoadSave(){
 function pdMount(){
  const ov=wzEnsure();
  PD.cs=null; ov.classList.remove('pdcut'); ov.classList.toggle('pdguest',PD.st==='guest'); ov.classList.toggle('pdmp',!!NET.on);
- pdApplyHand(); ov.innerHTML=`<canvas id="pdCv"></canvas><div id="pdHud"></div><div id="pdNetMsg" hidden></div><button class="wzhome" data-wz="home" aria-label="Hauptmenü">⌂</button><button class="wzhome wzpause" data-wz="pause" aria-label="Pause"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="7.2" y="5.5" width="3" height="13" rx="1.5" fill="currentColor"/><rect x="13.8" y="5.5" width="3" height="13" rx="1.5" fill="currentColor"/></svg></button><button class="wzhome wztree" data-wz="tree" aria-label="Skill-Tree">🌳</button><button id="pdUpHint" data-wz="tree" aria-label="Aufrüsten im Skill-Tree" hidden><b>🪙 Aufrüsten möglich</b><small></small></button><button id="pdKN" data-wz="knife" aria-label="Wurfmesser werfen" hidden><span>${PD_ICO.kn}</span><b>×1</b><small>Werfen</small></button><button id="pdGL" data-wz="gl" aria-label="Glock Feuer" hidden><span>${PD_ICO.gl}</span><b>24</b><small>Feuer</small></button><button id="pdNK" data-wz="nuke" aria-label="Atombombe zünden" hidden><span>${PD_ICO.nk}</span><b>1/1</b><small>Zünden</small></button><button id="pdAK" data-wz="ak" aria-label="AK-47 Feuer" hidden><span>${PD_ICO.ak}</span><b>0/50</b><small>Feuer</small></button><button id="pdC4" data-wz="c4" aria-label="C4 legen"><span>${PD_ICO.c4}</span><b>0</b><small>C4 legen</small></button>`;
+ pdApplyHand(); ov.innerHTML=`<canvas id="pdCv"></canvas><div id="pdHud"></div><div id="pdNetMsg" hidden></div><button class="wzhome" data-wz="home" aria-label="Hauptmenü">⌂</button><button class="wzhome wzpause" data-wz="pause" aria-label="Pause"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="7.2" y="5.5" width="3" height="13" rx="1.5" fill="currentColor"/><rect x="13.8" y="5.5" width="3" height="13" rx="1.5" fill="currentColor"/></svg></button><button class="wzhome wztree" data-wz="tree" aria-label="Skill-Tree">🌳</button><button id="pdUpHint" data-wz="tree" aria-label="Aufrüsten im Skill-Tree" hidden><b>🪙 Aufrüsten möglich</b><small></small></button><button id="pdKN" data-wz="knife" aria-label="Wurfmesser werfen" hidden><span>${pdWIco('kn',pdMyWsk().kn)}</span><b>×1</b><small>Werfen</small></button><button id="pdGL" data-wz="gl" aria-label="Glock Feuer" hidden><span>${pdWIco('gl',pdMyWsk().gl)}</span><b>24</b><small>Feuer</small></button><button id="pdNK" data-wz="nuke" aria-label="Atombombe zünden" hidden><span>${PD_ICO.nk}</span><b>1/1</b><small>Zünden</small></button><button id="pdAK" data-wz="ak" aria-label="AK-47 Feuer" hidden><span>${pdWIco('ak',pdMyWsk().ak)}</span><b>0/50</b><small>Feuer</small></button><button id="pdC4" data-wz="c4" aria-label="C4 legen"><span>${pdWIco('c4',pdMyWsk().c4)}</span><b>0</b><small>C4 legen</small></button>`;
  PD.cv=document.getElementById('pdCv'); PD.cx=PD.cv.getContext('2d'); pdResize(); if(!PD.bg) pdBuildBg();
  const cv=PD.cv;
  cv.onpointerdown=e=>{ if(PD.joy&&!e.isPrimary) return; cv.setPointerCapture(e.pointerId); const r=cv.getBoundingClientRect(); PD.joy={id:e.pointerId,x0:e.clientX-r.left,y0:e.clientY-r.top,dx:0,dy:0}; };
@@ -1491,7 +1493,7 @@ function pdTreeHTML(){
  const curN={ak:()=>pdAkMag(g)+' Schuss',gl:()=>pdGlMag(g)+' Schuss',kn:()=>pdKnRounds(g)+(pdKnRounds(g)===1?' Runde':' Runden'),c4:()=>'Radius '+pdC4R(g)+' px'};
  const nxtN={ak:()=>(pdAkMag(g)+3)+' Schuss',gl:()=>(pdGlMag(g)+2)+' Schuss',kn:()=>(pdKnRounds(g)+1)+' Runden',c4:()=>(pdC4R(g)+8)+' px'};
  const own={ak:g.ak>0?'im Besitz '+g.ak+'/'+pdAkMag(g):'nicht im Besitz',gl:(g.glMag+(g.glA>0?1:0))>0?'im Besitz '+(g.glMag+(g.glA>0?1:0))+'/'+PD_GLMAGS+' Mag.':'nicht im Besitz',kn:g.knife>0?'im Besitz ×'+g.knife:'nicht im Besitz',c4:'im Besitz '+g.c4+'/'+PD_C4MAX};
- const UP=[['ak',PD_ICO.ak,'AK-47'],['gl',PD_ICO.gl,'Glock 45'],['kn',PD_ICO.kn,'Wurfmesser'],['c4',PD_ICO.c4,'C4']];
+ const WS0=pdMyWsk(), UP=[['ak',pdWIco('ak',WS0.ak),'AK-47'],['gl',pdWIco('gl',WS0.gl),'Glock 45'],['kn',pdWIco('kn',WS0.kn),'Wurfmesser'],['c4',pdWIco('c4',WS0.c4),'C4']];
  const ur=UP.map(([k,ic,n])=>{ const l=U[k], mx=PD_UPMAX[k], full=l>=mx, c=pdUpCost(g,k), can=g.coins>=c&&!full;
   return `<div class="pdtp pdur" style="--cc:#ffd23f"><span class="pdti">${ic}</span><div class="pdtt"><b>${n} <em>Stufe ${l}/${mx}</em></b><small>${own[k]}${full?' · Maximum':''}</small><div class="pdupbar"><i style="width:${l/mx*100}%"></i></div></div><button class="pdupb sm" data-pdt="up" data-k="${k}"${can?'':' disabled'}>${full?'Max':`🪙 <small>${c}</small>`}</button>${pdChips(CH[k])}</div>`; }).join('');
  const lw=Object.keys(PD_WPN).map(k=>{
@@ -1546,7 +1548,7 @@ function pdUpBar(g){
   el.addEventListener('pointerdown',go); el.addEventListener('click',e=>{ if(e.target.closest('[data-k]')) e.preventDefault(); }); }
  const NM={ak:'AK-47',gl:'Glock',kn:'Messer',c4:'C4'};
  el.dataset.s=sig;
- el.innerHTML=show.map(k=>{ const can=g.coins>=pdUpCost(g,k); return `<button class="pdub${can?' can':''}" data-k="${k}"${can?'':' disabled'} aria-label="${NM[k]} aufrüsten (${pdUpCost(g,k)} Münzen)">${PD_ICO[k]}<i>${U[k]|0}</i></button>`; }).join('');
+ el.innerHTML=show.map(k=>{ const can=g.coins>=pdUpCost(g,k); return `<button class="pdub${can?' can':''}" data-k="${k}"${can?'':' disabled'} aria-label="${NM[k]} aufrüsten (${pdUpCost(g,k)} Münzen)">${pdWIco(k,pdMyWsk()[k])}<i>${U[k]|0}</i></button>`; }).join('');
 }
 function pdFloatRefresh(force){
  const g=PD.g; if(!g||!WZ.on) return;
@@ -1559,7 +1561,7 @@ function pdFloatRefresh(force){
  const U=g.up||{}, KS=['ak','gl','kn','c4'];
  const sig=pkSig+'|'+g.coins+'|'+g.lv;
  if(el&&el.dataset.s===sig&&!force) return;
- const NM={ak:['AK-47',PD_ICO.ak],gl:['Glock',PD_ICO.gl],kn:['Messer',PD_ICO.kn],c4:['C4',PD_ICO.c4]};
+ const WS1=pdMyWsk(), NM={ak:['AK-47',pdWIco('ak',WS1.ak)],gl:['Glock',pdWIco('gl',WS1.gl)],kn:['Messer',pdWIco('kn',WS1.kn)],c4:['C4',pdWIco('c4',WS1.c4)]};
  let picks='';
  if(g.pick){
   picks='<div class="pdflp">'+g.pick.map((o,i)=>{
@@ -1610,7 +1612,7 @@ function wzRender(){
  if(NET.on||NET.peer) netStop();
  const ov=wzEnsure(); cancelAnimationFrame(PD.raf); if(!pdProf().ch){ pdRenderChoose(); return; } PD.st='menu'; PD.g=null; const PF=pdProf(), mySk=pdMySk(); PD.sel=PF.ch;
  const cards=STAFF.map(s=>{ const st=pdStats(s.n); const w=PD_WPN[st.wp]; return `<button class="pdcard" data-pdn="${esc(s.n)}"><canvas class="pdav" width="192" height="208" data-n="${esc(s.n)}"></canvas><b>${esc(s.n)}</b><small>${esc(st.lbl)} · ${s.c==='NKA'?'NKA':s.c}</small><span class="pdst">❤ ${st.hp} · 👟 ${Math.round((st.spd||1)*100)}% · ${w.ic}</span></button>`; }).join('');
- ov.innerHTML=`<button class="wzhome" data-wz="home" aria-label="Hauptmenü">⌂</button><button class="pdfsb" data-wz="fs" aria-label="Vollbild">${pdIsFs()?'⤡ Vollbild aus':'⛶ Vollbild'}</button><div class="pdmenu"><div class="pdlogo"><small>Jedmayer rückt aus</small><b>PURGE-DAY</b><i class="pdver">Version ${PD_VER}</i></div>${PD.msg?`<div class="pdmsg">${esc(PD.msg)}</div>`:''}<div class="pdmpbox"><b>👥 Mehrspieler · bis zu 6 Handys</b><small>Einer erstellt den Raum, die anderen treten mit dem Code bei.</small>${location.protocol==='file:'&&pdIOS()?'<small style="color:#ffcf80">Auf dem iPhone bitte über einen Link (https) öffnen, nicht als Datei.</small>':''}<div><button data-wz="mphost">🌐 Raum erstellen</button><button data-wz="mpjoin">🔗 Raum beitreten</button></div></div><div class="pdme"><canvas class="pdmeav" width="200" height="220"></canvas><div class="pdmei"><small>Dein Charakter</small><b>${esc(PF.ch)}</b><span>${mySk?'👕 '+esc(PD_SKM[mySk].n):'👕 Standard-Jacke'}</span><button class="pdmech" data-wz="chchange">Charakter wechseln</button></div></div><div class="pdmeb"><button class="go" data-wz="solo">▶ Alleine spielen</button><button class="sk" data-wz="skins">👕 Skins<i>🎟️ ${PF.mk|0}</i></button></div><button class="pdopt pdloadbtn" data-wz="slots"><span class="pdoi">💾</span><span class="pdot"><b>Spielstände</b><small>${pdLoadSave()?'Solo-Spiel + ':''}${netRounds().length} Mehrspieler-Runden</small></span></button></div>`;
+ ov.innerHTML=`<button class="wzhome" data-wz="home" aria-label="Hauptmenü">⌂</button><button class="pdfsb" data-wz="fs" aria-label="Vollbild">${pdIsFs()?'⤡ Vollbild aus':'⛶ Vollbild'}</button><div class="pdmenu"><div class="pdlogo pdlogom"><small>Jedmayer rückt aus</small><b>PURGE-DAY</b><i class="pdver">Version ${PD_VER}</i></div>${PD.msg?`<div class="pdmsg">${esc(PD.msg)}</div>`:''}<div class="pdmpbox"><b>👥 Mehrspieler · bis zu 6 Handys</b><small>Einer erstellt den Raum, die anderen treten mit dem Code bei.</small>${location.protocol==='file:'&&pdIOS()?'<small style="color:#ffcf80">Auf dem iPhone bitte über einen Link (https) öffnen, nicht als Datei.</small>':''}<div><button data-wz="mphost">🌐 Raum erstellen</button><button data-wz="mpjoin">🔗 Raum beitreten</button></div></div><div class="pdme"><canvas class="pdmeav" width="200" height="220"></canvas><div class="pdmei"><small>Dein Charakter</small><b>${esc(PF.ch)}</b><span>${mySk?'👕 '+esc(PD_SKM[mySk].n):'👕 Standard-Jacke'}</span><button class="pdmech" data-wz="chchange">Charakter wechseln</button></div></div><div class="pdmeb"><button class="go" data-wz="solo">▶ Alleine spielen</button><button class="sk" data-wz="skins">👕 Skins<i>🎟️ ${PF.mk|0}</i></button></div><button class="pdopt pdloadbtn" data-wz="slots"><span class="pdoi">💾</span><span class="pdot"><b>Spielstände</b><small>${pdLoadSave()?'Solo-Spiel + ':''}${netRounds().length} Mehrspieler-Runden</small></span></button></div>`;
  { const c=ov.querySelector('.pdmeav'); if(c){ const x=c.getContext('2d'); x.scale(2,2); x.translate(50,84); pdDrawHero(x,pdStats(PF.ch),0,0,0,0,1,2.2,false,mySk); } }
  PD.msg='';
 }
@@ -1899,6 +1901,11 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pdgear{gap:4px;opacity:.7}.pdgear i{background:#0003;border-color:#fff1;border-radius:8px;padding:1px 5px;font-size:12px}.pdgear b{font-size:10px}.pdgear i small{font-size:9px}
 .pdinfo{font-size:11px;opacity:.85}.pdinfo b{font-size:15px}.pdinfo i.pdcn{position:absolute;left:50px;top:calc(6px + env(safe-area-inset-top,0px));height:34px;box-sizing:border-box;padding:0 11px;display:flex;align-items:center;border-radius:11px;background:#0b0d1499;border:1px solid #ffd23f55;font-style:normal;font:800 14px system-ui;color:#ffd23f;text-shadow:0 1px 3px #000;white-space:nowrap}
 #wzOv:not(.pdnohome) .pdinfo i.pdcn{left:90px}
+.pdlogom{margin:26px 0 22px}.pdlogom small{font:800 17px system-ui;letter-spacing:.24em;color:#ff9a9a;text-shadow:0 2px 8px #000}
+.pdshmode{display:flex;gap:6px;padding:0 14px 8px;flex:none}.pdshmode button{flex:1;border:1px solid #ffffff22;background:#16171d;color:#c9ced6;border-radius:12px;padding:8px 6px;font:800 13px system-ui;cursor:pointer}.pdshmode button.on{background:linear-gradient(#ffe27a,#f0b22c);color:#2a1d00;border-color:#f0b22c}
+.pdshc img.pdwimg{width:100%;max-width:110px;height:72px;object-fit:contain;padding:4px 0;box-sizing:border-box;filter:drop-shadow(0 3px 4px #0008)}
+.pdwbig{width:240px;height:180px;display:flex;align-items:center;justify-content:center;border-radius:18px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--rc) 28%,transparent),transparent 70%)}.pdwbig img{width:230px;height:172px;object-fit:contain;filter:drop-shadow(0 6px 8px #000a)}
+
 .pdcfg{margin:12px auto 0;max-width:460px;padding:10px;border-radius:16px;background:#16171d;border:1px solid #ffffff1f;text-align:left;box-sizing:border-box}
 .pdcfgh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}.pdcfgh b{font:800 14px system-ui}.pdcfgh small{color:#8b92a0;font-size:11px}
 .pdcfgd{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.pdcfgd button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 3px;border-radius:12px;border:1px solid #ffffff22;background:#1d1f27;color:#cfd3dc;font:700 10.5px system-ui;cursor:pointer;min-width:0}
@@ -2087,7 +2094,7 @@ function netHostData(c,d){
  }
  if(c.slot===undefined) return;
  if(d.t==='pick'){ const l=NET.lobby.find(q=>q.slot===c.slot); if(!l||PD.st!=='lobby'||l.sv!=null) return;
-  if(SMAP[d.n]) l.n=d.n; l.sk=PD_SKM[d.sk]?d.sk:''; netBroadcastLobby(); return; }
+  if(SMAP[d.n]) l.n=d.n; l.sk=PD_SKM[d.sk]?d.sk:''; l.wsk=typeof d.wsk==='string'?d.wsk.slice(0,120):''; netBroadcastLobby(); return; }
  const g=PD.g; if(!g||!g.ps) return; const p=g.ps.find(q=>q.slot===c.slot); if(!p||p.off) return;
  if(d.t==='in'){ if(p.dead) return;
   p.x=Math.max(PD_AR.x0+22,Math.min(PD_AR.x1-22,+d.x||p.x)); p.y=Math.max(PD_AR.y0+34,Math.min(PD_AR.y1-22,+d.y||p.y));
@@ -2134,7 +2141,7 @@ function netStartGame(){
   const g=PD.g; g.mp=1; g.ps=NET.lobby.filter(l=>l.slot!==0).map((l,i)=>netNewMate(l,g,i)); NET.eid=0;
  }
  PD.g.cfg=JSON.parse(JSON.stringify(NET.cfg||pdCfgLoad()));
- PD.g.sk=pdMySk(); for(const p of PD.g.ps){ const l=NET.lobby.find(q=>q.slot===p.slot); p.sk=(l&&l.sk)||''; }
+ PD.g.sk=pdMySk(); for(const p of PD.g.ps){ const l=NET.lobby.find(q=>q.slot===p.slot); p.sk=(l&&l.sk)||''; p.wsk=(l&&l.wsk)||''; }
  NET.sq=[]; NET.n=0; NET.autoT=0; setTimeout(()=>{ try{ netAutoSave(); }catch(e){} },1500);
  if(!NET.iv) NET.iv=setInterval(netTick,NET_RATE);
  netSend({t:'start'});
@@ -2164,8 +2171,8 @@ function netSnapBase(){
  const g=PD.g, R=Math.round, r1=v=>Math.round(v*10)/10;
  NET.n++;
  const inv=o=>[o.ak|0,o.akOn?1:0,o.glA|0,o.glMag|0,o.glOn?1:0,o.c4|0,o.knife|0,o.nuke|0,(o.w&&o.w.blau)|0,o.bait|0];
- const P=[[0,g.n,R(g.x),R(g.y),g.face,g.back?1:0,(Math.abs(g.vx)+Math.abs(g.vy)>5)?1:0,Math.ceil(g.hp),g.hpMax,g.dead?1:0,Math.ceil(g.rT||0),r1(g.ang),g.rvP|0,(g.hurt>.3||g.inv>0)?1:0,inv(g),0,g.lv|0,g.sk||'']];
- for(const p of g.ps) P.push([p.slot,p.n,R(p.x),R(p.y),p.face,p.back?1:0,p.mv?1:0,Math.ceil(p.hp),p.hpMax,p.dead?1:0,Math.ceil(p.rT||0),r1(p.ang||0),p.rvP|0,p.hurt>.3?1:0,inv(p),p.off?1:0,p.lv|0,p.sk||'']);
+ const P=[[0,g.n,R(g.x),R(g.y),g.face,g.back?1:0,(Math.abs(g.vx)+Math.abs(g.vy)>5)?1:0,Math.ceil(g.hp),g.hpMax,g.dead?1:0,Math.ceil(g.rT||0),r1(g.ang),g.rvP|0,(g.hurt>.3||g.inv>0)?1:0,inv(g),0,g.lv|0,g.sk||'',pdWskStr(pdMyWsk())]];
+ for(const p of g.ps) P.push([p.slot,p.n,R(p.x),R(p.y),p.face,p.back?1:0,p.mv?1:0,Math.ceil(p.hp),p.hpMax,p.dead?1:0,Math.ceil(p.rT||0),r1(p.ang||0),p.rvP|0,p.hurt>.3?1:0,inv(p),p.off?1:0,p.lv|0,p.sk||'',p.wsk||'']);
  const E=g.en.map(e=>{ if(!e.id) e.id=++NET.eid; return [e.id,e.k,e.sd||0,R(e.x),R(e.y),e.face<0?-1:1,e.back?1:0,r1(e.ph),r1(Math.max(0,e.flash)),Math.max(0,Math.round(e.hp/e.hpMax*100)),e.st|0,(e.mod|0)|(e.sh>0?16:0)|(e.el?32:0)]; });
  const xy=a=>a.map(q=>[R(q.x),R(q.y)]), xyt=a=>a.map(q=>[R(q.x),R(q.y),r1(q.t||0)]);
  const s={t:'s',st:PD.st,pk:0,
@@ -2176,7 +2183,7 @@ function netSnapBase(){
   fx:pdFxSl(g.fx,60).map(f=>{ const o=Object.assign({},f); o.x=R(f.x); o.y=R(f.y); if(f.ps) o.ps=f.ps.map(q=>[R(q[0]),R(q[1])]); return o; }),
   tx:g.txt.slice(-40).map(t=>[R(t.x),R(t.y),t.s,t.c,r1(t.t),t.life]),
   bp:g.bp?[R(g.bp.x),R(g.bp.y)]:0, ci:xy(g.c4i), ai:xy(g.aki), gi:xyt(g.gli), ki:xyt(g.kni), ni:xy(g.nki),
-  cs:g.c4s.map(q=>[R(q.x),R(q.y),r1(q.t||0),q.R|0]), kf:g.kfl.map(f=>[R(f.x),R(f.y),r1(f.t),f.dir]), nf:g.nf?[R(g.nf.x),R(g.nf.y),Math.round(g.nf.t*100)/100]:0,
+  cs:g.c4s.map(q=>[R(q.x),R(q.y),r1(q.t||0),q.R|0,q.o|0]), kf:g.kfl.map(f=>[R(f.x),R(f.y),r1(f.t),f.dir,f.ow|0]), nf:g.nf?[R(g.nf.x),R(g.nf.y),Math.round(g.nf.t*100)/100]:0,
   w:g.w,p:g.p,up:g.up,lv:g.lv,xp:g.xp,xpN:g.xpN,k:g.kills,cn:g.cnext|0,tt:r1(g.t),sm:g.spdM,
   sq:NET.sq.splice(0),hz:g.hz.slice(-110).map(pdHzPack),an:g.ann?[g.ann.s,g.ann.s2,g.ann.col,Math.round(g.ann.t*100)/100,g.ann.life,g.ann.big?1:0]:0,
   ld:g.lvd|0,cl:g.clear?1:0,as:g.arenaSeq|0,dr:g.door?1:0,am:g.am?[R(g.am.x),R(g.am.y),r1(g.am.a),R(g.am.vx),R(g.am.vy)]:0,mc:g.mc?[g.mc.s==='out'?1:2,R(g.mc.x),R(g.mc.y),g.mc.face,r1(g.mc.a||0),g.mc.ammo|0,g.mc.mv?1:0]:0,mcl:pdMercLeft(g),mk:(g.mk||[]).map(q=>[R(q.x),R(q.y),r1(q.t)]),bt:g.bt?[Math.round(g.bt.x0),Math.round(g.bt.y0),Math.round(g.bt.x),Math.round(g.bt.y),r1(g.bt.t),g.bt.fly,g.bt.life]:0};
@@ -2340,8 +2347,8 @@ function netPick(n){
  if(!SMAP[n]||PD.st!=='lobby') return;
  const me=NET.lobby.find(l=>l.slot===NET.me); if(!me) return;
  if(me.lock||(NET.host&&NET.load)) return;
- me.n=n; me.sk=pdMySk();
- if(NET.host) netBroadcastLobby(); else { try{ NET.conn.send({t:'pick',n,sk:me.sk}); }catch(e){} netLobbyRender(); }
+ me.n=n; me.sk=pdMySk(); me.wsk=pdWskStr(pdMyWsk());
+ if(NET.host) netBroadcastLobby(); else { try{ NET.conn.send({t:'pick',n,sk:me.sk,wsk:me.wsk}); }catch(e){} netLobbyRender(); }
 }
 function netAct(k){ if(NET.conn&&NET.conn.open&&!NET.re) try{ NET.conn.send({t:'act',a:k}); }catch(e){} }
 function netGuestStart(){
@@ -2369,7 +2376,7 @@ function netGuestStep(dt){
  const me=c.P.find(q=>q[0]===NET.me);
  g.ps=[];
  for(const q of c.P){ if(q[0]===NET.me) continue; const o=pm[q[0]]||q;
-  const m={slot:q[0],n:q[1],s:netStats(q[1]),x:L(o[2],q[2]),y:L(o[3],q[3]),face:q[4],back:!!q[5],mv:!!q[6],hp:q[7],hpMax:q[8],dead:q[9],rT:q[10],ang:L(o[11],q[11]),skel:false,rvP:q[12]|0,hu:q[13],off:!!q[15],lv:q[16]|0,sk:q[17]||'',anim:now/1000};
+  const m={slot:q[0],n:q[1],s:netStats(q[1]),x:L(o[2],q[2]),y:L(o[3],q[3]),face:q[4],back:!!q[5],mv:!!q[6],hp:q[7],hpMax:q[8],dead:q[9],rT:q[10],ang:L(o[11],q[11]),skel:false,rvP:q[12]|0,hu:q[13],off:!!q[15],lv:q[16]|0,sk:q[17]||'',wsk:q[18]||'',anim:now/1000};
   netInv(m,q[14]); g.ps.push(m); }
  const live=c.st==='play'&&!NET.re, busy=false;
  if(me){ const om=pm[NET.me]||me;
@@ -2403,7 +2410,7 @@ function netGuestStep(dt){
   g.bp=c.bp?{x:c.bp[0],y:c.bp[1]}:null;
   g.c4i=c.ci.map(q=>({x:q[0],y:q[1]})); g.aki=c.ai.map(q=>({x:q[0],y:q[1]})); g.nki=c.ni.map(q=>({x:q[0],y:q[1]}));
   g.gli=c.gi.map(q=>({x:q[0],y:q[1],t:q[2]})); g.kni=c.ki.map(q=>({x:q[0],y:q[1],t:q[2]}));
-  g.c4s=c.cs.map(q=>({x:q[0],y:q[1],t:q[2],R:q[3]})); g.kfl=c.kf.map(f=>({x:f[0],y:f[1],t:f[2],dir:f[3],tr:[[f[0],f[1]]]}));
+  g.c4s=c.cs.map(q=>({x:q[0],y:q[1],t:q[2],R:q[3],o:q[4]|0})); g.kfl=c.kf.map(f=>({x:f[0],y:f[1],t:f[2],dir:f[3],ow:f[4]|0,tr:[[f[0],f[1]]]}));
   g.nf=c.nf?{x:c.nf[0],y:c.nf[1],t:c.nf[2]}:null;
   g.mk=(c.mk||[]).map(q=>({x:q[0],y:q[1],t:q[2]}));
   g.bt=c.bt?{x0:c.bt[0],y0:c.bt[1],x:c.bt[2],y:c.bt[3],t:c.bt[4],fly:c.bt[5],life:c.bt[6]}:null;
@@ -3682,12 +3689,13 @@ function pdShop(tab,sel){
  const cards=L.map(k=>{ const own=P.own.includes(k.id), on=cur===k.id, R=PD_RAR[k.r];
   return `<button class="pdshc${own?' own':''}${on?' on':''}" data-sk="${k.id}" style="--rc:${R.c}"><canvas width="160" height="176" data-sk="${k.id}"></canvas><b>${esc(k.n)}</b><small>${R.n}</small><em>${on?'✓ An':own?'Anziehen':R.p+' 🎟️'}</em></button>`; }).join('');
  el=document.createElement('div'); el.id='pdShop';
- el.innerHTML=`<div class="pdshh"><button class="pdshx" data-sa="close" aria-label="Zurück">‹</button><div><b>Skins</b><small>${P.own.length} von ${PD_SKINS.length} gesammelt</small></div><span class="pdshm">🎟️ ${P.mk}</span></div><div class="pdsht">${tabs}</div><div class="pdshg">${tab==='all'||tab==='own'?def:''}${cards||'<p class="pdshe">Noch keine Skins in dieser Kategorie.</p>'}</div><p class="pdshi">🎟️ Skin-Marken lassen Gegner ganz selten fallen. Endgegner geben mehr.</p>`;
+ el.innerHTML=`<div class="pdshh"><button class="pdshx" data-sa="close" aria-label="Zurück">‹</button><div><b>Skins</b><small>${P.own.length} von ${PD_SKINS.length} gesammelt</small></div><span class="pdshm">🎟️ ${P.mk}</span></div><div class="pdshmode"><button class="on" data-sm="cl">👕 Kleidung</button><button data-sm="w">🔫 Waffen</button></div><div class="pdsht">${tabs}</div><div class="pdshg">${tab==='all'||tab==='own'?def:''}${cards||'<p class="pdshe">Noch keine Skins in dieser Kategorie.</p>'}</div><p class="pdshi">🎟️ Skin-Marken lassen Gegner ganz selten fallen. Endgegner geben mehr.</p>`;
  ov.appendChild(el);
  const g2=el.querySelector('.pdshg'); g2.scrollTop=sy;
  const st=pdStats(P.ch||STAFF[0].n);
  el.querySelectorAll('canvas[data-sk]').forEach(c=>{ const x=c.getContext('2d'); x.scale(2,2); x.translate(40,66); pdDrawHero(x,st,0,0,0,0,1,2.05,false,c.dataset.sk); });
- el.onclick=e=>{ const t=e.target.closest('[data-st]'); if(t){ pdShop(t.dataset.st); pdSnd('tap'); return; }
+ el.onclick=e=>{ const sm=e.target.closest('[data-sm]'); if(sm){ if(sm.dataset.sm==='w'){ pdWShop(); pdSnd('tap'); } return; }
+  const t=e.target.closest('[data-st]'); if(t){ pdShop(t.dataset.st); pdSnd('tap'); return; }
   if(e.target.closest('[data-sa="close"]')){ el.remove(); cancelAnimationFrame(PD.shRaf); pdSnd('tap'); if(PD.st==='menu') wzRender(); return; }
   const c=e.target.closest('.pdshc'); if(c){ pdShopSheet(c.dataset.sk); pdSnd('tap'); } };
  if(sel!==undefined) pdShopSheet(sel);
@@ -4093,6 +4101,97 @@ function pdCheatGo(v){
  g.arenaSeq=(g.arenaSeq|0)+1; PD.keys={}; g.inv=2;
  const d=PD_LVD[pdLvd(g)]; pdAnn(g,'LEVEL '+(v+1),d.ic+' '+pdLvdName(v)+'\nCheat · ohne Gegner','#b388ff',3.6);
 }
+
+/* ===================== WAFFEN-SKINS (AK-47, Glock, Wurfmesser, C4) · gekauft mit Skin-Marken ===================== */
+const PD_WBASE={ak:{w1:'#b97a3c',w2:'#6e4219',m1:'#5a5f68',m2:'#23262b',gr:'#3a2a1c',a1:'#7b8089',br:'#454a52',si:'#2b2e33'},
+ gl:{s1:'#6a707a',s2:'#2a2d33',fr:'#23262b',se:'#15171b',si:'#d9d9d9',li:'#3a3e46',a1:'#8a909a'},
+ kn:{b1:'#f4f8fc',b2:'#b9c4d0',b3:'#7d8896',ed:'#5f6a78',gu:'#d9a21f',g2:'#7a5a0a',ha:'#2a2d33',hl:'#4a4f58'},
+ c4:{c1:'#d8cb9b',c2:'#a89a68',bd:'#6a5f3a',tx:'#4a432a',bx:'#25282d',led:'#ff3b30',w1:'#d94a3a',w2:'#3a8fd9'}};
+const PD_WN={ak:'AK-47',gl:'Glock 45',kn:'Wurfmesser',c4:'C4'};
+/* [id, Waffe, Name, Seltenheit, Farben, Glitzer] */
+const PD_WSK=[
+ ['ak_wueste','ak','Wüstentarn',1,{w1:'#c8a96a',w2:'#8a6f3a',m1:'#a8986a',m2:'#5e5236',gr:'#6a5a34',br:'#8a7a52',si:'#5e5236'}],
+ ['ak_rost','ak','Rostlaube',1,{m1:'#a0603a',m2:'#4a2412',br:'#7a3a1a',si:'#4a2412',w1:'#5a3a22',w2:'#3a2412'}],
+ ['ak_blau','ak','Blaulicht',2,{w1:'#ff5a4d',w2:'#a01410',m1:'#3a6fff',m2:'#102a7f',br:'#2a4fbf',si:'#102a7f',a1:'#ffffff'}],
+ ['ak_bier','ak','Bierflasche',2,{w1:'#3aa04a',w2:'#14501c',m1:'#8a5a2a',m2:'#4a2a0c',br:'#6a3d1a',gr:'#d9b45a',a1:'#ffd23f'}],
+ ['ak_rave','ak','Neon-Rave',3,{w1:'#4fd1ff',w2:'#1a5a8a',m1:'#ff4fd8',m2:'#6a1a8a',br:'#b06bff',si:'#ff4fd8',gr:'#2a0a3a',a1:'#7dff9a'}],
+ ['ak_gold','ak','Pures Gold',4,{w1:'#fff1a8',w2:'#c9a227',m1:'#ffe27a',m2:'#a8760b',br:'#d4a017',si:'#8a6000',gr:'#6a4a00',a1:'#ffffff'},1],
+ ['gl_grau','gl','Polizei-Grau',1,{s1:'#a8b4c4',s2:'#4a5464',fr:'#2a3240',li:'#5a6474'}],
+ ['gl_tarn','gl','Tarnfleck',1,{s1:'#7a8a54',s2:'#3a4428',fr:'#4a3a24',se:'#2a2010',li:'#6a5a3a'}],
+ ['gl_pink','gl','Pink Panther',2,{s1:'#ff9ae0',s2:'#b0307a',fr:'#4a1a3a',se:'#6a1a4a',li:'#ff6bd6',a1:'#ffd6f4'}],
+ ['gl_kupfer','gl','Kupfer',2,{s1:'#f0a060',s2:'#8a4a1a',fr:'#3a2010',se:'#5a2a10',li:'#a05a2a',a1:'#ffd0a0'}],
+ ['gl_eis','gl','Eiszapfen',3,{s1:'#e8fbff',s2:'#6ac0e8',fr:'#2a6a8a',se:'#4a9ac0',li:'#9adcff',si:'#ffffff',a1:'#ffffff'}],
+ ['gl_diamant','gl','Diamant',4,{s1:'#ffffff',s2:'#7fe0ff',fr:'#1d8fd9',se:'#4fb8f0',li:'#bff4ff',si:'#7ff6ff',a1:'#e8fbff'},1],
+ ['kn_kueche','kn','Küchenmesser',1,{ha:'#f2f2f2',hl:'#bfbfbf',gu:'#9aa0aa',g2:'#5a606a'}],
+ ['kn_rost','kn','Rostklinge',1,{b1:'#d8a07a',b2:'#a06a42',b3:'#6a3a20',ed:'#4a2412',ha:'#3a2a1a'}],
+ ['kn_smaragd','kn','Smaragd',2,{b1:'#d6ffe6',b2:'#4fd18a',b3:'#1f7a4a',ed:'#0f4a2a',gu:'#e8e8e8',g2:'#8a8a8a'}],
+ ['kn_blut','kn','Blutrot',3,{b1:'#ffd0d0',b2:'#e0403a',b3:'#7a1410',ed:'#4a0a08',ha:'#151515',hl:'#5a1410',gu:'#2a2a2a',g2:'#000000'}],
+ ['kn_obsidian','kn','Obsidian',3,{b1:'#a89ac8',b2:'#4a3a7a',b3:'#1a1030',ed:'#0a0618',gu:'#c06bff',g2:'#5a2a8a',ha:'#120c20'}],
+ ['kn_gold','kn','Goldklinge',4,{b1:'#fff6c8',b2:'#ffd23f',b3:'#b8860b',ed:'#7a5a00',gu:'#ffffff',g2:'#c9a227',ha:'#3a2410',hl:'#c9a227'},1],
+ ['c4_militaer','c4','Militärgrün',1,{c1:'#8a9a64',c2:'#4a5a34',bd:'#2a3420',tx:'#1e2414'}],
+ ['c4_pizza','c4','Pizzakarton',1,{c1:'#ecd8b0',c2:'#c0a070',bd:'#c9301f',tx:'#c9301f'}],
+ ['c4_geschenk','c4','Geschenkpaket',2,{c1:'#e84a3a',c2:'#9a1a10',bd:'#ffd23f',tx:'#ffffff',w2:'#ffd23f'}],
+ ['c4_bier','c4','Bierkiste',2,{c1:'#3a9a4a',c2:'#14501c',bd:'#d9b45a',tx:'#ffd23f'}],
+ ['c4_radio','c4','Radioaktiv',3,{c1:'#ffe04a',c2:'#c99a10',bd:'#111111',tx:'#111111',led:'#7dff6a',w1:'#7dff6a',w2:'#111111'}],
+ ['c4_gold','c4','Goldbarren',4,{c1:'#fff1a8',c2:'#d4a017',bd:'#8a6a10',tx:'#6a4a00',bx:'#3a2a00'},1]
+];
+const PD_WSKM=Object.fromEntries(PD_WSK.map(a=>[a[0],{id:a[0],w:a[1],n:a[2],r:a[3],c:a[4],gl:!!a[5]}]));
+const PD_WSPARK='<g fill="#fff"><path d="M12 6 L13.2 9.8 L17 11 L13.2 12.2 L12 16 L10.8 12.2 L7 11 L10.8 9.8 Z" opacity=".95"/><path d="M50 30 L50.8 32.4 L53 33 L50.8 33.6 L50 36 L49.2 33.6 L47 33 L49.2 32.4 Z" opacity=".85"/><circle cx="30" cy="8" r="1.2" opacity=".8"/></g>';
+const PD_WICO={}, PD_WIMG={};
+function pdWIco(k,id){ const S=id&&PD_WSKM[id]; if(!S||S.w!==k) return PD_ICO[k]; if(PD_WICO[id]) return PD_WICO[id];
+ let svg=PD_ICO[k]; const B=PD_WBASE[k]; for(const r in S.c) if(B[r]) svg=svg.split(B[r]).join('§'+r+'§'); for(const r in S.c) svg=svg.split('§'+r+'§').join(S.c[r]);
+ svg=svg.replace(/id="(\w+)"/g,'id="$1_'+id+'"').replace(/url\(#(\w+)\)/g,'url(#$1_'+id+')');
+ if(S.gl) svg=svg.replace('</svg>',PD_WSPARK+'</svg>');
+ return PD_WICO[id]=svg; }
+function pdWImg(k,id){ const key=(id&&PD_WSKM[id]&&PD_WSKM[id].w===k)?id:k; if(!PD_WIMG[key]){ const im=new Image(); im.src='data:image/svg+xml;utf8,'+encodeURIComponent(pdWIco(k,key===k?'':key)); PD_WIMG[key]=im; } return PD_WIMG[key]; }
+function pdWCol(k,id){ const S=id&&PD_WSKM[id]; return Object.assign({},PD_WBASE[k],S&&S.w===k?S.c:{}); }
+/* eigene Waffen-Skins (Profil) */
+function pdMyWsk(){ const p=pdProf(), o={}; p.wown=Array.isArray(p.wown)?p.wown:[]; p.wsk=p.wsk||{}; for(const k of ['ak','gl','kn','c4']){ const id=p.wsk[k]; o[k]=(id&&p.wown.includes(id)&&PD_WSKM[id]&&PD_WSKM[id].w===k)?id:''; } return o; }
+function pdWskStr(o){ o=o||{}; return [o.ak||'',o.gl||'',o.kn||'',o.c4||''].join('|'); }
+function pdWskDec(s){ const a=String(s||'').split('|'); return {ak:a[0]||'',gl:a[1]||'',kn:a[2]||'',c4:a[3]||''}; }
+/* Skins eines Spielers über seinen Platz (0 = Host) */
+function pdWskOf(slot){
+ const g=PD.g; slot=slot|0;
+ if(PD.st==='guest'){ if(slot===NET.me) return pdMyWsk(); }
+ else if(!slot) return pdMyWsk();
+ const p=g&&(g.ps||[]).find(q=>q.slot===slot); return pdWskDec(p&&p.wsk);
+}
+
+/* ---------- Shop: Waffen-Skins ---------- */
+function pdWShop(tab,sel){
+ const ov=wzEnsure(), P=pdProf(); pdMyWsk(); let el=document.getElementById('pdShop'); const sy=el?(el.querySelector('.pdshg')||{}).scrollTop||0:0; if(el) el.remove();
+ PD.wTab=tab=tab||PD.wTab||'ak';
+ const mine=pdMyWsk(), L=PD_WSK.filter(a=>a[1]===tab).map(a=>PD_WSKM[a[0]]);
+ const tabs=['ak','gl','kn','c4'].map(k=>`<button class="${tab===k?'on':''}" data-wt="${k}">${PD_WN[k]}</button>`).join('');
+ const img=(k,id)=>`<img class="pdwimg" alt="" src="data:image/svg+xml;utf8,${encodeURIComponent(pdWIco(k,id))}">`;
+ const def=`<button class="pdshc${!mine[tab]?' on':''}" data-wsk="" style="--rc:#7dff9a">${img(tab,'')}<b>Standard</b><small>Original</small><em>${!mine[tab]?'✓ An':'Anlegen'}</em></button>`;
+ const cards=L.map(k=>{ const own=P.wown.includes(k.id), on=mine[tab]===k.id, R=PD_RAR[k.r];
+  return `<button class="pdshc${own?' own':''}${on?' on':''}" data-wsk="${k.id}" style="--rc:${R.c}">${img(tab,k.id)}<b>${esc(k.n)}</b><small>${R.n}</small><em>${on?'✓ An':own?'Anlegen':R.p+' 🎟️'}</em></button>`; }).join('');
+ el=document.createElement('div'); el.id='pdShop';
+ el.innerHTML=`<div class="pdshh"><button class="pdshx" data-sa="close" aria-label="Zurück">‹</button><div><b>Waffen-Skins</b><small>${P.wown.length} von ${PD_WSK.length} gesammelt</small></div><span class="pdshm">🎟️ ${P.mk}</span></div><div class="pdshmode"><button data-sm="cl">👕 Kleidung</button><button class="on" data-sm="w">🔫 Waffen</button></div><div class="pdsht">${tabs}</div><div class="pdshg">${def}${cards}</div><p class="pdshi">🎟️ Waffen-Skins sehen nur anders aus. Du siehst sie an deinen Buttons, in der Hand und bei C4 und Messer im Spiel – deine Mitspieler sehen sie auch.</p>`;
+ ov.appendChild(el); el.querySelector('.pdshg').scrollTop=sy;
+ el.onclick=e=>{ const t=e.target.closest('[data-wt]'); if(t){ pdWShop(t.dataset.wt); pdSnd('tap'); return; }
+  const m=e.target.closest('[data-sm]'); if(m){ if(m.dataset.sm==='cl'){ pdShop('all'); pdSnd('tap'); } return; }
+  if(e.target.closest('[data-sa="close"]')){ el.remove(); pdSnd('tap'); if(PD.st==='menu') wzRender(); return; }
+  const c=e.target.closest('[data-wsk]'); if(c){ pdWSheet(tab,c.dataset.wsk); pdSnd('tap'); } };
+ if(sel!==undefined) pdWSheet(tab,sel);
+}
+function pdWSheet(k,id){
+ const P=pdProf(), S=id?PD_WSKM[id]:null, el=document.getElementById('pdShop'); if(!el) return;
+ let sh=document.getElementById('pdShopS'); if(sh) sh.remove();
+ const mine=pdMyWsk(), own=!id||P.wown.includes(id), on=mine[k]===id, R=S?PD_RAR[S.r]:{n:'Standard',c:'#7dff9a',p:0}, can=(P.mk|0)>=R.p;
+ sh=document.createElement('div'); sh.id='pdShopS'; sh.style.setProperty('--rc',R.c);
+ sh.innerHTML=`<div class="pdss"><div class="pdwbig"><img alt="" src="data:image/svg+xml;utf8,${encodeURIComponent(pdWIco(k,id))}"></div><div class="pdssi"><small>${PD_WN[k]} · ${R.n}</small><b>${S?esc(S.n):'Standard'}</b>${own?'':`<span>Preis: ${R.p} 🎟️ · Du hast ${P.mk} 🎟️</span>`}</div><div class="pdssb">${on?`<button class="go" disabled>✓ Angelegt</button>${id?'<button data-ws="off">Ablegen</button>':''}`:own?`<button class="go" data-ws="wear">Anlegen</button>`:`<button class="go" data-ws="buy"${can?'':' disabled'}>${can?'Kaufen für '+R.p+' 🎟️':'Noch '+(R.p-P.mk)+' 🎟️ fehlen'}</button>`}<button data-ws="close">Schließen</button></div></div>`;
+ el.appendChild(sh);
+ sh.onclick=e=>{ e.stopPropagation(); const b=e.target.closest('[data-ws]'); if(!b&&e.target!==sh) return; const a=b?b.dataset.ws:'close';
+  if(a==='close'){ sh.remove(); return; }
+  if(a==='buy'){ if(P.wown.includes(id)||(P.mk|0)<R.p) return; P.mk-=R.p; P.wown.push(id); P.wsk[k]=id; pdProfSave(); pdSnd('maut'); pdWShop(k,id); pdShopToast('🎉 '+S.n+' gekauft und angelegt!'); pdWskSync(); return; }
+  if(a==='wear'){ P.wsk[k]=id||''; pdProfSave(); pdSnd('pick'); pdWShop(k); pdWskSync(); return; }
+  if(a==='off'){ P.wsk[k]=''; pdProfSave(); pdSnd('tap'); pdWShop(k); pdWskSync(); return; }
+ };
+}
+/* geänderte Skins im laufenden Spiel / in der Lobby übernehmen */
+function pdWskSync(){ try{ if(NET.on&&PD.st==='lobby'){ const me=NET.lobby.find(l=>l.slot===NET.me); if(me){ me.wsk=pdWskStr(pdMyWsk()); if(NET.host) netBroadcastLobby(); else if(me.n) NET.conn.send({t:'pick',n:me.n,sk:me.sk||pdMySk(),wsk:me.wsk}); } } }catch(e){} }
 
 /* ===================== iPhone / iOS-Anpassungen ===================== */
 /* Ältere iPhones (vor iOS 16) kennen roundRect auf dem Canvas nicht */
