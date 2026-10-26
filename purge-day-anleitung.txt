@@ -1,5 +1,5 @@
 =====================================================================
-  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 6.0)
+  PURGE-DAY  ·  Die komplette Spielanleitung  (Stand: Version 6.1)
 =====================================================================
 
 Purge-Day ist ein Überlebensspiel von oben gesehen. Du bist ein Mitarbeiter
@@ -378,6 +378,17 @@ ein. Alle spielen im selben Feld. Der Host rechnet das Spiel, die anderen
 sehen den Stand live. Die Verbindung läuft über das Internet (PeerJS/WebRTC).
 
 Lobby:
+  - Spiel-Einstellungen (nur der Host ändert sie, alle sehen sie):
+      Schwierigkeit   ☕ Kaffeepause  weniger und schwächere Gegner
+                      🚑 Nachtdienst  das normale Spiel
+                      🚨 Großeinsatz  Gegner zäher (+40 %), mehr Schaden
+                                      (+30 %), mehr Gegner (+15 %)
+                      ☠️ Purge-Day    Gegner doppelt so zäh, +60 % Schaden,
+                                      +30 % Gegner
+      Gegnertypen     Jeden Gegnertyp einzeln ein- oder ausschalten
+                      (mindestens einer bleibt an). Ausgeschaltete Typen
+                      werden durch erlaubte ersetzt.
+    Die Einstellungen werden gemerkt und gelten auch für geladene Runden.
   - Jeder sieht die Mitspieler mit Name, Charakter und Skin.
   - Der Host startet die Runde. Man kann auch eine gespeicherte Runde
     laden.
@@ -415,6 +426,15 @@ Einfluss auf die Werte.
     Meine. Antippen zeigt eine große Vorschau mit Kaufen / Anziehen.
   - Skins und Marken gehören deinem Profil und bleiben bei einem neuen
     Spiel erhalten.
+
+
+---------------------------------------------------------------------
+CHEAT-MENÜ
+---------------------------------------------------------------------
+
+Im Pause-Menü gibt es ein Cheat-Menü mit Passwort. Damit kann man jedes
+Level (1 bis 7) ohne Gegner ansehen oder im aktuellen Level die Gegner aus-
+und wieder einschalten. Ohne Gegner kommt auch kein Endgegner.
 
 
 ---------------------------------------------------------------------

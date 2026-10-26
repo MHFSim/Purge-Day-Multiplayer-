@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='6.0';   /* bei jeder neuen Version erhöhen */
+const PD_VER='6.1';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -373,7 +373,8 @@ const PD_EN={
 };
 
 function pdRand(a,b){ return a+Math.random()*(b-a); }
-function pdPickEnemy(t){
+function pdPickEnemy(t){ return pdKindFix(pdPickEnemy0(t)); }
+function pdPickEnemy0(t){
  { const lk=pdLvKind(); if(lk) return lk; }
  { let q=Math.random(), acc=0; for(const [k,tm,pp] of PD_SPEC){ if(t>tm){ acc+=pp; if(q<acc){ if(((k==='spucker'||k==='schatten'||k==='rammer')&&pdKindN(k)>=2)||(k==='heiler'&&pdKindN(k)>=3)) break; return k; } } } }
  const r=Math.random();
@@ -526,15 +527,15 @@ function pdUpdate(dt){
  if(mx||my){ const l=Math.hypot(mx,my); g.dx=mx/l; g.dy=my/l; if(Math.abs(mx)>.1) g.face=mx>0?1:-1; }
  /* Spawns: alle über die Tür des Jedmayer */
  g.spawnT-=dt;
- const rate=Math.max(.12,1.1-g.t/260)/PD_SPAWN, cap=(g.clear||g.bigWarn>0)?0:g.bigOn?6+3*(1+(g.ps||[]).length):(60+Math.min(200,g.t/2.2))*PD_SPAWN*.8*pdLvC(g)*(PD.lite>=2?.65:PD.lite===1?.85:1);
+ const rate=Math.max(.12,1.1-g.t/260)/PD_SPAWN, cap=(g.clear||g.peace||g.bigWarn>0)?0:g.bigOn?6+3*(1+(g.ps||[]).length):(60+Math.min(200,g.t/2.2))*PD_SPAWN*.8*pdLvC(g)*(PD.lite>=2?.65:PD.lite===1?.85:1);
  if(g.spawnT<=0&&g.en.length<cap){
   g.spawnT=rate; const burst=g.bigOn?1:1+Math.floor(g.t/70);
   for(let i=0;i<burst;i++){ const k=pdPickEnemy(g.t), d=PD_EN[k], gt=PD_GATES[Math.floor(Math.random()*PD_GATES.length)], off=pdRand(0,26); g.en.push({k,x:gt.x+pdRand(-gt.jx,gt.jx)+gt.ox*off,y:gt.y+pdRand(-gt.jy,gt.jy)+gt.oy*off,sd:Math.floor(Math.random()*1e6),hp:d.hp*PD_HPM*(1+g.t/420)*pdLvM(g),hpMax:d.hp*PD_HPM*(1+g.t/420)*pdLvM(g),face:1,stun:0,kx:0,ky:0,ph:Math.random()*6,flash:0,sleep:0}); }
  }
- if(g.bigOn||g.clear||g.bigWarn>0) g.bossN=Math.floor(g.t/180);
+ if(g.bigOn||g.clear||g.peace||g.bigWarn>0) g.bossN=Math.floor(g.t/180);
  while(g.t>=180*(g.bossN+1)){ const n=g.bossN++, d=PD_EN.boss, hp=Math.round((700+600*n)*PD_BOSSM); g.en.push({k:'boss',sd:0,x:PD_DOOR.x,y:PD_DOOR.y+34,hp,hpMax:hp,xp:60*(n+1),face:1,stun:0,kx:0,ky:0,ph:0,flash:0,sleep:0}); pdTxt(g.x,g.y-60,'Dealer-Papa Nr. '+(n+1)+' kommt!','#ff6b6b',2.6); pdSnd('boss'); }
  /* Camper-Nachschub: steht der Spieler länger als 3 s, kommen Gegner direkt von außerhalb des Bildes */
- if(g.still>3&&!g.bigOn&&!g.clear&&!(g.bigWarn>0)){ g.campT=(g.campT||0)-dt; if(g.campT<=0&&g.en.length<(60+Math.min(200,g.t/2.2))*PD_SPAWN*.8*1.4*(PD.lite>=2?.65:PD.lite===1?.85:1)){ g.campT=.5; const nn=2+Math.floor(g.t/120);
+ if(g.still>3&&!g.bigOn&&!g.clear&&!g.peace&&!(g.bigWarn>0)){ g.campT=(g.campT||0)-dt; if(g.campT<=0&&g.en.length<(60+Math.min(200,g.t/2.2))*PD_SPAWN*.8*1.4*(PD.lite>=2?.65:PD.lite===1?.85:1)){ g.campT=.5; const nn=2+Math.floor(g.t/120);
   for(let i=0;i<nn;i++){ const k=pdPickEnemy(g.t), d=PD_EN[k], a=Math.random()*6.2832, R=pdRand(340,420), hp=d.hp*PD_HPM*(1+g.t/420)*pdLvM(g);
    g.en.push({k,x:Math.max(PD_AR.x0,Math.min(PD_AR.x1,g.x+Math.cos(a)*R)),y:Math.max(PD_AR.y0,Math.min(PD_AR.y1,g.y+Math.sin(a)*R)),sd:Math.floor(Math.random()*1e6),hp,hpMax:hp,face:1,stun:0,kx:0,ky:0,ph:Math.random()*6,flash:0,sleep:0}); } } }
  /* Gegner */
@@ -1378,10 +1379,10 @@ function pdPause(force){
  if(PD.st!=='play'&&!(force&&PD.st==='paused')) return; cancelAnimationFrame(PD.raf); PD.st='paused'; PD.joy=null; PD.keys={}; pdSave();
  const g=PD.g, ov=wzEnsure(); const old=document.getElementById('pdPick'); if(old) old.remove();
  const el=document.createElement('div'); el.id='pdPick'; el.className='pdover';
- el.innerHTML=`<div class="pdpt">Pause</div><div class="pdps">${esc(g.n)} · Stufe ${g.lv} · ${pdFmt(g.t)}<br>Level ${(g.lvd|0)+1}: ${esc(pdLvdName(g.lvd|0))}${pdMainOk()?'<br>Nächste '+PD_REWARD_MAUT+' Maut in '+(PD_KILLS_PER_REWARD-((G.pdKills||0)%PD_KILLS_PER_REWARD))+' besiegten Gegnern':''}</div><div class="pdstat"><span><b>${pdFmt(g.t)}</b>durchgehalten</span><span><b>${g.kills}</b>eingeschläfert</span><span><b>${Math.ceil(g.hp)}</b>Leben</span></div><button class="pdopt" data-pdo="go"><span class="pdoi">▶</span><span class="pdot"><b>Weiter</b><small>Dein Stand ist gespeichert</small></span></button><button class="pdopt" data-pdo="tree"><span class="pdoi">🌳</span><span class="pdot"><b>Skill-Tree</b><small>Waffen ansehen und aufrüsten</small></span></button><button class="pdopt" data-pdo="mp"><span class="pdoi">🏆</span><span class="pdot"><b>Multiplayer Score</b><small>Rangliste aller Spieler</small></span></button><button class="pdopt" data-pdo="opts"><span class="pdoi">⚙</span><span class="pdot"><b>Optionen</b><small>Hand-Modus, Ton, Blut</small></span></button><button class="pdopt" data-pdo="slots"><span class="pdoi">💾</span><span class="pdot"><b>Spielstände</b><small>Speichern und laden, 3 Plätze</small></span></button><button class="pdopt" data-pdo="new"><span class="pdoi">👥</span><span class="pdot"><b>Neue Runde starten</b><small>Andere Figur wählen, dieser Stand geht verloren</small></span></button>`;
+ el.innerHTML=`<div class="pdpt">Pause</div><div class="pdps">${esc(g.n)} · Stufe ${g.lv} · ${pdFmt(g.t)}<br>Level ${(g.lvd|0)+1}: ${esc(pdLvdName(g.lvd|0))}${pdMainOk()?'<br>Nächste '+PD_REWARD_MAUT+' Maut in '+(PD_KILLS_PER_REWARD-((G.pdKills||0)%PD_KILLS_PER_REWARD))+' besiegten Gegnern':''}</div><div class="pdstat"><span><b>${pdFmt(g.t)}</b>durchgehalten</span><span><b>${g.kills}</b>eingeschläfert</span><span><b>${Math.ceil(g.hp)}</b>Leben</span></div><button class="pdopt" data-pdo="go"><span class="pdoi">▶</span><span class="pdot"><b>Weiter</b><small>Dein Stand ist gespeichert</small></span></button><button class="pdopt" data-pdo="tree"><span class="pdoi">🌳</span><span class="pdot"><b>Skill-Tree</b><small>Waffen ansehen und aufrüsten</small></span></button><button class="pdopt" data-pdo="mp"><span class="pdoi">🏆</span><span class="pdot"><b>Multiplayer Score</b><small>Rangliste aller Spieler</small></span></button><button class="pdopt" data-pdo="opts"><span class="pdoi">⚙</span><span class="pdot"><b>Optionen</b><small>Hand-Modus, Ton, Blut</small></span></button><button class="pdopt" data-pdo="slots"><span class="pdoi">💾</span><span class="pdot"><b>Spielstände</b><small>Speichern und laden, 3 Plätze</small></span></button><button class="pdopt" data-pdo="cheat"><span class="pdoi">🕵️</span><span class="pdot"><b>Cheat-Menü</b><small>Mit Passwort · Level ohne Gegner ansehen</small></span></button><button class="pdopt" data-pdo="new"><span class="pdoi">👥</span><span class="pdot"><b>Neue Runde starten</b><small>Andere Figur wählen, dieser Stand geht verloren</small></span></button>`;
  if(g.mp){ el.querySelectorAll('[data-pdo="mp"]').forEach(b=>b.remove()); const sb=el.querySelector('[data-pdo="slots"]'); if(sb) sb.querySelector('small').textContent='Mehrspieler-Runde speichern, 3 Plätze'; const nb=el.querySelector('[data-pdo="new"]'); nb.querySelector('b').textContent='Zurück in die Lobby'; nb.querySelector('small').textContent='Runde beenden, alle Mitspieler kommen mit'; }
  ov.appendChild(el);
- el.onclick=e=>{ const b=e.target.closest('[data-pdo]'); if(!b) return; if(b.dataset.pdo==='go') pdResume(); else if(b.dataset.pdo==='mp'){ el.remove(); pdRenderMP(); } else if(b.dataset.pdo==='opts'){ el.remove(); pdRenderOpts(); } else if(b.dataset.pdo==='tree'){ el.remove(); pdTreeOpen(true); } else if(b.dataset.pdo==='slots'){ el.remove(); if(g.mp) pdSaveList(NET.host?'mppause':'pause'); else pdSaveList('pause'); } else if(g.mp) netBackToLobby(); else { pdClearSave(); wzRender(); } };
+ el.onclick=e=>{ const b=e.target.closest('[data-pdo]'); if(!b) return; if(b.dataset.pdo==='go') pdResume(); else if(b.dataset.pdo==='mp'){ el.remove(); pdRenderMP(); } else if(b.dataset.pdo==='opts'){ el.remove(); pdRenderOpts(); } else if(b.dataset.pdo==='tree'){ el.remove(); pdTreeOpen(true); } else if(b.dataset.pdo==='slots'){ el.remove(); if(g.mp) pdSaveList(NET.host?'mppause':'pause'); else pdSaveList('pause'); } else if(b.dataset.pdo==='cheat'){ el.remove(); pdCheat(); } else if(g.mp) netBackToLobby(); else { pdClearSave(); wzRender(); } };
 }
 
 /* ---------- Spielstände (3 Plätze: speichern & laden) ---------- */
@@ -1898,6 +1899,21 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 .pdgear{gap:4px;opacity:.7}.pdgear i{background:#0003;border-color:#fff1;border-radius:8px;padding:1px 5px;font-size:12px}.pdgear b{font-size:10px}.pdgear i small{font-size:9px}
 .pdinfo{font-size:11px;opacity:.85}.pdinfo b{font-size:15px}.pdinfo i.pdcn{position:absolute;left:50px;top:calc(6px + env(safe-area-inset-top,0px));height:34px;box-sizing:border-box;padding:0 11px;display:flex;align-items:center;border-radius:11px;background:#0b0d1499;border:1px solid #ffd23f55;font-style:normal;font:800 14px system-ui;color:#ffd23f;text-shadow:0 1px 3px #000;white-space:nowrap}
 #wzOv:not(.pdnohome) .pdinfo i.pdcn{left:90px}
+.pdcfg{margin:12px auto 0;max-width:460px;padding:10px;border-radius:16px;background:#16171d;border:1px solid #ffffff1f;text-align:left;box-sizing:border-box}
+.pdcfgh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}.pdcfgh b{font:800 14px system-ui}.pdcfgh small{color:#8b92a0;font-size:11px}
+.pdcfgd{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.pdcfgd button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 3px;border-radius:12px;border:1px solid #ffffff22;background:#1d1f27;color:#cfd3dc;font:700 10.5px system-ui;cursor:pointer;min-width:0}
+.pdcfgd button span{font-size:18px}.pdcfgd button b{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.pdcfgd button.on{background:linear-gradient(#ffe27a,#f0b22c);color:#2a1d00;border-color:#f0b22c}
+.pdcfgv{display:flex;align-items:center;gap:8px;font:800 15px system-ui}.pdcfgv span{font-size:20px}
+.pdcfgs{margin:7px 0 0;color:#9aa0ad;font-size:11.5px;line-height:1.35}
+.pdcfgx{margin-top:8px}.pdcfgx summary{cursor:pointer;font:800 13px system-ui;color:#e8eaf0;padding:4px 0}
+.pdcfgr{margin-top:6px}.pdcfgr small{display:block;color:#8b92a0;font-size:10.5px;margin-bottom:3px}.pdcfgr div{display:flex;flex-wrap:wrap;gap:4px}
+.pdcfgr button{padding:5px 9px;border-radius:999px;border:1px solid #7dff9a66;background:#173322;color:#c9f5d4;font:700 11.5px system-ui;cursor:pointer}
+.pdcfgr button.off{border-color:#ffffff22;background:#22232a;color:#6b7180;text-decoration:line-through}.pdcfgr button:disabled{cursor:default}
+.pdchin{display:block;width:100%;max-width:320px;margin:4px auto 2px;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid #ffffff33;background:#101116;color:#fff;font:700 17px system-ui;text-align:center}
+.pdchk{color:#ff6b6b;font:700 13px system-ui;text-align:center}
+.pdchl{max-height:46vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;overscroll-behavior:contain}
+.pdopt.pdchcur{border-color:#b388ff}
+
 #pdAK,#pdGL,#pdKN,#pdC4,#pdNK,#pdBT{width:54px;height:54px;border-radius:16px;border-width:1.5px;opacity:.82;box-shadow:0 3px 10px #0009;gap:0}
 #pdAK span,#pdGL span,#pdKN span,#pdC4 span,#pdNK span,#pdBT span{font-size:17px}
 #pdAK span svg,#pdGL span svg,#pdKN span svg,#pdC4 span svg,#pdNK span svg{width:32px;height:23px}
@@ -2088,7 +2104,7 @@ function netBroadcastLobby(){
  NET.lobby.sort((a,b)=>a.slot-b.slot); netApplyLoad();
  if(NET.host&&NET.code) NET.st=NET.lobby.filter(l=>!l.off).length+' von '+NET_MAX+' Spielern im Raum';
  const L=NET.load, ld=L?{lv:L.lv,t:Math.round(L.t),nm:L.names}:0;
- netSend({t:'lobby',L:NET.lobby.map(l=>[l.slot,l.n,l.off?1:0,l.sv!=null||(l.slot===0&&L)?1:0,l.sk||'']),run:netInGame()?1:0,ld});
+ netSend({t:'lobby',cfg:NET.cfg||pdCfgLoad(),L:NET.lobby.map(l=>[l.slot,l.n,l.off?1:0,l.sv!=null||(l.slot===0&&L)?1:0,l.sk||'']),run:netInGame()?1:0,ld});
  if(PD.st==='lobby') netLobbyRender();
 }
 /* Gespeicherte Runde: Gäste bekommen ihre gespeicherte Figur (zuerst nach Gerät, dann der Reihe nach) */
@@ -2117,6 +2133,7 @@ function netStartGame(){
   const hn=NET.lobby.find(l=>l.slot===0).n; PD.sel=hn; pdNew(hn);
   const g=PD.g; g.mp=1; g.ps=NET.lobby.filter(l=>l.slot!==0).map((l,i)=>netNewMate(l,g,i)); NET.eid=0;
  }
+ PD.g.cfg=JSON.parse(JSON.stringify(NET.cfg||pdCfgLoad()));
  PD.g.sk=pdMySk(); for(const p of PD.g.ps){ const l=NET.lobby.find(q=>q.slot===p.slot); p.sk=(l&&l.sk)||''; }
  NET.sq=[]; NET.n=0; NET.autoT=0; setTimeout(()=>{ try{ netAutoSave(); }catch(e){} },1500);
  if(!NET.iv) NET.iv=setInterval(netTick,NET_RATE);
@@ -2303,7 +2320,7 @@ function netGuestData(d){
   if(!back) NET.lobby=[]; PD.st='lobby'; netLobbyRender(); return; }
  if(d.t==='full'){ NET.re=null; netFail(d.run?'In diesem Raum läuft gerade eine Runde. Wartet, bis der Host zurück in die Lobby geht.':'Der Raum ist voll (höchstens '+NET_MAX+' Spieler).'); return; }
  if(d.t==='lobby'){
-  NET.lobby=(d.L||[]).map(q=>({slot:q[0],n:q[1],off:!!q[2],lock:!!q[3],sk:q[4]||''})); NET.ld=d.ld||0;
+  NET.lobby=(d.L||[]).map(q=>({slot:q[0],n:q[1],off:!!q[2],lock:!!q[3],sk:q[4]||''})); NET.ld=d.ld||0; NET.cfgG=d.cfg||null;
   if(PD.st==='guest'&&!d.run){ cancelAnimationFrame(PD.raf); PD.g=null; PD.st='lobby'; wzEnsure().classList.remove('pdguest','pdmp'); }
   NET.st=NET.lobby.filter(l=>!l.off).length+' von '+NET_MAX+' Spielern im Raum';
   if(PD.st==='lobby') netLobbyRender(); return;
@@ -2454,7 +2471,8 @@ function netLobbyRender(){
  const codeBox=`<div class="pdcode"><small>${NET.host?'Raum-Code für deine Mitspieler':'Raum'}</small><b>${esc(NET.code||'····')}</b><span>${esc(NET.st||'')}</span></div>`;
  const action=NET.host?`<button class="pdstart" data-wz="mpstart"${all&&ready?'':' disabled'}>${!ready?'Raum wird erstellt …':all?(NET.load?'▶ Gespeicherte Runde fortsetzen':(act.length>1?'▶ Spiel starten ('+act.length+' Spieler)':'▶ Alleine starten')):'Alle müssen eine Figur wählen'}</button>${ready&&!NET.load?'<button class="pdopt pdldbtn" data-wz="mpload"><span class="pdoi">💾</span><span class="pdot"><b>Gespeicherte Runde laden</b><small>Mehrspieler-Spielstand fortsetzen</small></span></button>':''}`
   :`<p class="pdsub">${mine?'Bereit! Warte, bis der Host startet …':'Einen Moment …'}</p>`;
- ov.innerHTML=`<button class="wzhome" data-wz="mpleave" aria-label="Raum verlassen">‹</button><div class="pdmenu"><div class="pdlogo"><small>Mehrspieler</small><b>LOBBY</b></div>${codeBox}${NET.err?`<div class="pdmsg">${esc(NET.err)}</div>`:''}${ldBox}<div class="pdlslots">${slots}</div>${action}<p class="pdsub pdhint">Jeder sammelt seine eigenen Waffen (AK-47, Glock, C4, Wurfmesser, Atombombe) und setzt sie selbst ein. Jeder levelt und rüstet für sich auf. Wer K.O. geht, muss innerhalb von 2 Minuten gerettet werden: 2 s bei ihm bleiben. Bricht eine Verbindung ab, wird automatisch neu verbunden.</p><div class="pdlme"><canvas width="120" height="132"></canvas><div><small>Du spielst als</small><b>${esc(mine||pdProf().ch||'?')}</b><span>${pdMySk()?'👕 '+esc(PD_SKM[pdMySk()].n):'👕 Standard-Jacke'}</span></div></div></div>`;
+ ov.innerHTML=`<button class="wzhome" data-wz="mpleave" aria-label="Raum verlassen">‹</button><div class="pdmenu"><div class="pdlogo"><small>Mehrspieler</small><b>LOBBY</b></div>${codeBox}${NET.err?`<div class="pdmsg">${esc(NET.err)}</div>`:''}${ldBox}<div class="pdlslots">${slots}</div>${action}${pdCfgHTML(NET.host?(NET.cfg||(NET.cfg=pdCfgLoad())):(NET.cfgG||{d:'normal',off:{}}),!!NET.host)}<p class="pdsub pdhint">Jeder sammelt seine eigenen Waffen (AK-47, Glock, C4, Wurfmesser, Atombombe) und setzt sie selbst ein. Jeder levelt und rüstet für sich auf. Wer K.O. geht, muss innerhalb von 2 Minuten gerettet werden: 2 s bei ihm bleiben. Bricht eine Verbindung ab, wird automatisch neu verbunden.</p><div class="pdlme"><canvas width="120" height="132"></canvas><div><small>Du spielst als</small><b>${esc(mine||pdProf().ch||'?')}</b><span>${pdMySk()?'👕 '+esc(PD_SKM[pdMySk()].n):'👕 Standard-Jacke'}</span></div></div></div>`;
+ pdCfgBind(ov);
  { const c=ov.querySelector('.pdlme canvas'); if(c){ const x=c.getContext('2d'); x.scale(2,2); x.translate(30,44); pdDrawHero(x,pdStats(mine||pdProf().ch||STAFF[0].n),0,0,0,0,1,1.5,false,pdMySk()); } }
  const nm=ov.querySelector('.pdmenu'); if(nm) nm.scrollTop=sy;
 }
@@ -2566,7 +2584,7 @@ function netTr(v){ if(NET.conn&&NET.conn.open&&!NET.re) try{ NET.conn.send({t:'t
 function pdDmgP(tp,dmg){
  const g=PD.g; if(!tp||tp.dead||tp.off||(tp.hzT>0)) return 0;
  if(tp===g){ if(g.inv>0||g.over) return 0; } else if(tp.hurt>.65) return 0;
- tp.hzT=.35; const d=Math.round(dmg*PD_EDMG);
+ tp.hzT=.35; const d=Math.round(dmg*PD_EDMG*pdDf(PD.g).dmg);
  pdSt(tp).tk+=Math.min(d,Math.max(0,tp.hp)); tp.hp-=d; pdTxt(tp.x,tp.y-30,'−'+d,'#ff5d5d',.7);
  if(tp===g){ g.hurt=Math.max(g.hurt,.45); pdSnd('hurt'); } else tp.hurt=Math.max(tp.hurt||0,.45);
  if(tp.hp<=0){
@@ -3737,9 +3755,9 @@ const PD_LVD=[
 ];
 function pdLvd(g){ const v=(g&&g.lvd)|0; return v<=0?0:1+((v-1)%3); }
 function pdLvdName(v){ v=v|0; const d=PD_LVD[v<=0?0:1+((v-1)%3)], k=v>3?Math.floor((v-1)/3):0; return d.n+(k?' '+['','II','III','IV','V','VI','VII','VIII','IX','X'][Math.min(9,k)]:''); }
-function pdLvM(g){ return 1+.35*((g&&g.lvd)|0); }                       /* Gegner-Leben je Level */
-function pdLvD(g){ return 1+.12*((g&&g.lvd)|0); }                       /* Gegner-Schaden je Level */
-function pdLvC(g){ if(!g) return 1; const v=g.lvd|0, ramp=g.lvT==null?1:Math.min(1,.3+g.lvT/25); return ramp*(1+Math.min(.25,.05*v)); }   /* Gegnermenge: nach dem Levelwechsel langsam ansteigend */
+function pdLvM(g){ return (1+.35*((g&&g.lvd)|0))*pdDf(g).hp; }                       /* Gegner-Leben je Level */
+function pdLvD(g){ return (1+.12*((g&&g.lvd)|0))*pdDf(g).dmg; }                       /* Gegner-Schaden je Level */
+function pdLvC(g){ if(!g) return 1; const v=g.lvd|0, ramp=g.lvT==null?1:Math.min(1,.3+g.lvT/25); return ramp*(1+Math.min(.25,.05*v))*pdDf(g).cnt; }   /* Gegnermenge: nach dem Levelwechsel langsam ansteigend */
 
 /* ---------- Gebäude der neuen Designs (Jedmayer und Berni bleiben) ---------- */
 const PD_HC={kiosk:['#3a6d4a','#2c5639','#173322'],spelunke:['#6a3f2a','#553220','#2e1a10'],notarzt:['#e9ecef','#cfd5db','#9aa3ad'],
@@ -3961,11 +3979,11 @@ function pdLvKind(){
 
 /* ---------- Endgegner: große Warnung, mehr Leben, Freunde mit Fähigkeiten ---------- */
 function pdBigCheck(g){
- if(g.arena||g.bigOn||g.clear||g.bigWarn>0||PD.st!=='play') return;
+ if(g.arena||g.bigOn||g.clear||g.peace||g.bigWarn>0||PD.st!=='play') return;
  if(pdAllLv(g)>=PD_BIGEVERY*((g.bigN|0)+1)){ g.bigWarn=4.4; pdAnn(g,'ACHTUNG!','Der Chef vom Jedmayer ist hier …\nund er ist sauer!','#ff3b3b',4.8); g.ann.big=1; pdSnd('boss'); }
 }
 function pdBigSpawn(g){
- const bn=g.bigN|0, th=bn%5, hp=Math.round(pdBigHp(g,bn)*1.6*(1+.15*((g.lvd|0))));
+ const bn=g.bigN|0, th=bn%5, hp=Math.round(pdBigHp(g,bn)*1.6*(1+.15*((g.lvd|0)))*pdDf(g).hp);
  const e={k:'big',sd:0,x:PD_DOOR.x,y:PD_DOOR.y+80,hp,hpMax:hp,xp:1,face:1,stun:0,kx:0,ky:0,ph:0,flash:0,sleep:0,mod:th,bn};
  g.en.push(e); pdSnd('boss');
  let keep=0; g.en=g.en.filter(q=>{ if(q===e||PD_EN[q.k].boss) return true; if(keep<5){ keep++; return true; } if(g.fx.length<40) g.fx.push({k:'puff',x:q.x,y:q.y,t:0,life:.5}); return false; });
@@ -3976,7 +3994,7 @@ function pdBigSpawn(g){
 function pdBigFriends(g,e,n){
  const pool=['rammer','schatten','spucker','heiler','dicker','nodder'], v=pdLvd(g); if(v) for(const s of PD_LVD[v].spec) pool.push(s[0],s[0]);
  const hm=(1+g.t/700)*pdLvM(g)*.8;
- for(let i=0;i<n;i++){ const k=pool[Math.floor(Math.random()*pool.length)], an=i*6.2832/n+Math.random()*.4, mod=1+Math.floor(Math.random()*3);
+ for(let i=0;i<n;i++){ const k=pdKindFix(pool[Math.floor(Math.random()*pool.length)]), an=i*6.2832/n+Math.random()*.4, mod=1+Math.floor(Math.random()*3);
   const m=pdMkEnemy(k,Math.max(PD_AR.x0+20,Math.min(PD_AR.x1-20,e.x+Math.cos(an)*130)),Math.max(PD_AR.y0+20,Math.min(PD_AR.y1-20,e.y+Math.sin(an)*130)),hm,mod,1); m.fr=1; g.fx.push({k:'puff',x:m.x,y:m.y,t:0,life:.5}); }
 }
 function pdBigDie(g,e){
@@ -4009,6 +4027,73 @@ function pdLvTick(g,dt){
  if(g.bigOn){ g.frT=(g.frT||18)-dt; if(g.frT<=0){ g.frT=22; const big=g.en.find(e=>e.k==='big'); if(big&&g.en.filter(e=>e.fr&&e.hp>0).length<8) pdBigFriends(g,big,3); } }
 }
 
+/* ===================== Schwierigkeit & Gegnertypen (Lobby) · Cheat-Menü (Pause) ===================== */
+const PD_DIFF={
+ leicht:{n:'Kaffeepause',ic:'☕',d:'Weniger und schwächere Gegner',hp:.7,dmg:.7,cnt:.8},
+ normal:{n:'Nachtdienst',ic:'🚑',d:'Das normale Spiel',hp:1,dmg:1,cnt:1},
+ schwer:{n:'Großeinsatz',ic:'🚨',d:'Zähere Gegner, mehr Schaden, mehr Gegner',hp:1.4,dmg:1.3,cnt:1.15},
+ extrem:{n:'Purge-Day',ic:'☠️',d:'Alles auf einmal – viel Glück',hp:2,dmg:1.6,cnt:1.3}
+};
+const PD_KINDS=[['Straße',['suchti','speedy','nodder','dicker','spucker','heiler','rammer','schatten']],['Säufer-Park',['saeufer','kotzer','stamm']],['Karlsplatz-Passage',['zitterer','dealer','nadel']],['Crack-Hinterhof',['koch','paranoiker','koloss']]];
+const PD_CFGKEY='mhsim_pd_cfg';
+function pdCfgLoad(){ try{ const c=JSON.parse(localStorage.getItem(PD_CFGKEY)||'null'); if(c&&PD_DIFF[c.d]) return {d:c.d,off:c.off||{}}; }catch(e){} return {d:'normal',off:{}}; }
+function pdCfgSave(c){ try{ localStorage.setItem(PD_CFGKEY,JSON.stringify(c)); }catch(e){} }
+function pdDf(g){ const c=g&&g.cfg; return PD_DIFF[(c&&c.d)||'normal']||PD_DIFF.normal; }
+function pdKindOff(g,k){ return !!(g&&g.cfg&&g.cfg.off&&g.cfg.off[k]); }
+/* ausgeschaltete Gegnertypen durch erlaubte ersetzen */
+function pdKindFix(k){
+ const g=PD.g; if(!pdKindOff(g,k)) return k;
+ const pref=['suchti','speedy','nodder','dicker'].filter(q=>!pdKindOff(g,q)); if(pref.length) return pref[Math.floor(Math.random()*pref.length)];
+ const all=[].concat(...PD_KINDS.map(r=>r[1])).filter(q=>!pdKindOff(g,q)&&!(['spucker','heiler','rammer','schatten','dealer','koch','stamm','koloss','kotzer','saeufer'].includes(q)&&pdKindN(q)>=4));
+ return all.length?all[Math.floor(Math.random()*all.length)]:'suchti';
+}
+function pdCfgHTML(c,edit){
+ const D=PD_DIFF[c.d]||PD_DIFF.normal;
+ const diffs=Object.keys(PD_DIFF).map(k=>{ const v=PD_DIFF[k]; return edit?`<button class="${c.d===k?'on':''}" data-cfgd="${k}"><span>${v.ic}</span><b>${v.n}</b></button>`:''; }).join('');
+ const nOff=Object.keys(c.off||{}).filter(k=>c.off[k]).length;
+ const rows=PD_KINDS.map(([t,L])=>`<div class="pdcfgr"><small>${t}</small><div>${L.map(k=>`<button class="${c.off&&c.off[k]?'off':''}" data-cfge="${k}"${edit?'':' disabled'}>${esc(PD_EN[k].n)}</button>`).join('')}</div></div>`).join('');
+ return `<div class="pdcfg"><div class="pdcfgh"><b>⚙️ Spiel-Einstellungen</b>${edit?'':'<small>legt der Host fest</small>'}</div>
+  ${edit?`<div class="pdcfgd">${diffs}</div>`:`<div class="pdcfgv"><span>${D.ic}</span><b>${D.n}</b></div>`}<p class="pdcfgs">${D.ic} ${D.n}: ${D.d}</p>
+  <details class="pdcfgx"${PD.cfgOpen?' open':''}><summary>Gegnertypen ${nOff?'· '+nOff+' aus':'· alle an'}</summary>${rows}${edit?'<p class="pdcfgs">Antippen schaltet einen Typ aus oder wieder ein. Mindestens einer bleibt an.</p>':''}</details></div>`;
+}
+function pdCfgBind(root){
+ const box=root.querySelector('.pdcfg'); if(!box) return; const dt=box.querySelector('details'); if(dt) dt.addEventListener('toggle',()=>{ PD.cfgOpen=dt.open; }); if(!NET.host) return;
+ box.onclick=e=>{ const d=e.target.closest('[data-cfgd]'), k=e.target.closest('[data-cfge]'); if(!d&&!k) return; e.preventDefault(); e.stopPropagation();
+  const c=NET.cfg||(NET.cfg=pdCfgLoad());
+  if(d) c.d=d.dataset.cfgd;
+  if(k){ const kk=k.dataset.cfge; if(c.off[kk]) delete c.off[kk]; else { const on=[].concat(...PD_KINDS.map(r=>r[1])).filter(q=>!c.off[q]); if(on.length>1) c.off[kk]=1; } }
+  pdCfgSave(c); pdSnd('tap'); netBroadcastLobby(); };
+}
+
+/* ---------- Cheat-Menü (Pause) ---------- */
+function pdCheat(err){
+ const g=PD.g; if(!g) return; const ov=wzEnsure(); const old=document.getElementById('pdPick'); if(old) old.remove();
+ const el=document.createElement('div'); el.id='pdPick'; el.className='pdover';
+ if(!PD.cheatOk){
+  el.innerHTML=`<div class="pdpt">🕵️ Cheat-Menü</div><div class="pdps">Passwort eingeben</div><input class="pdchin" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Passwort">${err?'<div class="pdchk">Falsches Passwort</div>':''}<button class="pdopt" data-ch="ok"><span class="pdoi">🔓</span><span class="pdot"><b>Öffnen</b><small>Level ohne Gegner ansehen</small></span></button><button class="pdopt" data-ch="back"><span class="pdoi">‹</span><span class="pdot"><b>Zurück</b><small>zum Pause-Menü</small></span></button>`;
+  ov.appendChild(el); const inp=el.querySelector('input'); setTimeout(()=>{ try{ inp.focus(); }catch(e){} },60);
+  const tryIt=()=>{ if(inp.value.trim().toLowerCase()==='dealer'){ PD.cheatOk=true; pdSnd('ok'); pdCheat(); } else { pdSnd('bad'); pdCheat(1); } };
+  inp.addEventListener('keydown',e=>{ e.stopPropagation(); if(e.key==='Enter') tryIt(); }); inp.addEventListener('keyup',e=>e.stopPropagation());
+  el.onclick=e=>{ const b=e.target.closest('[data-ch]'); if(!b) return; if(b.dataset.ch==='ok') tryIt(); else { el.remove(); pdPause(true); } };
+  return;
+ }
+ const cur=g.lvd|0, lv=[0,1,2,3,4,5,6].map(v=>{ const d=PD_LVD[v<=0?0:1+((v-1)%3)]; return `<button class="pdopt${v===cur?' pdchcur':''}" data-cl="${v}"><span class="pdoi">${d.ic}</span><span class="pdot"><b>Level ${v+1}: ${esc(pdLvdName(v))}</b><small>${v===cur?'du bist hier · ':''}${esc(d.sub)}</small></span></button>`; }).join('');
+ el.innerHTML=`<div class="pdpt">🕵️ Cheat-Menü</div><div class="pdps">Level wählen und ohne Gegner ansehen</div><div class="pdchl">${lv}</div><button class="pdopt" data-ch="peace"><span class="pdoi">${g.peace?'👾':'🕊️'}</span><span class="pdot"><b>${g.peace?'Gegner wieder einschalten':'Gegner hier ausschalten'}</b><small>${g.peace?'Im aktuellen Level kommen wieder Gegner':'Bleib in diesem Level, aber ohne Gegner'}</small></span></button><button class="pdopt" data-ch="back"><span class="pdoi">‹</span><span class="pdot"><b>Zurück</b><small>zum Pause-Menü</small></span></button>`;
+ ov.appendChild(el);
+ el.onclick=e=>{ const b=e.target.closest('[data-cl],[data-ch]'); if(!b) return; pdSnd('tap');
+  if(b.dataset.cl!=null){ pdCheatGo(+b.dataset.cl); el.remove(); pdResume(); return; }
+  if(b.dataset.ch==='peace'){ if(g.peace){ g.peace=false; g.lvT=0; } else pdCheatClear(g); g.peace=g.peace||false; el.remove(); pdResume(); return; }
+  el.remove(); pdPause(true); };
+}
+function pdCheatClear(g){ g.peace=true; g.en=[]; g.hz=[]; g.pr=[]; g.bigOn=false; g.bigWarn=0; g.ann=null; }
+function pdCheatGo(v){
+ const g=PD.g; if(!g) return;
+ pdCheatClear(g); g.lvd=v; g.lvT=0; g.door=false; g.clear=false; g.gem=[]; g.blood=[]; g.bp=null; g.am=null; g.mc=null; g.bt=null; g.fz=[]; g.fx=[]; g.mk=[]; g.dia=[];
+ const PL=pdAll(g).filter(o=>!o.off); PL.forEach((o,i)=>{ o.x=1050+(i-(PL.length-1)/2)*60; o.y=1100; o.vx=o.vy=0; });
+ g.arenaSeq=(g.arenaSeq|0)+1; PD.keys={}; g.inv=2;
+ const d=PD_LVD[pdLvd(g)]; pdAnn(g,'LEVEL '+(v+1),d.ic+' '+pdLvdName(v)+'\nCheat · ohne Gegner','#b388ff',3.6);
+}
+
 /* ===================== iPhone / iOS-Anpassungen ===================== */
 /* Ältere iPhones (vor iOS 16) kennen roundRect auf dem Canvas nicht */
 if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.roundRect){
@@ -4029,7 +4114,7 @@ function pdUnlockAudio(){
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&PDS.ac&&PDS.ac.state!=='running') try{ PDS.ac.resume(); }catch(e){} });
 /* Kein Zoomen durch Zwei-Finger- oder Doppeltippen, kein Hin-und-her-Wackeln der Seite */
 ['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
-document.addEventListener('touchmove',e=>{ if(WZ.on&&!(e.target&&e.target.closest&&e.target.closest('.pdmenu,.pdtscroll,.pdmpb,#pdSlots,#pdOpts,.pdshg,.pdsht'))) e.preventDefault(); },{passive:false});
+document.addEventListener('touchmove',e=>{ if(WZ.on&&!(e.target&&e.target.closest&&e.target.closest('.pdmenu,.pdtscroll,.pdmpb,#pdSlots,#pdOpts,.pdshg,.pdsht,.pdchl'))) e.preventDefault(); },{passive:false});
 /* Bildschirm bleibt an, solange gespielt wird (iOS 16.4+) – wichtig für den Host */
 const PDW={lock:null};
 async function pdWake(){
