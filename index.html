@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='8.0';   /* bei jeder neuen Version erhöhen */
+const PD_VER='8.0.1';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -3910,7 +3910,7 @@ function pdWzRender(keep){
   body=`<div class="pdwzc pdwzfull"><h2>Deine Kompetenz</h2><p>Jede hat andere Start-Werte.</p><div class="pdwzg pdwzgc">${Object.keys(PD_COMP_N).map(c=>{ const st=PD_CLS[c], w=PD_WPN[st.wp]; return `<button class="pdwzcard pdwzcomp${cd.c===c?' on':''}" data-wc="${c}"><b>${PD_COMP_N[c][0]}</b><em>${PD_COMP_N[c][2]}</em><small>${PD_COMP_N[c][1]}</small><span>❤ ${st.hp}</span><span>👟 ${Math.round(st.spd*100)} %</span><span>${w.ic} ${w.n}</span></button>`; }).join('')}</div></div>`; }
  ov.innerHTML=`<div class="pdwz"><div class="pdwzh">${W.step>0||W.edit?'<button class="pdwzbk" data-wn="back" aria-label="Zurück">‹</button>':'<span></span>'}<div class="pdwzt"><small>${W.edit?'Charakter bearbeiten':'Willkommen bei PURGE-DAY'}</small><div class="pdwzd">${dots}</div></div><span></span></div><div class="pdwzb">${body}</div><div class="pdwzf"><button class="pdwzn" data-wn="next"${ok?'':' disabled'}>${nxt}</button></div></div>`;
  const bd=ov.querySelector('.pdwzb'); if(bd) bd.scrollTop=sy;
- ov.querySelectorAll('canvas[data-pv]').forEach(c=>{ const x=c.getContext('2d'); x.scale(2,2); x.translate(60,100); pdDrawHero(x,pdWzStats(),0,0,0,0,1,4.6,false,''); });
+ ov.querySelectorAll('canvas[data-pv]').forEach(c=>{ const x=c.getContext('2d'); x.scale(2,2); x.translate(60,98); pdDrawHero(x,pdWzStats(),0,0,0,0,1,2.7,false,''); });
  ov.querySelectorAll('canvas[data-uni]').forEach(c=>{ const x=c.getContext('2d'); x.scale(2,2); x.translate(30,52); pdDrawHero(x,pdWzStats(c.dataset.uni),0,0,0,0,1,2.5,false,''); });
  const w=ov.querySelector('.pdwz'), inp=ov.querySelector('.pdwzin');
  if(inp){ inp.addEventListener('input',()=>{ W.nick=inp.value.replace(/[<>&"'`]/g,''); const n=ov.querySelector('.pdwzn'); if(n) n.disabled=W.nick.trim().length<2; const t=ov.querySelector('.pdwzp b'); if(t) t.textContent=W.nick.trim()||'Dein Name'; }); inp.addEventListener('keydown',e=>{ e.stopPropagation(); if(e.key==='Enter'){ e.preventDefault(); pdWzNext(); } }); inp.addEventListener('keyup',e=>e.stopPropagation()); setTimeout(()=>{ try{ inp.focus(); }catch(e){} },80); }
