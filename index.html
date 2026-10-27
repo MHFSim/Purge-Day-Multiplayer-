@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='8.0.2';   /* bei jeder neuen Version erhöhen */
+const PD_VER='8.0.3';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -333,7 +333,7 @@ const PD_CLS={
  NKA:{hp:115,spd:0.90,dmg:1.0,wp:'spritze',gold:.3,lbl:'Zäh'},
  NKV:{hp:100,spd:1.00,dmg:1.0,wp:'spritze',gold:.8,lbl:'Allrounder'},
  NKI:{hp:110,spd:0.95,dmg:1.0,wp:'spritze',gold:1,lbl:'Erfahren'},
- POL:{hp:105,spd:1.0,dmg:1.0,wp:'blau',gold:.6,lbl:'Streife'}
+ POL:{hp:105,spd:1.0,dmg:1.0,wp:'spritze',gold:.6,lbl:'Streife'}
 };
 function pdStats(n){ const s=SMAP[n]||{c:'NKV'}, b=Object.assign({},PD_CLS[s.c]||PD_CLS.NKV); b.n=n; b.c=s.c; if(s.look) b.look=s.look; if(s.uni) b.uni=s.uni; return b; }
 
