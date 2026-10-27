@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='7.3';   /* bei jeder neuen Version erhöhen */
+const PD_VER='7.4';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -623,7 +623,7 @@ function pdPickups(dt){
  for(const c of g.aki){ for(const g of PL){ if(c.got) break; if(g.ak<pdAkMag(g)&&Math.hypot(c.x-g.x,c.y-g.y)<32){ c.got=1; g.ak=pdAkMag(g); pdTxt(g.x,g.y-44,'AK-47 · '+pdAkMag(g)+' Schuss','#ffd23f',1.6); pdSnd('pick'); } } }
  g.aki=g.aki.filter(c=>!c.got);
  for(const b of g.c4s){ b.t+=dt; if(!b.boom&&Math.floor(b.t*2)>(b.bp||0)){ b.bp=Math.floor(b.t*2); pdSnd('fuse'); } if(b.t>=PD_C4FUSE&&!b.boom){ b.boom=1; g.fx.push({k:'boom',x:b.x,y:b.y,t:0,life:.6,R:(b.R||pdC4R(g))});
-   for(const e of g.en){ const dx=e.x-b.x, dy=e.y-b.y, d=Math.hypot(dx,dy); if(d<(b.R||pdC4R(g))+PD_EN[e.k].r){ const cdm=PD_EN[e.k].big?PD_C4DMG*6:PD_C4DMG; e.hp-=cdm; e.lh=b.o|0; e.flash=.15; { const P=pdBySlot(g,b.o|0); if(P) pdSt(P).d+=cdm; } const l=d||1; e.kx+=dx/l*260; e.ky+=dy/l*260; g.txt.push({x:e.x,y:e.y-16,s:String(cdm),c:'#ffb02e',t:0,life:.7}); } }
+   for(const e of g.en){ const dx=e.x-b.x, dy=e.y-b.y, d=Math.hypot(dx,dy); if(d<(b.R||pdC4R(g))+PD_EN[e.k].r){ const cdm=PD_C4DMG; e.hp-=cdm; e.lh=b.o|0; e.flash=.15; { const P=pdBySlot(g,b.o|0); if(P) pdSt(P).d+=cdm; } const l=d||1; e.kx+=dx/l*260; e.ky+=dy/l*260; g.txt.push({x:e.x,y:e.y-16,s:String(cdm),c:'#ffb02e',t:0,life:.7}); } }
    pdSnd('boom'); } }
  g.c4s=g.c4s.filter(b=>!b.boom);
 }
@@ -703,7 +703,9 @@ function pdKnifeTick(dt){
   /* Ellipse, die im Wurfpunkt (Spieler) beginnt und dort wieder endet: vorn hinaus und im Bogen zurück */
   const lx=A*(1-Math.cos(u)), ly=f.dir*B*Math.sin(u);
   const O=pdBySlot(g,f.ow)||g; f.x=O.x+lx*c-ly*s; f.y=O.y+lx*s+ly*c; f.tr.push([f.x,f.y]); if(f.tr.length>14) f.tr.shift();
-  for(const e of g.en){ if(e.hp<=0||PD_EN[e.k].boss) continue; const r=PD_EN[e.k].r+14*pdKnSize(O); if((e.x-f.x)**2+(e.y-f.y)**2<r*r){ e.lh=f.ow|0; e.hp=0; e.flash=.12; if(PDO.blood) g.fx.push({k:'bl',x:e.x,y:e.y-6,t:0,life:.4,ps:[[40,-30],[-40,-20],[0,-50]]}); } } }
+  if(f.bhR!==f.rd){ f.bhR=f.rd; f.bh=[]; }   /* Bosse: 150 Schaden pro Messer und Runde */
+  for(const e of g.en){ if(e.hp<=0) continue; const r=PD_EN[e.k].r+14*pdKnSize(O); if(PD_EN[e.k].boss){ if(f.bh.includes(e)||(e.x-f.x)**2+(e.y-f.y)**2>=r*r) continue; f.bh.push(e); const sv=PD.src; PD.src=f.ow|0; pdHit(e,150/PD_WDMG,0,0,0,1); PD.src=sv; pdSnd('hit'); continue; }
+   if((e.x-f.x)**2+(e.y-f.y)**2<r*r){ e.lh=f.ow|0; e.hp=0; e.flash=.12; if(PDO.blood) g.fx.push({k:'bl',x:e.x,y:e.y-6,t:0,life:.4,ps:[[40,-30],[-40,-20],[0,-50]]}); } } }
  g.kfl=g.kfl.filter(f=>f.t<PD_KNT*f.r);
 }
 function pdToggleGL_solo(){ const g=PD.g; if(!g||PD.st!=='play'||g.over||g.glOn) return;
