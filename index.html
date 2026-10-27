@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='8.0.1';   /* bei jeder neuen Version erhöhen */
+const PD_VER='8.0.2';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -917,7 +917,7 @@ function pdCdOk(c){ if(!c||typeof c!=='object') return null; const I=(v,m)=>{ v=
  const u=PD_UNI_N[c.u]?c.u:'wien', k=PD_CLS[c.c]?c.c:'NKV'; return {k:I(c.k,PD_SK2.length),hs:I(c.hs,PD_HS_N.length),hc:I(c.hc,PD_HC2.length),b:I(c.b,3),g:c.g?1:0,u,c:k}; }
 function pdCdStr(c){ c=pdCdOk(c); return c?[c.k,c.hs,c.hc,c.b,c.g,c.u,c.c].join(','):''; }
 function pdCdParse(t){ if(typeof t!=='string'||t.length>40) return null; const a=t.split(','); if(a.length!==7) return null; return pdCdOk({k:+a[0],hs:+a[1],hc:+a[2],b:+a[3],g:+a[4],u:a[5],c:a[6]}); }
-function pdCdReg(n,c){ if(typeof c==='string') c=pdCdParse(c); c=pdCdOk(c); if(!n||!c) return false; SMAP[n]={n,c:c.c,look:{k:c.k,hs:c.hs,hc:c.hc,b:c.b,g:c.g},uni:c.u,custom:1}; return true; }
+function pdCdReg(n,c){ if(typeof c==='string') c=pdCdParse(c); c=pdCdOk(c); if(!n||!c) return false; SMAP[n]={n,c:c.c,look:{k:c.k,hs:c.hs,hc:c.hc,b:c.b,g:c.g},uni:c.u,custom:1}; try{ if(typeof NET!=='undefined'&&NET.sc) delete NET.sc[n]; }catch(e){} return true; }
 const PD_HAIRS={'René':{c:HL,l:1},'Henri':{c:HB,l:3},'Felix':{c:HB,l:0},'Matthias':{c:HD,l:4},'Höbi':{c:HD,l:4},'Flotschi':{c:HB,l:4},'Vikal':{c:HL,l:3},'Niklas':{c:HD,l:2},'Flo der Große':{c:HL,l:2},'Hari':{c:HB,l:4},'Paul':{c:HM,l:4},'Berni':{c:HL,l:2},'Roni':{c:HB,l:0}};
 function pdHairOf(n){ return PD_HAIRS[n]||{c:pdHairHash(n),l:2}; }
 /* Schulterklappen: Gold für höhere Qualifikation, Silber sonst */
@@ -4454,7 +4454,7 @@ function pdWSheet(k,id){
  };
 }
 /* geänderte Skins im laufenden Spiel / in der Lobby übernehmen */
-function pdWskSync(){ try{ if(NET.on&&PD.st==='lobby'){ const me=NET.lobby.find(l=>l.slot===NET.me); if(me){ me.wsk=pdWskStr(pdMyWsk()); if(NET.host) netBroadcastLobby(); else if(me.n) NET.conn.send({t:'pick',n:me.n,sk:me.sk||pdMySk(),wsk:me.wsk}); } } }catch(e){} }
+function pdWskSync(){ try{ if(NET.on&&PD.st==='lobby'){ const me=NET.lobby.find(l=>l.slot===NET.me); if(me){ me.wsk=pdWskStr(pdMyWsk()); if(NET.host) netBroadcastLobby(); else if(me.n) NET.conn.send({t:'pick',n:me.n,sk:me.sk||pdMySk(),wsk:me.wsk,cd:me.cd||''}); } } }catch(e){} }
 
 /* ===================== Level 5–11: sieben weitere eigene Designs (keine Wiederholungen bis Stufe 500) ===================== */
 const PD_GR=[null,
