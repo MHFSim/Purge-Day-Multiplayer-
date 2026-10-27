@@ -211,7 +211,7 @@ const WZ={on:false,pausedBefore:null};
 const PD={st:'menu',sel:null,raf:0,cv:null,cx:null,bg:null,W:0,H:0,dpr:1,keys:{},joy:null,g:null,last:0};
 const PD_WW=2100, PD_WH=2100;                 /* Weltgröße: Spielfeld + Rand mit den Häusern */
 const PD_AR={x0:300,y0:300,x1:1800,y1:1800};
-const PD_VER='7.4';   /* bei jeder neuen Version erhöhen */
+const PD_VER='7.5';   /* bei jeder neuen Version erhöhen */
 const PD_FA={x0:300,y0:300,x1:1800,y1:1800};   /* das Feld (PD_AR zeigt in der Arena auf den Innenraum des Jedmayer) */  /* begehbares Spielfeld; die Häuser stehen außerhalb im Rand */
 const PD_HOUSES={
  jed:{n:'Jedmayer',x:840,y:50,w:420,h:240,door:'S',theme:'jed'},
@@ -1336,9 +1336,54 @@ function pdMount(){
  cv.onpointerup=cv.onpointercancel=e=>{ if(PD.joy&&PD.joy.id===e.pointerId) PD.joy=null; };
  PD.joy=null; PD.keys={};
 }
-function pdStartRun(n){
+function pdStartRun(n,noIntro){
+ if(!noIntro&&PDO.intro!==0&&!navigator.webdriver&&!PD.introOn&&!(PD.g&&PD.st==='play')){ pdIntro(()=>pdStartRun(n,true)); return; }
+ if(PD.introOn) return;
  PD.slot=null; PD.sel=n; pdNew(n); PD.g.sk=pdMySk(); PD.st='play'; pdMount(); pdClearSave(); pdSave();
  PD.last=0; PD.saveT=0; cancelAnimationFrame(PD.raf); PD.raf=requestAnimationFrame(pdLoop); pdSnd('go');
+}
+
+/* ---------- Intro: kurzer, witziger Rundgang durch alle Karten (überspringbar) ---------- */
+const PD_INTRO=[
+ 'Hier fängt jede Schicht an. Kaffee gibt es keinen.',
+ 'Prost! Die Bänke sind schon besetzt.',
+ 'Hände sichtbar halten und bitte nichts anfassen.',
+ 'Frisch gekocht. Bitte nicht probieren.',
+ 'Der Zug fährt gleich ab. Die Schnorrer nicht.',
+ 'Ein Prosit der Gemütlichkeit. Mit Maßkrügen.',
+ 'Das Haus gewinnt immer. Meistens.',
+ 'Schöne Aussicht, fragwürdiges Wasser.',
+ 'Besuchszeit: für immer vorbei.',
+ 'Bass bis zum Umfallen. Wörtlich.',
+ 'Der Pate lädt zum Essen ein. Du bist das Menü.'];
+PD.thumbs=PD.thumbs||{};
+function pdThumb(v){
+ if(PD.thumbs[v]) return PD.thumbs[v];
+ const oB=PD.bg, oV=PD.bgV; let c=null;
+ try{ pdBuildBg(v); const A=PD_FA, w=document.createElement('canvas'); w.width=420; w.height=280; const x2=w.getContext('2d'); x2.drawImage(PD.bg,A.x0+300,A.y0+420,900,600,0,0,420,280); c=w; }catch(e){}
+ PD.bg=oB; PD.bgV=oV; PD.thumbs[v]=c; return c;
+}
+function pdIntro(done){
+ PD.introOn=true;
+ const el=document.createElement('div'); el.id='pdIntro';
+ document.body.appendChild(el);
+ const N=PD_LVD.length, steps=[{t:'title'}]; for(let v=0;v<N;v++) steps.push({t:'map',v}); steps.push({t:'end'});
+ let i=-1, tm=0, finished=false;
+ const fin=()=>{ if(finished) return; finished=true; clearTimeout(tm); document.removeEventListener('keydown',kd,true); el.classList.add('out'); setTimeout(()=>{ el.remove(); PD.introOn=false; done(); },220); };
+ const kd=e=>{ e.preventDefault(); e.stopPropagation(); fin(); };
+ document.addEventListener('keydown',kd,true);
+ el.addEventListener('pointerdown',e=>{ e.preventDefault(); fin(); });
+ const dots=()=>`<div class="pdinD">${Array.from({length:N},(_,k)=>`<i class="${k<=(steps[i].v|0)?'on':''}"></i>`).join('')}</div>`;
+ const next=()=>{ if(finished) return; i++; if(i>=steps.length){ fin(); return; } const st=steps[i]; let ms=650;
+  el.querySelectorAll('.pdinC').forEach(c=>{ c.classList.add('old'); setTimeout(()=>c.remove(),300); });
+  const c=document.createElement('div'); c.className='pdinC '+st.t;
+  if(st.t==='title'){ ms=1700; c.innerHTML=`<div class="pdinT">PURGE-DAY</div><div class="pdinS">Ein Sani. Eine Nacht.<br>Sehr viele Suchtis.</div>`; pdSnd('boss'); }
+  else if(st.t==='map'){ const d=PD_LVD[st.v], th=pdThumb(st.v); c.innerHTML=`<div class="pdinM"></div><div class="pdinI">${d.ic}</div><div class="pdinN">Level ${st.v+1}</div><div class="pdinH">${esc(d.n)}</div><div class="pdinQ">${esc(PD_INTRO[st.v]||d.sub)}</div>`; const m=c.querySelector('.pdinM'); if(th) m.appendChild(th.cloneNode(true)).getContext('2d').drawImage(th,0,0); else m.style.background='#222'; c.insertAdjacentHTML('beforeend',dots()); pdSnd('tap'); }
+  else { ms=1200; c.innerHTML=`<div class="pdinT sm">Auf geht's!</div><div class="pdinS">Der Jedmayer wartet schon.<br>Und er hat Hunger.</div>`; pdSnd('go'); }
+  el.appendChild(c); if(i===0) el.insertAdjacentHTML('beforeend',`<div class="pdinSk">Antippen zum Überspringen</div>`);
+  tm=setTimeout(next,ms); };
+ el.addEventListener('animationend',()=>{});
+ next();
 }
 /* Pause: Spiel anhalten, Stand speichern, Pausenmenü zeigen */
 /* ---------- Multiplayer-Score (Google-Sheet über das Hauptspiel) ---------- */
@@ -1459,8 +1504,8 @@ function pdMiles(k){
  return a;
 }
 const PD_OPTKEY='mhsim_pd_opts';
-const PDO={snd:1,blood:1,col:'r',vol:1,dnum:1};
-try{ const o=JSON.parse(localStorage.getItem(PD_OPTKEY)||'null'); if(o){ if(o.snd===0) PDO.snd=0; if([0,1,2].includes(o.blood)) PDO.blood=o.blood; if(['r','g','b'].includes(o.col)) PDO.col=o.col; if(typeof o.vol==='number'&&o.vol>=0&&o.vol<=1) PDO.vol=o.vol; if(o.dnum===0) PDO.dnum=0; } }catch(e){}
+const PDO={snd:1,blood:1,col:'r',vol:1,dnum:1,intro:1};
+try{ const o=JSON.parse(localStorage.getItem(PD_OPTKEY)||'null'); if(o){ if(o.snd===0) PDO.snd=0; if([0,1,2].includes(o.blood)) PDO.blood=o.blood; if(['r','g','b'].includes(o.col)) PDO.col=o.col; if(typeof o.vol==='number'&&o.vol>=0&&o.vol<=1) PDO.vol=o.vol; if(o.dnum===0) PDO.dnum=0; if(o.intro===0) PDO.intro=0; } }catch(e){}
 function pdOptSave(){ try{ localStorage.setItem(PD_OPTKEY,JSON.stringify(PDO)); }catch(e){} }
 const PD_BCOL={r:{n:'Rot',f:[150,20,28],p:[190,24,34],c:'#d0212c'},g:{n:'Grün',f:[40,150,50],p:[80,205,80],c:'#3fbf4a'},b:{n:'Blau',f:[40,90,200],p:[90,150,255],c:'#3d7dff'}};
 const PD_HANDKEY='mhsim_pd_hand';
@@ -1478,13 +1523,14 @@ function pdRenderOpts(){
  <div class="pdhand"><div class="pdtt"><b>Ton</b><small>Alle Spielgeräusche</small></div>${seg('snd',[[1,'🔊 An'],[0,'🔇 Aus']],PDO.snd)}</div>
  <div class="pdhand"><div class="pdtt"><b>Lautstärke</b><small id="pdVolL">${Math.round(PDO.vol*100)} %</small></div><input class="pdvol" type="range" min="0" max="100" step="5" value="${Math.round(PDO.vol*100)}" data-vol="1" aria-label="Lautstärke"></div>
  <div class="pdhand"><div class="pdtt"><b>Schadenszahlen</b><small>Zahlen über getroffenen Gegnern</small></div>${seg('dnum',[[1,'An'],[0,'Aus']],PDO.dnum)}</div>
+ <div class="pdhand"><div class="pdtt"><b>Intro</b><small>Kurzer Vorspann beim Rundenstart (antippen = überspringen)</small></div>${seg('intro',[[1,'An'],[0,'Aus']],PDO.intro)}</div>
  <div class="pdhand"><div class="pdtt"><b>Blut</b><small>Menge der Blutspritzer und Flecken</small></div>${seg('blood',[[0,'Aus'],[1,'Normal'],[2,'Mehr']],PDO.blood)}</div>
  <div class="pdhand"><div class="pdtt"><b>Blutfarbe</b><small>Rot, Grün oder Blau</small></div><div class="pdseg pdseg3">${['r','g','b'].map(k=>`<button data-po="col" data-v="${k}" class="${PDO.col===k?'on':''}"><i class="pdbd" style="background:${PD_BCOL[k].c}"></i>${PD_BCOL[k].n}</button>`).join('')}</div></div>
  <button class="pdopt pdslback" data-po="back"><span class="pdoi">‹</span><span class="pdot"><b>Zurück</b></span></button>`;
  ov.appendChild(el);
  el.onclick=e=>{ const b=e.target.closest('[data-po]'); if(!b) return; const k=b.dataset.po, v=b.dataset.v;
   if(k==='back'){ el.remove(); pdPause(true); return; }
-  if(k==='hand') pdSetHand(v); else if(k==='snd') PDO.snd=+v; else if(k==='dnum') PDO.dnum=+v; else if(k==='blood') PDO.blood=+v; else if(k==='col') PDO.col=v;
+  if(k==='hand') pdSetHand(v); else if(k==='snd') PDO.snd=+v; else if(k==='dnum') PDO.dnum=+v; else if(k==='intro') PDO.intro=+v; else if(k==='blood') PDO.blood=+v; else if(k==='col') PDO.col=v;
   pdOptSave(); const y=el.scrollTop; pdRenderOpts(); const n=document.getElementById('pdOpts'); if(n) n.scrollTop=y; pdSnd('tap'); };
  el.addEventListener('input',e=>{ const r=e.target.closest('[data-vol]'); if(!r) return; PDO.vol=Math.max(0,Math.min(1,+r.value/100)); if(PDS.mg) PDS.mg.gain.value=.9*PDO.vol; const l=document.getElementById('pdVolL'); if(l) l.textContent=Math.round(PDO.vol*100)+' %'; pdOptSave(); });
  el.addEventListener('change',e=>{ if(e.target.closest('[data-vol]')) pdSnd('kill'); });
@@ -1599,7 +1645,7 @@ function pdRenderOver(){
  el.innerHTML=`<div class="pdpt">${g.mp?'Runde vorbei!':g.skel?'Endgültig vorbei!':'Zu müde!'}</div><div class="pdps">${g.mp?esc(g.why||'Das Team ist erschöpft.'):g.skel?g.n+' ist als Skelett gefallen.':g.n+' ist erschöpft.'}</div><div class="pdstat"><span><b>${pdFmt(g.t)}</b>durchgehalten</span><span><b>${g.kills}</b>eingeschläfert</span><span><b>${g.lv}</b>Stufe</span></div>${pdStatHTML(pdStatRows(g))}<button class="pdopt" data-pdo="again"><span class="pdoi">🔁</span><span class="pdot"><b>Nochmal</b><small>Mit ${g.n} noch eine Runde</small></span></button><button class="pdopt" data-pdo="menu"><span class="pdoi">👥</span><span class="pdot"><b>Andere Figur wählen</b></span></button>`;
  ov.appendChild(el);
  if(g.mp){ const a=el.querySelector('[data-pdo="again"]'), m=el.querySelector('[data-pdo="menu"]'); a.querySelector('b').textContent='Zurück in die Lobby'; a.querySelector('small').textContent='Alle Mitspieler kommen mit'; m.querySelector('b').textContent='Raum verlassen'; }
- el.onclick=e=>{ const b=e.target.closest('[data-pdo]'); if(!b) return; if(g.mp){ if(b.dataset.pdo==='again') netBackToLobby(); else { netStop(); wzRender(); } return; } if(b.dataset.pdo==='again') pdStartRun(g.n); else wzRender(); };
+ el.onclick=e=>{ const b=e.target.closest('[data-pdo]'); if(!b) return; if(g.mp){ if(b.dataset.pdo==='again') netBackToLobby(); else { netStop(); wzRender(); } return; } if(b.dataset.pdo==='again') pdStartRun(g.n,true); else wzRender(); };
 }
 
 /* ---------- Charakterwahl ---------- */
@@ -1789,6 +1835,23 @@ window.addEventListener('pagehide',()=>{ if(WZ.on&&PD.g){ pdSave(); try{ if(pdMa
 #pdFloat.pdfl2 .pdflx{flex:none;width:18px!important;height:18px!important;font-size:9px!important}
 @media (orientation:portrait){#pdFloat.pdfl2{top:calc(132px + env(safe-area-inset-top,0px))!important}}
 #pdFloat.pdfl2.lowr{margin-top:46px}
+
+#pdIntro{position:fixed;inset:0;z-index:2147483000;background:#06070b;color:#fff;font-family:system-ui,sans-serif;overflow:hidden;touch-action:manipulation;animation:pdinfade .25s ease-out}
+#pdIntro.out{opacity:0;transition:opacity .2s}@keyframes pdinfade{from{opacity:0}to{opacity:1}}
+.pdinC{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;box-sizing:border-box;animation:pdinc .3s ease-out}
+.pdinC.old{opacity:0;transition:opacity .25s}@keyframes pdinc{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:none}}
+.pdinT{font:900 clamp(34px,9vw,84px)/1 system-ui;letter-spacing:.04em;color:#ff4b4b;text-shadow:0 0 28px #ff2a2a88,0 4px 0 #000;animation:pdinpop .6s cubic-bezier(.2,1.6,.4,1)}.pdinT.sm{color:#ffd23f;text-shadow:0 0 24px #ffd23f66,0 4px 0 #000}
+@keyframes pdinpop{from{transform:scale(.4) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+.pdinS{margin-top:14px;font:700 clamp(16px,4vw,26px)/1.3 system-ui;color:#dfe3ee}
+.pdinM{position:absolute;inset:0;overflow:hidden}.pdinM canvas{width:100%;height:100%;object-fit:cover;filter:brightness(.55) saturate(1.1);animation:pdinkb 1.6s linear forwards}
+@keyframes pdinkb{from{transform:scale(1.02)}to{transform:scale(1.18)}}
+.pdinM:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,#0000 25%,#000b 100%)}
+.pdinI,.pdinN,.pdinH,.pdinQ{position:relative;text-shadow:0 3px 10px #000,0 0 3px #000}
+.pdinI{font-size:clamp(40px,11vw,80px);animation:pdinpop .5s cubic-bezier(.2,1.6,.4,1)}.pdinN{margin-top:4px;font:800 clamp(12px,3vw,16px)/1 system-ui;letter-spacing:.2em;text-transform:uppercase;color:#ffd23f}
+.pdinH{margin-top:4px;font:900 clamp(28px,7vw,54px)/1.05 system-ui}.pdinQ{margin-top:10px;max-width:640px;font:700 clamp(15px,3.6vw,24px)/1.3 system-ui;color:#fff}
+.pdinD{position:absolute;left:0;right:0;bottom:calc(36px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;justify-content:center}.pdinD i{width:20px;height:4px;border-radius:2px;background:#ffffff33}.pdinD i.on{background:#ffd23f}
+.pdinSk{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;font:600 11px system-ui;color:#ffffff88;letter-spacing:.04em}
+
 #pdFloat .pdflh{display:flex;align-items:center;gap:6px;margin-bottom:4px}#pdFloat .pdflh>div{flex:1;min-width:0;display:flex;flex-direction:column}
 #pdFloat .pdflh b{font:800 13px system-ui}#pdFloat .pdflh small{font:600 10.5px system-ui;color:#b9c0d4}
 #pdFloat .pdflcoin{font:800 12px system-ui;color:#ffd23f;background:#ffd23f1f;border-radius:9px;padding:3px 8px}
